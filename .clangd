@@ -1,0 +1,2 @@
+CompileFlags:
+	Add: [I.,-I.,-I/usr/include/qt,-I/usr/include/qt/QtWidgets,-I/usr/include/qt/QtGui,-I/usr/include/qt/QtCore,-I.,-I.,-I/usr/lib/qt/mkspecs/linux-g++]
