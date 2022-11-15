@@ -18,8 +18,9 @@ compile() {
 }
 
 test() {
-    cd $WHEREAMI/test
+    compile
 
+    cd $WHEREAMI/test
     qmake
     make
 
@@ -35,6 +36,10 @@ generate_qrc() {
     done
 
     for frame in assets/img/lk/*.png; do
+        echo "<file>$frame</file>" >> images.qrc
+    done
+
+    for frame in assets/img/icons/*.png; do
         echo "<file>$frame</file>" >> images.qrc
     done
 

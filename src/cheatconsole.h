@@ -56,7 +56,7 @@ const static std::vector<CheatCommand> COMMANDS = {
         }
     },
     {
-        "si",
+        "print",
         "Print detailed information about the item at yx ($0, $1) in the inventory",
         2,
         [](LKGameWindow *game, const QStringList &args) {
@@ -65,17 +65,18 @@ const static std::vector<CheatCommand> COMMANDS = {
 
             OOB_CHECK(y, x);
 
-            Item *item = game->get_item_instance_at(y, x);
-            qDebug("si: item yx (%d, %d): code (%d), id (%lx), name (%s)",
+            Item item = game->get_item_instance_at(y, x);
+            qDebug("print: item yx (%d, %d): code (%d), id (%lx), name (%s), intent (%d)",
                 y, x,
-                item->code,
-                item->id,
-                Item::def_of(item->code)->internal_name.c_str()
+                item.code,
+                item.id,
+                Item::def_of(item.code)->internal_name.c_str(),
+                item.intent
             );
         }
     },
     {
-        "moi",
+        "move",
         "Move the item at yx ($0, $1) in the inventory to yx ($2, $3) in the inventory",
         4,
         [](LKGameWindow *game, const QStringList &args) {
@@ -87,8 +88,8 @@ const static std::vector<CheatCommand> COMMANDS = {
             OOB_CHECK(y0, x0);
             OOB_CHECK(y1, x1);
 
-            Item *item = game->get_item_instance_at(y0, x0);
-            game->copy_item_to(*item, y1, x1);
+            Item item = game->get_item_instance_at(y0, x0);
+            game->copy_item_to(item, y1, x1);
             game->remove_item_at(y0, x0);
 
             game->refresh_inventory();
@@ -97,7 +98,7 @@ const static std::vector<CheatCommand> COMMANDS = {
         }
     },
     {
-        "swi",
+        "swap",
         "Swap the item at yx ($0, $1) in the inventory with the item at yx ($2, $3) in the inventory",
         4,
         [](LKGameWindow *game, const QStringList &args) {
@@ -109,8 +110,8 @@ const static std::vector<CheatCommand> COMMANDS = {
             OOB_CHECK(y0, x0);
             OOB_CHECK(y1, x1);
 
-            Item item_a(*game->get_item_instance_at(y0, x0));
-            Item item_b(*game->get_item_instance_at(y1, x1));
+            Item item_a(game->get_item_instance_at(y0, x0));
+            Item item_b(game->get_item_instance_at(y1, x1));
 
             game->copy_item_to(item_a, y1, x1);
             game->copy_item_to(item_b, y0, x0);
@@ -121,7 +122,7 @@ const static std::vector<CheatCommand> COMMANDS = {
         }
     },
     {
-        "mki",
+        "make",
         "Make a new item with code ($0) at yx ($1, $2)",
         3,
         [](LKGameWindow *game, const QStringList &args) {
@@ -134,6 +135,72 @@ const static std::vector<CheatCommand> COMMANDS = {
             game->make_item_at(Item::def_of(code), y, x);
 
             game->refresh_inventory();
+
+            qDebug("done");
+        }
+    },
+    {
+        "save",
+        "Save the current state of the game to the file ($0)",
+        1,
+        [](LKGameWindow *game, const QStringList &args) {
+            StateSerialize::save_state(game->character, args[0].toStdString());
+
+            qDebug("done");
+        }
+    },
+    {
+        "load",
+        "Load a saved character state from the file ($0)",
+        1,
+        [](LKGameWindow *game, const QStringList &args) {
+            CharacterState *state = StateSerialize::load_state(args[0].toStdString());
+
+            if (state == nullptr) {
+                qWarning("State file is not proper!");
+                return;
+            }
+
+            game->character = *state;
+            delete state;
+
+            qDebug("done");
+        }
+    },
+    {
+        "name",
+        "Change the current character's name to ($0); if $0 is '?', show the current name instead",
+        1,
+        [](LKGameWindow *game, const QStringList &args) {
+            std::string new_name = args[0].toStdString();
+            if (new_name == "?") {
+                qDebug("My name is (%s)", game->character.name.c_str());
+                return;
+            }
+
+            game->character.name = new_name;
+
+            qDebug("done");
+        }
+    },
+    {
+        "hunger",
+        "Change the current character's hunger to ($0); if $0 is '?', show the current hunger instead",
+        1,
+        [](LKGameWindow *game, const QStringList &args) {
+            if (args[0] == "?") {
+                qDebug("Current hunger is (%d)", game->character.hunger);
+                return;
+            }
+
+            QS_TO_INT(hunger, args[0]);
+
+            if (hunger < 0 || hunger > 100) {
+                qWarning("New hunger value is oob (%d)", hunger);
+                return;
+            }
+
+            game->character.hunger = hunger;
 
             qDebug("done");
         }

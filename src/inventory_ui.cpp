@@ -33,7 +33,9 @@ QFrame *InventoryUi::make_inventory_slot(LKGameWindow &window, unsigned y, unsig
     label->setObjectName(make_internal_name("inventory_label", y, x));
     label->setMinimumSize(QSize(48, 48));
     label->setMaximumSize(QSize(48, 48));
-    label->setAcceptDrops(true);
+
+    static InventoryEventFilter *inventory_event_filter = new InventoryEventFilter(&window);
+    label->installEventFilter(inventory_event_filter);
 
     layout->addWidget(label);
 

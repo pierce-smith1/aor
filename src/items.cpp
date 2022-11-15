@@ -1,4 +1,5 @@
 #include "items.h"
+#include <algorithm>
 #include <chrono>
 
 ItemDefinitionPtr Item::def_of(ItemCode code) {
@@ -27,7 +28,13 @@ Item::Item(const ItemDefinition &def)
     : code(def.code),
       id(new_instance_id()),
       uses_left(def.default_uses_left),
-      intent(ItemIntent::None) { }
+      intent(ItemIntent::None)
+{
+    // Don't give an empty item a unique id
+    if (code == 0) {
+        id = 0;
+    }
+}
 
 Item::Item(ItemDefinitionPtr ptr)
     : Item(*ptr) { }
@@ -39,18 +46,22 @@ Item::Item(const std::string &name)
     : Item(def_of(name)) { }
 
 QPixmap Item::pixmap_of(ItemCode id) {
-    std::string pixmap_name = ":/assets/img/items/" + Item::def_of(id)->internal_name + ".png";
-    return QPixmap(QString::fromStdString(pixmap_name));
+    return pixmap_of(*def_of(id));
 }
 
 QPixmap Item::pixmap_of(const std::string &name) {
-    std::string pixmap_name = ":/assets/img/items/" + name + ".png";
-    return QPixmap(QString::fromStdString(pixmap_name));
+    return pixmap_of(*def_of(name));
 }
 
 QPixmap Item::pixmap_of(const ItemDefinition &def) {
-    std::string pixmap_name = ":/assets/img/items/" + def.internal_name + ".png";
-    return QPixmap(QString::fromStdString(pixmap_name));
+    QString pixmap_name = QString::fromStdString(":/assets/img/items/" + def.internal_name + ".png");
+
+    if (!QFile(pixmap_name).exists()) {
+        qDebug("Missing item pixmap (%s)", def.internal_name.c_str());
+        pixmap_name = QString::fromStdString(":/assets/img/items/missing.png");
+    }
+
+    return QPixmap(pixmap_name);
 }
 
 ItemId Item::new_instance_id() {
@@ -62,4 +73,12 @@ ItemId Item::new_instance_id() {
     static std::uniform_int_distribution<long> dist(0);
 
     return (milliseconds & 0xffffffff) + ((dist(rng) & 0xffffffff) << 32);
+}
+
+Item Item::invalid_item() {
+    Item item;
+    item.code = INVALID_CODE;
+    item.id = INVALID_ID;
+
+    return item;
 }

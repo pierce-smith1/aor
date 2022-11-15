@@ -7,6 +7,7 @@
 #include <random>
 
 #include <QtGlobal>
+#include <QFile>
 #include <QPixmap>
 
 const static int IF_NOTHING_SPECIAL   = 0;
@@ -19,7 +20,7 @@ const static int IF_DIVINE_ITEM       = 1 << 5;
 const static int IF_ANIMAL            = 1 << 6;
 
 const static int INVENTORY_ROWS = 4;
-const static int INVENTORY_COLS = 5;
+const static int INVENTORY_COLS = 7;
 const static int INVENTORY_SIZE = INVENTORY_COLS * INVENTORY_ROWS;
 
 using ItemCode = std::uint16_t;
@@ -27,6 +28,8 @@ using ItemId = std::uint64_t;
 using ForeignItemId = std::uint64_t;
 
 const static ItemId EMPTY_ID = 0;
+const static ItemId INVALID_ID = 0xffffffffffffffff;
+const static ItemCode INVALID_CODE = 0xff;
 
 struct ItemDefinition {
     std::string internal_name;
@@ -76,8 +79,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     },
 };
 
-enum ItemIntent {
-    None,
+enum ItemIntent : unsigned char {
+    None = 0,
     ToUse,          // marked for smithing, praying, eating, etc.
     ToSell,         // to be sold in a trade
     ToPurchaseWith, // to be used for buying another player's trade
@@ -85,10 +88,10 @@ enum ItemIntent {
 };
 
 struct Item {
-    ItemCode code = 0;
-    ItemId id = EMPTY_ID;
-    unsigned char uses_left = 0;
-    ItemIntent intent = ItemIntent::None;
+    ItemCode code;
+    ItemId id;
+    unsigned char uses_left;
+    ItemIntent intent;
 
     Item() = default;
     explicit Item(const ItemDefinition &def);
@@ -102,6 +105,7 @@ struct Item {
     static QPixmap pixmap_of(const std::string &name);
     static QPixmap pixmap_of(const ItemDefinition &def);
     static ItemId new_instance_id();
+    static Item invalid_item();
 };
 
 

@@ -7,6 +7,10 @@ TARGET = test
 INCLUDEPATH += .
 CONFIG += debug
 
+RESOURCES += ../images.qrc
+FORMS += ../assets/ui/main.ui
+FORMS += ../assets/ui/cheat.ui
+
 QT += gui
 QT += widgets
 
@@ -15,10 +19,11 @@ QT += widgets
 # Please consult the documentation of the deprecated API in order to know
 # how to port your code away from it.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 # Input
 SOURCES += $$files($$PWD/*.cpp)
 SOURCES += $$files($$PWD/../src/*.cpp)
 SOURCES -= $$PWD/../src/main.cpp
 HEADERS += $$files($$PWD/*.h)
+HEADERS += $$files($$PWD/../src/*.h)

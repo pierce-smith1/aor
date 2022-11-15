@@ -58,3 +58,10 @@ compile_commands.json
 *_qmlcache.qrc
 
 # End of https://www.toptal.com/developers/gitignore/api/qt
+
+test/tmp/*
+test/test
+desktop-yokin
+*.qrc
+.clangd
+lk
