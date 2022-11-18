@@ -1,4 +1,5 @@
 #include "main.h"
+#include "generators.h"
 
 int main(int argc, char **argv) {
     QApplication app(argc, argv);
@@ -8,8 +9,9 @@ int main(int argc, char **argv) {
 
     CheatConsole console(&game_window);
 
-    game_window.character.inventory[0] = Item("globfruit");
-    game_window.refresh_inventory();
+    game_window.mutate_state([](State &s) {
+        s.inventory[0] = Item("globfruit");
+    });
 
     return app.exec();
 }

@@ -1,9 +1,58 @@
 #include "state.h"
+#include "generators.h"
+#include "inventory_ui.h"
 
-CharacterState::CharacterState()
-    : name("selta"), inventory(), activity({ Nothing, 0 }) { }
+ItemId State::get_item_id_at(int y, int x) const {
+    return inventory[InventoryUi::inventory_index(y, x)].id;
+}
 
-void StateSerialize::save_state(const CharacterState &state, const std::string &filename) {
+Item State::get_item_instance(ItemId id) const {
+    auto match_id = [id](const Item &item) -> bool { return item.id == id; };
+    auto search_result = std::find_if(begin(inventory), end(inventory), match_id);
+
+    if (search_result == end(inventory)) {
+        qDebug("Searching for an item by id turned up nothing (%lx)", id);
+        return Item::invalid_item();
+    }
+
+    return *search_result;
+}
+
+Item State::get_item_instance_at(int y, int x) const {
+    return inventory[InventoryUi::inventory_index(y, x)];
+}
+
+void State::copy_item_to(const Item &item, int y, int x) {
+    if (inventory[InventoryUi::inventory_index(y, x)].id != EMPTY_ID) {
+        qWarning("Placed an item (id: %lx, code: %d) into a non-empty inventory space (y: %d, x: %d)", item.id, item.code, y, x);
+    }
+
+    inventory[InventoryUi::inventory_index(y, x)] = item;
+}
+
+void State::remove_item_at(int y, int x) {
+    inventory[InventoryUi::inventory_index(y, x)] = Item();
+}
+
+ItemId State::make_item_at(ItemDefinitionPtr def, int y, int x) {
+    if (inventory[InventoryUi::inventory_index(y, x)].id != EMPTY_ID) {
+        qWarning("Made an item (code: %d) at a non-empty inventory space (y: %d, x: %d)", def->code, y, x);
+    }
+
+    Item new_item = Item(def);
+    inventory[InventoryUi::inventory_index(y, x)] = new_item;
+
+    return new_item.id;
+}
+
+void State::mutate_item_at(std::function<void(Item &)> action, int y, int x) {
+    action(inventory[InventoryUi::inventory_index(y, x)]);
+}
+
+State::State()
+    : name(Generators::generate_yokin_name()), inventory(), activity({ Nothing, 0 }) { }
+
+void StateSerialize::save_state(const State &state, const std::string &filename) {
     std::ofstream out(filename);
 
     put_char(out, 'l');
@@ -14,10 +63,10 @@ void StateSerialize::save_state(const CharacterState &state, const std::string &
     put_inventory(out, state.inventory);
     put_char(out, state.activity.action);
     put_long(out, state.activity.ms_left);
-    put_char(out, state.hunger);
+    put_short(out, state.energy);
 }
 
-CharacterState *StateSerialize::load_state(const std::string &filename) {
+State *StateSerialize::load_state(const std::string &filename) {
     std::ifstream in(filename);
 
     char header[4];
@@ -31,12 +80,12 @@ CharacterState *StateSerialize::load_state(const std::string &filename) {
         return nullptr;
     }
 
-    CharacterState *state = new CharacterState;
+    State *state = new State;
     state->name = get_string(in);
     state->inventory = get_inventory(in);
     state->activity.action = (CharacterAction) get_char(in);
     state->activity.ms_left = get_long(in);
-    state->hunger = get_char(in);
+    state->energy = get_short(in);
 
     return state;
 }

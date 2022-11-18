@@ -9,33 +9,48 @@ class LKGameWindow;
 #include "state.h"
 #include "../ui_main.h"
 
-
 class InventoryEventFilter : public QObject {
     Q_OBJECT;
-
 public:
     InventoryEventFilter(LKGameWindow *game);
-
     LKGameWindow *game;
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
+};
+
+class GameTimers : public QObject {
+    Q_OBJECT;
+public:
+    GameTimers(LKGameWindow *game);
+    LKGameWindow *game;
+    int activity_timer;
+protected:
+    void timerEvent(QTimerEvent *event) override;
 };
 
 class LKGameWindow : public QMainWindow {
 public:
     LKGameWindow();
 
-    void refresh_inventory();
-    ItemId get_item_id_at(int y, int x);
-    Item get_item_instance(ItemId id);
-    Item get_item_instance_at(int y, int x);
-    void copy_item_to(const Item &item, int y, int x);
-    void remove_item_at(int y, int x);
-    ItemId make_item_at(ItemDefinitionPtr def, int y, int x);
-    void mutate_item_at(std::function<void(Item &)> action, int y, int x);
+    template<typename T> T read_state(std::function<T(const State &)> action) {
+        QMutexLocker lock(&mutex);
+        return action(character);
+    }
+    void mutate_state(std::function<void(State &)> action);
+
+    void start_activity(const CharacterActivity &activity);
+    void progress_activity(std::int64_t by_ms);
+    void notify_activity();
+
+    std::vector<QPushButton *> get_activity_buttons();
 
     Ui::LKMainWindow window;
-    CharacterState character;
 private:
+    void refresh_inventory();
+    void lock_ui();
+    void unlock_ui();
+
+    GameTimers timers;
     QRecursiveMutex mutex;
+    State character;
 };

@@ -78,7 +78,9 @@ std::pair<int, int> InventoryUi::get_yx_coords_of_label(QObject *label) {
 
 ItemId InventoryUi::get_item_in(LKGameWindow &window, QObject *label) {
     std::pair<int, int> coords = get_yx_coords_of_label(label);
-    return window.character.inventory[coords.first * INVENTORY_COLS + coords.second].id;
+    return window.read_state<ItemId>([=](const State &state) {
+        return state.inventory[coords.first * INVENTORY_COLS + coords.second].id;
+    });
 }
 
 bool InventoryUi::are_yx_coords_oob(int y, int x) {

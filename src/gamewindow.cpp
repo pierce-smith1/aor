@@ -1,4 +1,5 @@
 #include "gamewindow.h"
+#include "I."
 #include "inventory_ui.h"
 #include "cheatconsole.h"
 #include "items.h"
@@ -20,7 +21,9 @@ bool InventoryEventFilter::eventFilter(QObject *slot, QEvent *event) {
                 }
             };
 
-            game->mutate_item_at(update_intent, coords.first, coords.second);
+            game->mutate_state([=](State &state) {
+                state.mutate_item_at(update_intent, coords.first, coords.second);
+            });
 
             return true;
         } default: {
@@ -29,11 +32,33 @@ bool InventoryEventFilter::eventFilter(QObject *slot, QEvent *event) {
     }
 }
 
+GameTimers::GameTimers(LKGameWindow *game)
+    : game(game) { }
+
+void GameTimers::timerEvent(QTimerEvent *event) {
+    if (event->timerId() == activity_timer) {
+        game->progress_activity(ACTIVITY_TICK_RATE_MS);
+    }
+}
+
 LKGameWindow::LKGameWindow()
-    : window()
+    : window(), timers(this)
 {
     window.setupUi(this);
+
+    connect(window.smith_button, &QPushButton::clicked, [&]() { start_activity({ Smithing, 50000 }); });
+    connect(window.forage_button, &QPushButton::clicked, [&]() { start_activity({ Foraging, 50000 }); });
+    connect(window.mine_button, &QPushButton::clicked, [&]() { start_activity({ Mining, 50000 }); });
+    connect(window.pray_button, &QPushButton::clicked, [&]() { start_activity({ Praying, 50000 }); });
+
     InventoryUi::insert_inventory_slots(*this);
+}
+
+void LKGameWindow::mutate_state(std::function<void(State &)> action) {
+    QMutexLocker lock(&mutex);
+
+    action(character);
+    refresh_inventory();
 }
 
 void LKGameWindow::refresh_inventory() {
@@ -48,63 +73,71 @@ void LKGameWindow::refresh_inventory() {
     }
 }
 
-ItemId LKGameWindow::get_item_id_at(int y, int x) {
+void LKGameWindow::start_activity(const CharacterActivity &activity) {
     QMutexLocker lock(&mutex);
 
-    return character.inventory[InventoryUi::inventory_index(y, x)].id;
+    lock_ui();
+    character.activity = activity;
+    notify_activity();
+
+    timers.activity_timer = timers.startTimer(ACTIVITY_TICK_RATE_MS);
 }
 
-Item LKGameWindow::get_item_instance(ItemId id) {
+void LKGameWindow::progress_activity(std::int64_t by_ms) {
     QMutexLocker lock(&mutex);
 
-    auto match_id = [id](Item &item) -> bool { return item.id == id; };
-    auto search_result = std::find_if(begin(character.inventory), end(character.inventory), match_id);
+    character.activity.ms_left -= by_ms;
+    notify_activity();
 
-    if (search_result == end(character.inventory)) {
-        qDebug("Searching for an item by id turned up nothing (%lx)", id);
-        return Item::invalid_item();
+    if (character.activity.ms_left <= 0) {
+        start_activity({ Nothing, 0 });
+        unlock_ui();
+        killTimer(timers.activity_timer);
     }
-
-    return *search_result;
 }
 
-Item LKGameWindow::get_item_instance_at(int y, int x) {
+void LKGameWindow::notify_activity() {
     QMutexLocker lock(&mutex);
 
-    return character.inventory[InventoryUi::inventory_index(y, x)];
-}
+    auto notify = [&](const std::string &action_name) {
+        window.statusbar->showMessage(QString("Currently %1: %2 minutes left...")
+            .arg(QString::fromStdString(action_name))
+            .arg(character.activity.ms_left / 60000.0));
+    };
 
-void LKGameWindow::copy_item_to(const Item &item, int y, int x) {
-    QMutexLocker lock(&mutex);
-
-    if (character.inventory[InventoryUi::inventory_index(y, x)].id != EMPTY_ID) {
-        qWarning("Placed an item (id: %lx, code: %d) into a non-empty inventory space (y: %d, x: %d)", item.id, item.code, y, x);
+    switch (character.activity.action) {
+        case Nothing: {
+            window.statusbar->showMessage(QString("Doing nothing"));
+            break;
+        }
+        case Smithing: notify("smithing a cool new tool"); break;
+        case Eating: notify("eating a yummy snack"); break;
+        case Foraging: notify("foraging for eats"); break;
+        case Mining: notify("looking for shiny metals"); break;
+        case Trading: notify("venturing for a trade"); break;
+        case Praying: notify("dreaming of the gods"); break;
+        case Sleeping: notify("fast asleep"); break;
+        default: notify("???"); break;
     }
-
-    character.inventory[InventoryUi::inventory_index(y, x)] = item;
 }
 
-void LKGameWindow::remove_item_at(int y, int x) {
-    QMutexLocker lock(&mutex);
-
-    character.inventory[InventoryUi::inventory_index(y, x)] = Item();
+std::vector<QPushButton *> LKGameWindow::get_activity_buttons() {
+    return {
+        window.smith_button,
+        window.forage_button,
+        window.mine_button,
+        window.pray_button,
+    };
 }
 
-ItemId LKGameWindow::make_item_at(ItemDefinitionPtr def, int y, int x) {
-    QMutexLocker lock(&mutex);
-
-    if (character.inventory[InventoryUi::inventory_index(y, x)].id != EMPTY_ID) {
-        qWarning("Made an item (code: %d) at a non-empty inventory space (y: %d, x: %d)", def->code, y, x);
+void LKGameWindow::lock_ui() {
+    for (QPushButton *button : get_activity_buttons()) {
+        button->setEnabled(false);
     }
-
-    Item new_item = Item(def);
-    character.inventory[InventoryUi::inventory_index(y, x)] = new_item;
-
-    return new_item.id;
 }
 
-void LKGameWindow::mutate_item_at(std::function<void(Item &)> action, int y, int x) {
-    QMutexLocker lock(&mutex);
-
-    action(character.inventory[InventoryUi::inventory_index(y, x)]);
+void LKGameWindow::unlock_ui() {
+    for (QPushButton *button : get_activity_buttons()) {
+        button->setEnabled(true);
+    }
 }

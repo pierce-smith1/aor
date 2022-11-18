@@ -6,6 +6,7 @@ TEMPLATE = app
 TARGET = desktop-yokin
 INCLUDEPATH += .
 CONFIG += debug
+CONFIG += static
 
 RESOURCES += images.qrc
 FORMS += assets/ui/main.ui

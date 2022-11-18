@@ -4,20 +4,17 @@
 #include <vector>
 #include <algorithm>
 #include <chrono>
+#include <map>
 #include <random>
+#include <set>
 
 #include <QtGlobal>
 #include <QFile>
 #include <QPixmap>
 
-const static int IF_NOTHING_SPECIAL   = 0;
-const static int IF_UNTRADEABLE       = 1 << 0;
-const static int IF_TOOL              = 1 << 1;
-const static int IF_CONSUMABLE        = 1 << 2;
-const static int IF_SMITHING_MATERIAL = 1 << 3;
-const static int IF_PRAYER_ITEM       = 1 << 4;
-const static int IF_DIVINE_ITEM       = 1 << 5;
-const static int IF_ANIMAL            = 1 << 6;
+#define USES
+#define NOT_CRAFTABLE {}
+#define NOT_TOOL {}
 
 const static int INVENTORY_ROWS = 4;
 const static int INVENTORY_COLS = 7;
@@ -31,56 +28,139 @@ const static ItemId EMPTY_ID = 0;
 const static ItemId INVALID_ID = 0xffffffffffffffff;
 const static ItemCode INVALID_CODE = 0xff;
 
+enum ItemType {
+    NoType,
+    Consumable,
+    Material,
+    ForagingTool,
+    SmithingTool,
+    TradingTool,
+    PrayerTool,
+    Artifact,
+};
+
+const static int FTOOL_FORAGING_TREE = 1 << 0;
+const static int FTOOL_FORAGING_MUSHROOM = 1 << 1;
+const static int FTOOL_FORAGING_INSECT = 1 << 2;
+const static int FTOOL_FORAGING_RIVER = 1 << 3;
+const static int FTOOL_MINING_METAL = 1 << 4;
+const static int FTOOL_MINING_CRYSTAL = 1 << 5;
+const static int FTOOL_MINING_ARTIFACT = 1 << 6;
+const static int FTOOL_PRAYER = 1 << 7;
+const static int FTOOL_ANY = 0x7f;
+
+enum ItemProperty {
+    EnergyBoost,
+    MoraleBoost,
+    MaterialPower,
+    MaterialFlags,
+    EnergyCost,
+    ToolPower,
+    ToolFlags,
+    PrayerPower,
+};
+
+// This basically just wraps a std::map<ItemPropety, int>,
+// with the crucial change that operator[] is const while retaining the
+// behavior of returning zero-initialized values for non-existant keys.
+class ItemProperties {
+public:
+    ItemProperties(std::initializer_list<std::pair<const ItemProperty, int>> map);
+    int operator[](ItemProperty prop) const;
+
+private:
+    std::map<ItemProperty, int> map;
+};
+
+using ItemNameList = std::vector<std::string>;
+using ItemChances = std::set<std::pair<std::string, double>>;
+
 struct ItemDefinition {
+    ItemCode code;
     std::string internal_name;
     std::string display_name;
     std::string description;
     unsigned char default_uses_left;
-    unsigned char flags;
-    ItemCode code;
+    ItemType type;
+    ItemNameList recipe;
+    ItemChances result_chances;
+    ItemProperties properties;
 };
 
 using ItemDefinitionPtr = std::vector<ItemDefinition>::const_iterator;
 
-// IMPORTANT: The item id of whatever item you define MUST match its
-// index in this vector!
 const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
+        __COUNTER__,
         "empty",
         "Empty",
         "Nothing here.",
-        0,
-        IF_NOTHING_SPECIAL,
-        0
+        0 USES,
+        NoType,
+        NOT_CRAFTABLE,
+        NOT_TOOL,
+        {}
     },
     {
+        __COUNTER__,
         "globfruit",
         "Globfruit",
         "A cluster of wild starfruit.",
-        1,
-        IF_CONSUMABLE,
-        1,
+        1 USES,
+        Consumable,
+        NOT_CRAFTABLE,
+        NOT_TOOL,
+        {
+            { EnergyBoost, 20 },
+            { MoraleBoost, 20 }
+        }
     },
     {
+        __COUNTER__,
         "eliding_hatchet",
         "Eliding Hatchet",
-        "You never know what you'll find beneath a tree's bark.",
-        3,
-        IF_TOOL,
-        2,
+        "Cast away the bark from the tree, and you'll uncover all sorts of bugs!",
+        3 USES,
+        ForagingTool,
+        {},
+        {},
+        {
+            { ToolFlags, FTOOL_FORAGING_INSECT },
+            { EnergyCost, 40 },
+            { ToolPower, 2 },
+        }
     },
     {
+        __COUNTER__,
         "root_kit",
         "Root kit",
-        "A box of neat roots you found.",
-        3,
-        IF_CONSUMABLE,
-        3,
+        "Not very tasty, but you have to eat something.",
+        3 USES,
+        Consumable,
+        NOT_CRAFTABLE,
+        NOT_TOOL,
+        {
+            { EnergyBoost, 10 },
+        }
     },
+    {
+        __COUNTER__,
+        "silicon_bar",
+        "Silicon Bar",
+        "The stuff electric dreams are made of.",
+        1 USES,
+        Material,
+        NOT_CRAFTABLE,
+        NOT_TOOL,
+        {
+            { MaterialFlags, FTOOL_MINING_METAL },
+            { MaterialPower, 1 }
+        }
+    }
 };
 
 enum ItemIntent : unsigned char {
-    None = 0,
+    None,
     ToUse,          // marked for smithing, praying, eating, etc.
     ToSell,         // to be sold in a trade
     ToPurchaseWith, // to be used for buying another player's trade
@@ -101,11 +181,10 @@ struct Item {
 
     static ItemDefinitionPtr def_of(ItemCode id);
     static ItemDefinitionPtr def_of(const std::string &name);
+    static ItemDefinitionPtr def_of(const Item &item);
     static QPixmap pixmap_of(ItemCode id);
     static QPixmap pixmap_of(const std::string &name);
     static QPixmap pixmap_of(const ItemDefinition &def);
     static ItemId new_instance_id();
     static Item invalid_item();
 };
-
-

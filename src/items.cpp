@@ -2,6 +2,17 @@
 #include <algorithm>
 #include <chrono>
 
+ItemProperties::ItemProperties(std::initializer_list<std::pair<const ItemProperty, int>> map)
+    : map(map) { }
+
+int ItemProperties::operator[](ItemProperty prop) const {
+    try {
+        return map.at(prop);
+    } catch (std::out_of_range &e) {
+        return 0;
+    }
+}
+
 ItemDefinitionPtr Item::def_of(ItemCode code) {
     auto match_code = [code](const ItemDefinition def) -> bool { return def.code == code; };
     auto result = std::find_if(begin(ITEM_DEFINITIONS), end(ITEM_DEFINITIONS), match_code);
@@ -22,6 +33,10 @@ ItemDefinitionPtr Item::def_of(const std::string &name) {
     }
 
     return result;
+}
+
+ItemDefinitionPtr Item::def_of(const Item &item) {
+    return def_of(item.code);
 }
 
 Item::Item(const ItemDefinition &def)
