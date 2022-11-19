@@ -37,6 +37,7 @@ enum ItemType {
     TradingTool,
     PrayerTool,
     Artifact,
+    Blessing,
 };
 
 const static int FTOOL_FORAGING_TREE = 1 << 0;
@@ -82,8 +83,6 @@ struct ItemDefinition {
     std::string description;
     unsigned char default_uses_left;
     ItemType type;
-    ItemNameList recipe;
-    ItemChances result_chances;
     ItemProperties properties;
 };
 
@@ -92,24 +91,14 @@ using ItemDefinitionPtr = std::vector<ItemDefinition>::const_iterator;
 const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         __COUNTER__,
-        "empty",
-        "Empty",
-        "Nothing here.",
-        0 USES,
-        NoType,
-        NOT_CRAFTABLE,
-        NOT_TOOL,
+        "empty", "Empty", "Nothing here.",
+        0 USES, NoType,
         {}
     },
     {
         __COUNTER__,
-        "globfruit",
-        "Globfruit",
-        "A cluster of wild starfruit.",
-        1 USES,
-        Consumable,
-        NOT_CRAFTABLE,
-        NOT_TOOL,
+        "globfruit", "Globfruit", "A cluster of wild starfruit.",
+        1 USES, Consumable,
         {
             { EnergyBoost, 20 },
             { MoraleBoost, 20 }
@@ -117,13 +106,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     },
     {
         __COUNTER__,
-        "eliding_hatchet",
-        "Eliding Hatchet",
-        "Cast away the bark from the tree, and you'll uncover all sorts of bugs!",
-        3 USES,
-        ForagingTool,
-        {},
-        {},
+        "eliding_hatchet", "Eliding Hatchet", "Cast away the bark from the tree, and you'll uncover all sorts of bugs!",
+        3 USES, ForagingTool,
         {
             { ToolFlags, FTOOL_FORAGING_INSECT },
             { EnergyCost, 40 },
@@ -132,39 +116,31 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     },
     {
         __COUNTER__,
-        "root_kit",
-        "Root kit",
-        "Not very tasty, but you have to eat something.",
-        3 USES,
-        Consumable,
-        NOT_CRAFTABLE,
-        NOT_TOOL,
+        "root_kit", "Root kit", "Not very tasty, but you have to eat something.",
+        3 USES, Consumable,
         {
             { EnergyBoost, 10 },
         }
     },
     {
         __COUNTER__,
-        "silicon_bar",
-        "Silicon Bar",
-        "The stuff electric dreams are made of.",
-        1 USES,
-        Material,
-        NOT_CRAFTABLE,
-        NOT_TOOL,
-        {
-            { MaterialFlags, FTOOL_MINING_METAL },
-            { MaterialPower, 1 }
-        }
+        "silicon_bar", "Silicon Bar", "The stuff electric dreams are made of.",
+        1 USES, Material,
+        {}
+    },
+    {
+        __COUNTER__,
+        "rusted_bar", "Rusted Bar", "Cast by some long-lost society. They won't mind you borrowing it.",
+        1 USES, Material,
+        {}
     }
 };
 
 enum ItemIntent : unsigned char {
     None,
-    ToUse,          // marked for smithing, praying, eating, etc.
-    ToSell,         // to be sold in a trade
-    ToPurchaseWith, // to be used for buying another player's trade
-    ToRecieve,      // not currently in my inventory; to be gained in a trade
+    ToBeMaterial,
+    ToBeOffered,
+    UsedAsTool
 };
 
 struct Item {
@@ -185,6 +161,8 @@ struct Item {
     static QPixmap pixmap_of(ItemCode id);
     static QPixmap pixmap_of(const std::string &name);
     static QPixmap pixmap_of(const ItemDefinition &def);
+    static QPixmap pixmap_of(const Item &item);
     static ItemId new_instance_id();
     static Item invalid_item();
+    static std::string type_to_string(ItemType type);
 };

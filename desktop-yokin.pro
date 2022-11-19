@@ -11,6 +11,7 @@ CONFIG += static
 RESOURCES += images.qrc
 FORMS += assets/ui/main.ui
 FORMS += assets/ui/cheat.ui
+FORMS += assets/ui/tooltip.ui
 
 QT += gui
 QT += widgets

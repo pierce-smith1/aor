@@ -1,36 +1,7 @@
 #include "gamewindow.h"
-#include "I."
 #include "inventory_ui.h"
 #include "cheatconsole.h"
 #include "items.h"
-
-InventoryEventFilter::InventoryEventFilter(LKGameWindow *game)
-    : game(game) { }
-
-bool InventoryEventFilter::eventFilter(QObject *slot, QEvent *event) {
-    switch (event->type()) {
-        case QEvent::MouseButtonPress: {
-            std::pair<int, int> coords = InventoryUi::get_yx_coords_of_label(slot);
-            qDebug("Clicked item at (%d, %d)", coords.first, coords.second);
-
-            auto update_intent = [](Item &item) {
-                if (item.intent == None) {
-                    item.intent = ToUse;
-                } else {
-                    item.intent = None;
-                }
-            };
-
-            game->mutate_state([=](State &state) {
-                state.mutate_item_at(update_intent, coords.first, coords.second);
-            });
-
-            return true;
-        } default: {
-            return false;
-        }
-    }
-}
 
 GameTimers::GameTimers(LKGameWindow *game)
     : game(game) { }
@@ -51,25 +22,27 @@ LKGameWindow::LKGameWindow()
     connect(window.mine_button, &QPushButton::clicked, [&]() { start_activity({ Mining, 50000 }); });
     connect(window.pray_button, &QPushButton::clicked, [&]() { start_activity({ Praying, 50000 }); });
 
-    InventoryUi::insert_inventory_slots(*this);
+    ItemSlot::insert_inventory_slots(*this);
+    ExternalSlot::insert_external_slots(*this);
+}
+
+void LKGameWindow::register_slot_name(const std::string &slot_name) {
+    slot_names.push_back(slot_name);
 }
 
 void LKGameWindow::mutate_state(std::function<void(State &)> action) {
     QMutexLocker lock(&mutex);
 
     action(character);
-    refresh_inventory();
+    refresh_item_slots();
 }
 
-void LKGameWindow::refresh_inventory() {
+void LKGameWindow::refresh_item_slots() {
     QMutexLocker lock(&mutex);
 
-    for (int x = 0; x < INVENTORY_COLS; x++) {
-        for (int y = 0; y < INVENTORY_ROWS; y++) {
-            int item_index = InventoryUi::inventory_index(y, x);
-            ItemCode item_code = character.inventory[item_index].code;
-            InventoryUi::get_inventory_label(*this, y, x)->setPixmap(Item::pixmap_of(item_code));
-        }
+    for (const std::string &slot_name : slot_names) {
+        ItemSlot *slot = findChild<ItemSlot *>(QString::fromStdString(slot_name));
+        slot->refresh_pixmap();
     }
 }
 
@@ -128,6 +101,10 @@ std::vector<QPushButton *> LKGameWindow::get_activity_buttons() {
         window.mine_button,
         window.pray_button,
     };
+}
+
+const std::vector<std::string> &LKGameWindow::get_item_slot_names() {
+    return slot_names;
 }
 
 void LKGameWindow::lock_ui() {

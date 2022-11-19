@@ -6,4 +6,6 @@ std::vector<Item> Actions::smith(const std::vector<Item> &materials) {
     for (const Item &item : materials) {
         total_power += Item::def_of(item)->properties[ItemProperty::MaterialPower];
     }
+
+    return {};
 }

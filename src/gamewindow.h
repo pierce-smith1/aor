@@ -8,15 +8,7 @@ class LKGameWindow;
 #include "items.h"
 #include "state.h"
 #include "../ui_main.h"
-
-class InventoryEventFilter : public QObject {
-    Q_OBJECT;
-public:
-    InventoryEventFilter(LKGameWindow *game);
-    LKGameWindow *game;
-protected:
-    bool eventFilter(QObject *obj, QEvent *event) override;
-};
+#include "tooltip.h"
 
 class GameTimers : public QObject {
     Q_OBJECT;
@@ -32,6 +24,8 @@ class LKGameWindow : public QMainWindow {
 public:
     LKGameWindow();
 
+    void register_slot_name(const std::string &slot_name);
+
     template<typename T> T read_state(std::function<T(const State &)> action) {
         QMutexLocker lock(&mutex);
         return action(character);
@@ -43,14 +37,17 @@ public:
     void notify_activity();
 
     std::vector<QPushButton *> get_activity_buttons();
+    const std::vector<std::string> &get_item_slot_names();
 
     Ui::LKMainWindow window;
+    Tooltip item_tooltip;
 private:
-    void refresh_inventory();
+    void refresh_item_slots();
     void lock_ui();
     void unlock_ui();
 
     GameTimers timers;
     QRecursiveMutex mutex;
     State character;
+    std::vector<std::string> slot_names;
 };

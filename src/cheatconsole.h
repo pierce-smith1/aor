@@ -23,7 +23,7 @@ int i; \
 }
 
 #define OOB_CHECK(y, x) \
-if (InventoryUi::are_yx_coords_oob(y, x)) { \
+if (ItemSlot::are_yx_coords_oob(y, x)) { \
     qWarning("Yx coords were oob (y: %d, x: %d)", y, x); \
     return; \
 }

@@ -26,7 +26,7 @@ void CheatConsole::execute(const std::string &input) {
     }
 
     if (tokens.size() != command->nargs) {
-        qWarning("Wrong number of arguments (%d) for command (%s)", tokens.size(), command->name.c_str());
+        qWarning("Wrong number of arguments (%d) for command (%s) (wanted %d)", tokens.size(), command->name.c_str(), command->nargs);
         return;
     }
 

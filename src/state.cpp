@@ -3,7 +3,7 @@
 #include "inventory_ui.h"
 
 ItemId State::get_item_id_at(int y, int x) const {
-    return inventory[InventoryUi::inventory_index(y, x)].id;
+    return inventory[ItemSlot::inventory_index(y, x)].id;
 }
 
 Item State::get_item_instance(ItemId id) const {
@@ -19,34 +19,34 @@ Item State::get_item_instance(ItemId id) const {
 }
 
 Item State::get_item_instance_at(int y, int x) const {
-    return inventory[InventoryUi::inventory_index(y, x)];
+    return inventory[ItemSlot::inventory_index(y, x)];
 }
 
 void State::copy_item_to(const Item &item, int y, int x) {
-    if (inventory[InventoryUi::inventory_index(y, x)].id != EMPTY_ID) {
+    if (inventory[ItemSlot::inventory_index(y, x)].id != EMPTY_ID) {
         qWarning("Placed an item (id: %lx, code: %d) into a non-empty inventory space (y: %d, x: %d)", item.id, item.code, y, x);
     }
 
-    inventory[InventoryUi::inventory_index(y, x)] = item;
+    inventory[ItemSlot::inventory_index(y, x)] = item;
 }
 
 void State::remove_item_at(int y, int x) {
-    inventory[InventoryUi::inventory_index(y, x)] = Item();
+    inventory[ItemSlot::inventory_index(y, x)] = Item();
 }
 
 ItemId State::make_item_at(ItemDefinitionPtr def, int y, int x) {
-    if (inventory[InventoryUi::inventory_index(y, x)].id != EMPTY_ID) {
+    if (inventory[ItemSlot::inventory_index(y, x)].id != EMPTY_ID) {
         qWarning("Made an item (code: %d) at a non-empty inventory space (y: %d, x: %d)", def->code, y, x);
     }
 
     Item new_item = Item(def);
-    inventory[InventoryUi::inventory_index(y, x)] = new_item;
+    inventory[ItemSlot::inventory_index(y, x)] = new_item;
 
     return new_item.id;
 }
 
 void State::mutate_item_at(std::function<void(Item &)> action, int y, int x) {
-    action(inventory[InventoryUi::inventory_index(y, x)]);
+    action(inventory[ItemSlot::inventory_index(y, x)]);
 }
 
 State::State()

@@ -79,6 +79,10 @@ QPixmap Item::pixmap_of(const ItemDefinition &def) {
     return QPixmap(pixmap_name);
 }
 
+QPixmap Item::pixmap_of(const Item &item) {
+    return pixmap_of(*def_of(item));
+}
+
 ItemId Item::new_instance_id() {
     auto time = std::chrono::system_clock::now().time_since_epoch();
     auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(time).count();
@@ -96,4 +100,19 @@ Item Item::invalid_item() {
     item.id = INVALID_ID;
 
     return item;
+}
+
+std::string Item::type_to_string(ItemType type) {
+    switch (type) {
+        case NoType: return "Empty slot";
+        case Consumable: return "Consumable";
+        case Material: return "Material";
+        case ForagingTool: return "Foraging Tool";
+        case SmithingTool: return "Smithing Tool";
+        case TradingTool: return "Trading Tool";
+        case PrayerTool: return "Ceremonial Tool";
+        case Artifact: return "Artifact";
+        case Blessing: return "Blessing";
+        default: return "???";
+    }
 }
