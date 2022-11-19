@@ -43,7 +43,7 @@ Item::Item(const ItemDefinition &def)
     : code(def.code),
       id(new_instance_id()),
       uses_left(def.default_uses_left),
-      intent(ItemIntent::None)
+      intent(NoIntent)
 {
     // Don't give an empty item a unique id
     if (code == 0) {

@@ -9,10 +9,19 @@
 #include <QEnterEvent>
 #include <QDrag>
 #include <QMimeData>
+#include <QGraphicsOpacityEffect>
 
 #include "gamewindow.h"
 
 const static int INVALID_COORD = -1;
+
+enum SlotType {
+    InventorySlot,
+    MaterialSlot,
+    PrayerSlot,
+    ToolSlot,
+    ArtifactSlot,
+};
 
 class ItemSlot : public QFrame {
     Q_OBJECT
@@ -22,7 +31,10 @@ public:
     ItemSlot(LKGameWindow *game, int y, int x);
 
     virtual Item get_item();
-    void refresh_pixmap();
+    virtual void set_item(const Item &item);
+    virtual SlotType get_type();
+    virtual void refresh_pixmap();
+    std::vector<ItemSlot *> get_slots_of_same_type();
 
     static void insert_inventory_slots(LKGameWindow &window);
     static void insert_inventory_slot(LKGameWindow &window, unsigned y, unsigned x);
@@ -41,29 +53,34 @@ protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
     virtual void dropEvent(QDropEvent *event) override;
 
+    void drop_external_item();
+
     QLabel *item_label;
     QLayout *item_layout;
     LKGameWindow *game;
-};
 
-enum ExternalSlotType {
-    MaterialSlot,
-    PrayerSlot,
-    ToolSlot,
-    ArtifactSlot,
+private:
+    QGraphicsOpacityEffect opacity_effect;
 };
 
 class ExternalSlot : public ItemSlot {
     Q_OBJECT
 
 public:
-    ExternalSlot(LKGameWindow *game, ExternalSlotType type, int n);
+    ExternalSlot(LKGameWindow *game, SlotType type, int n);
 
     Item get_item() override;
-    void dropEvent(QDropEvent *event) override;
+    void set_item(const Item &item) override;
+    SlotType get_type() override;
+    void refresh_pixmap() override;
+
     static void insert_external_slots(LKGameWindow &window);
 
-    ExternalSlotType type;
+    SlotType type;
+    int n;
+
+protected:
+    void dropEvent(QDropEvent *event) override;
 
 private:
     ItemId held_item_id;

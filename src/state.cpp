@@ -6,16 +6,30 @@ ItemId State::get_item_id_at(int y, int x) const {
     return inventory[ItemSlot::inventory_index(y, x)].id;
 }
 
+Item &State::get_item_ref(ItemId id) {
+    auto match_id = [id](const Item &item) -> bool { return item.id == id; };
+    auto search_result = std::find_if(begin(inventory), end(inventory), match_id);
+
+    if (search_result == end(inventory)) {
+        qFatal("Searching for an item by id turned up nothing (%lx)", id);
+    }
+
+    return *search_result;
+}
+
 Item State::get_item_instance(ItemId id) const {
     auto match_id = [id](const Item &item) -> bool { return item.id == id; };
     auto search_result = std::find_if(begin(inventory), end(inventory), match_id);
 
     if (search_result == end(inventory)) {
-        qDebug("Searching for an item by id turned up nothing (%lx)", id);
-        return Item::invalid_item();
+        qFatal("Searching for an item by id turned up nothing (%lx)", id);
     }
 
     return *search_result;
+}
+
+Item &State::get_item_ref_at(int y, int x) {
+    return inventory[ItemSlot::inventory_index(y, x)];
 }
 
 Item State::get_item_instance_at(int y, int x) const {
@@ -63,6 +77,10 @@ void StateSerialize::save_state(const State &state, const std::string &filename)
     put_inventory(out, state.inventory);
     put_char(out, state.activity.action);
     put_long(out, state.activity.ms_left);
+    put_id_array(out, state.materials);
+    put_id_array(out, state.offered_items);
+    put_id_array(out, state.artifacts);
+    put_long(out, state.tool);
     put_short(out, state.energy);
 }
 
@@ -85,6 +103,10 @@ State *StateSerialize::load_state(const std::string &filename) {
     state->inventory = get_inventory(in);
     state->activity.action = (CharacterAction) get_char(in);
     state->activity.ms_left = get_long(in);
+    state->materials = get_id_array<SMITHING_SLOTS>(in);
+    state->offered_items = get_id_array<PRAYER_SLOTS>(in);
+    state->artifacts = get_id_array<ARTIFACT_SLOTS>(in);
+    state->tool = get_long(in);
     state->energy = get_short(in);
 
     return state;

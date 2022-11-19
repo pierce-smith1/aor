@@ -20,6 +20,14 @@ const static int INVENTORY_ROWS = 4;
 const static int INVENTORY_COLS = 7;
 const static int INVENTORY_SIZE = INVENTORY_COLS * INVENTORY_ROWS;
 
+const static int SMITHING_SLOTS = 6;
+const static int SMITHING_SLOTS_PER_ROW = 3;
+
+const static int PRAYER_SLOTS = 6;
+const static int PRAYER_SLOTS_PER_ROW = 3;
+
+const static int ARTIFACT_SLOTS = 4;
+
 using ItemCode = std::uint16_t;
 using ItemId = std::uint64_t;
 using ForeignItemId = std::uint64_t;
@@ -137,17 +145,18 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
 };
 
 enum ItemIntent : unsigned char {
-    None,
+    NoIntent,
     ToBeMaterial,
     ToBeOffered,
-    UsedAsTool
+    UsingAsTool,
+    UsingAsArtifact,
 };
 
 struct Item {
-    ItemCode code;
-    ItemId id;
-    unsigned char uses_left;
-    ItemIntent intent;
+    ItemCode code = 0;
+    ItemId id = EMPTY_ID;
+    unsigned char uses_left = 0;
+    ItemIntent intent = NoIntent;
 
     Item() = default;
     explicit Item(const ItemDefinition &def);
