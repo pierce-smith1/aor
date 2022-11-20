@@ -17,6 +17,7 @@ using Inventory = std::array<Item, INVENTORY_SIZE>;
 using MaterialIds = std::array<ItemId, SMITHING_SLOTS>;
 using OfferingIds = std::array<ItemId, PRAYER_SLOTS>;
 using ArtifactIds = std::array<ItemId, ARTIFACT_SLOTS>;
+using Effects = std::array<Item, EFFECT_SLOTS>;
 
 struct State {
     State();
@@ -28,12 +29,11 @@ struct State {
     Item get_item_instance_at(int y, int x) const;
     void copy_item_to(const Item &item, int y, int x);
     void remove_item_at(int y, int x);
+    ItemId make_item(ItemDefinitionPtr def);
     ItemId make_item_at(ItemDefinitionPtr def, int y, int x);
     void mutate_item_at(std::function<void(Item &)> action, int y, int x);
 
-    std::vector<Item> get_materials();
-    std::vector<Item> get_offerings();
-    std::vector<Item> get_active_artifacts();
+    int get_max_energy();
 
     std::string name;
     Inventory inventory;
@@ -41,8 +41,10 @@ struct State {
     MaterialIds materials = {};
     OfferingIds offered_items = {};
     ArtifactIds artifacts = {};
+    Effects effects = {};
     ItemId tool = EMPTY_ID;
-    std::uint16_t energy;
+    std::uint16_t energy = 40;
+    std::uint16_t morale = 40;
 };
 
 namespace StateSerialize {
@@ -53,6 +55,15 @@ namespace StateSerialize {
     void put_short(std::ostream &out, std::uint16_t n);
     void put_long(std::ostream &out, std::uint64_t n);
     void put_string(std::ostream &out, const std::string &s);
+    template<size_t N> void put_item_array(std::ostream &out, const std::array<Item, N> &array) {
+        put_short(out, array.size());
+        for (const Item &item : array) {
+            put_short(out, item.code);
+            put_long(out, item.id);
+            put_char(out, item.uses_left);
+            put_char(out, item.intent);
+        }
+    }
     void put_inventory(std::ostream &out, const Inventory &i);
     template<size_t N> void put_id_array(std::ostream &out, const std::array<ItemId, N> &array) {
         put_short(out, array.size());
@@ -65,7 +76,22 @@ namespace StateSerialize {
     std::uint16_t get_short(std::istream &in);
     std::uint64_t get_long(std::istream &in);
     std::string get_string(std::istream &in);
-    Inventory get_inventory(std::istream &in);
+    template<size_t N> std::array<Item, N> get_item_array(std::istream &in) {
+        std::uint16_t size = get_short(in);
+        std::array<Item, N> array = {};
+
+        for (std::uint16_t i = 0; i < size; i++) {
+            Item item;
+            item.code = get_short(in);
+            item.id = get_long(in);
+            item.uses_left = get_char(in);
+            item.intent = (ItemIntent) get_char(in);
+
+            array[i] = item;
+        }
+
+        return array;
+    }
     template<size_t N> std::array<ItemId, N> get_id_array(std::istream &in) {
         std::uint16_t size = get_short(in);
         std::array<ItemId, N> array;

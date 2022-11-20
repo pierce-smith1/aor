@@ -21,6 +21,8 @@ enum SlotType {
     PrayerSlot,
     ToolSlot,
     ArtifactSlot,
+    EffectSlot,
+    PortraitSlot,
 };
 
 class ItemSlot : public QFrame {
@@ -46,11 +48,11 @@ public:
     int x;
 
 protected:
-    void enterEvent(QEvent *event) override;
-    void mouseMoveEvent(QMouseEvent *event) override;
-    void leaveEvent(QEvent *event) override;
-    void mousePressEvent(QMouseEvent *event) override;
-    void dragEnterEvent(QDragEnterEvent *event) override;
+    virtual void enterEvent(QEvent *event) override;
+    virtual void mouseMoveEvent(QMouseEvent *event) override;
+    virtual void leaveEvent(QEvent *event) override;
+    virtual void mousePressEvent(QMouseEvent *event) override;
+    virtual void dragEnterEvent(QDragEnterEvent *event) override;
     virtual void dropEvent(QDropEvent *event) override;
 
     void drop_external_item();
@@ -61,27 +63,4 @@ protected:
 
 private:
     QGraphicsOpacityEffect opacity_effect;
-};
-
-class ExternalSlot : public ItemSlot {
-    Q_OBJECT
-
-public:
-    ExternalSlot(LKGameWindow *game, SlotType type, int n);
-
-    Item get_item() override;
-    void set_item(const Item &item) override;
-    SlotType get_type() override;
-    void refresh_pixmap() override;
-
-    static void insert_external_slots(LKGameWindow &window);
-
-    SlotType type;
-    int n;
-
-protected:
-    void dropEvent(QDropEvent *event) override;
-
-private:
-    ItemId held_item_id;
 };

@@ -1,7 +1,11 @@
 #include "gamewindow.h"
-#include "inventory_ui.h"
+#include "I."
+#include "itemslot.h"
+#include "externalslot.h"
+#include "effectslot.h"
 #include "cheatconsole.h"
 #include "items.h"
+#include "qmutex.h"
 
 GameTimers::GameTimers(LKGameWindow *game)
     : game(game) { }
@@ -24,6 +28,11 @@ LKGameWindow::LKGameWindow()
 
     ItemSlot::insert_inventory_slots(*this);
     ExternalSlot::insert_external_slots(*this);
+    EffectSlot::insert_effect_slots(*this);
+    ToolSlot::insert_tool_slot(*this);
+    PortraitSlot::insert_portrait_slot(*this);
+
+    notify(Discovery, "The Sun breaks on a new adventure.");
 }
 
 void LKGameWindow::register_slot_name(const std::string &slot_name) {
@@ -34,64 +43,73 @@ void LKGameWindow::mutate_state(std::function<void(State &)> action) {
     QMutexLocker lock(&mutex);
 
     action(character);
-    refresh_item_slots();
+    refresh_ui();
 }
 
-void LKGameWindow::refresh_item_slots() {
-    QMutexLocker lock(&mutex);
-
-    for (const std::string &slot_name : slot_names) {
-        ItemSlot *slot = findChild<ItemSlot *>(QString::fromStdString(slot_name));
-        slot->refresh_pixmap();
-    }
+void LKGameWindow::notify(NotificationType type, const std::string &message) {
+    window.event_list->addItem(new GameNotification(type, message));
 }
 
 void LKGameWindow::start_activity(const CharacterActivity &activity) {
     QMutexLocker lock(&mutex);
 
-    lock_ui();
-    character.activity = activity;
-    notify_activity();
+    if (activity.action != Nothing) {
+        lock_ui();
+        timers.activity_timer_id = timers.startTimer(ACTIVITY_TICK_RATE_MS);
+    }
 
-    timers.activity_timer = timers.startTimer(ACTIVITY_TICK_RATE_MS);
+    character.activity = activity;
 }
 
 void LKGameWindow::progress_activity(std::int64_t by_ms) {
     QMutexLocker lock(&mutex);
 
     character.activity.ms_left -= by_ms;
-    notify_activity();
 
-    if (character.activity.ms_left <= 0) {
-        start_activity({ Nothing, 0 });
-        unlock_ui();
-        killTimer(timers.activity_timer);
+    if (character.activity.ms_left < 0) {
+        complete_activity();
     }
+
+    refresh_ui();
 }
 
-void LKGameWindow::notify_activity() {
+void LKGameWindow::refresh_ui() {
     QMutexLocker lock(&mutex);
 
-    auto notify = [&](const std::string &action_name) {
-        window.statusbar->showMessage(QString("Currently %1: %2 minutes left...")
-            .arg(QString::fromStdString(action_name))
-            .arg(character.activity.ms_left / 60000.0));
-    };
+    for (const std::string &slot_name : slot_names) {
+        ItemSlot *slot = findChild<ItemSlot *>(QString::fromStdString(slot_name));
+        slot->refresh_pixmap();
+    }
+
+    window.energy_bar->setValue(character.energy);
+    window.energy_bar->setMaximum(character.get_max_energy());
+
+    window.activity_time_bar->setValue(character.activity.ms_total - character.activity.ms_left);
+    window.activity_time_bar->setMaximum(character.activity.ms_total);
+}
+
+bool LKGameWindow::activity_ongoing() {
+    QMutexLocker lock(&mutex);
+
+    return character.activity.action != Nothing;
+}
+
+void LKGameWindow::complete_activity() {
+    QMutexLocker lock(&mutex);
 
     switch (character.activity.action) {
-        case Nothing: {
-            window.statusbar->showMessage(QString("Doing nothing"));
-            break;
+        case Smithing: {
+            notify(ActionComplete, "You have finished smithing.");
         }
-        case Smithing: notify("smithing a cool new tool"); break;
-        case Eating: notify("eating a yummy snack"); break;
-        case Foraging: notify("foraging for eats"); break;
-        case Mining: notify("looking for shiny metals"); break;
-        case Trading: notify("venturing for a trade"); break;
-        case Praying: notify("dreaming of the gods"); break;
-        case Sleeping: notify("fast asleep"); break;
-        default: notify("???"); break;
+        default: {
+            qFatal("What the fuck?");
+        }
     }
+
+    killTimer(timers.activity_timer_id);
+    timers.activity_timer_id = 0;
+
+    unlock_ui();
 }
 
 std::vector<QPushButton *> LKGameWindow::get_activity_buttons() {

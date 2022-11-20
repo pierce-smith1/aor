@@ -4,7 +4,7 @@
 #include <QApplication>
 #include <QLabel>
 
-#include "inventory_ui.h"
+#include "itemslot.h"
 #include "gamewindow.h"
 #include "cheatconsole.h"
 

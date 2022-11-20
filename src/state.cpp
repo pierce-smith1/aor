@@ -1,6 +1,6 @@
 #include "state.h"
 #include "generators.h"
-#include "inventory_ui.h"
+#include "itemslot.h"
 
 ItemId State::get_item_id_at(int y, int x) const {
     return inventory[ItemSlot::inventory_index(y, x)].id;
@@ -48,9 +48,22 @@ void State::remove_item_at(int y, int x) {
     inventory[ItemSlot::inventory_index(y, x)] = Item();
 }
 
+ItemId State::make_item(ItemDefinitionPtr def) {
+    for (int y = 0; y < INVENTORY_ROWS; y++) {
+        for (int x = 0; x < INVENTORY_COLS; x++) {
+            if (inventory[ItemSlot::inventory_index(y, x)].id != EMPTY_ID) {
+                return make_item_at(def, y, x);
+            }
+        }
+    }
+
+    qWarning("Tried to add item (code %d) to inventory, but there was no open spot", def->code);
+    return EMPTY_ID;
+}
+
 ItemId State::make_item_at(ItemDefinitionPtr def, int y, int x) {
     if (inventory[ItemSlot::inventory_index(y, x)].id != EMPTY_ID) {
-        qWarning("Made an item (code: %d) at a non-empty inventory space (y: %d, x: %d)", def->code, y, x);
+        qWarning("Made an item (code %d) at a non-empty inventory space (y %d, x %d)", def->code, y, x);
     }
 
     Item new_item = Item(def);
@@ -61,6 +74,10 @@ ItemId State::make_item_at(ItemDefinitionPtr def, int y, int x) {
 
 void State::mutate_item_at(std::function<void(Item &)> action, int y, int x) {
     action(inventory[ItemSlot::inventory_index(y, x)]);
+}
+
+int State::get_max_energy() {
+    return 50;
 }
 
 State::State()
@@ -74,14 +91,17 @@ void StateSerialize::save_state(const State &state, const std::string &filename)
     put_short(out, STATE_VERSION);
 
     put_string(out, state.name);
-    put_inventory(out, state.inventory);
+    put_item_array(out, state.inventory);
     put_char(out, state.activity.action);
     put_long(out, state.activity.ms_left);
+    put_long(out, state.activity.ms_total);
     put_id_array(out, state.materials);
     put_id_array(out, state.offered_items);
     put_id_array(out, state.artifacts);
+    put_item_array(out, state.effects);
     put_long(out, state.tool);
     put_short(out, state.energy);
+    put_short(out, state.morale);
 }
 
 State *StateSerialize::load_state(const std::string &filename) {
@@ -100,14 +120,17 @@ State *StateSerialize::load_state(const std::string &filename) {
 
     State *state = new State;
     state->name = get_string(in);
-    state->inventory = get_inventory(in);
+    state->inventory = get_item_array<INVENTORY_SIZE>(in);
     state->activity.action = (CharacterAction) get_char(in);
     state->activity.ms_left = get_long(in);
+    state->activity.ms_total = get_long(in);
     state->materials = get_id_array<SMITHING_SLOTS>(in);
     state->offered_items = get_id_array<PRAYER_SLOTS>(in);
     state->artifacts = get_id_array<ARTIFACT_SLOTS>(in);
+    state->effects = get_item_array<EFFECT_SLOTS>(in);
     state->tool = get_long(in);
     state->energy = get_short(in);
+    state->morale = get_short(in);
 
     return state;
 }
@@ -136,16 +159,6 @@ void StateSerialize::put_string(std::ostream &out, const std::string &s) {
     put_short(out, s.size());
     for (char c : s) {
         out.put(c);
-    }
-}
-
-void StateSerialize::put_inventory(std::ostream &out, const Inventory &i)  {
-    put_short(out, i.size());
-    for (const Item &item : i) {
-        put_short(out, item.code);
-        put_long(out, item.id);
-        put_char(out, item.uses_left);
-        put_char(out, item.intent);
     }
 }
 
@@ -185,21 +198,4 @@ std::string StateSerialize::get_string(std::istream &in) {
     str[size] = '\0';
 
     return std::string(str);
-}
-
-Inventory StateSerialize::get_inventory(std::istream &in) {
-    std::uint16_t size = get_short(in);
-    Inventory inventory;
-
-    for (std::uint16_t i = 0; i < size; i++) {
-        Item item;
-        item.code = get_short(in);
-        item.id = get_long(in);
-        item.uses_left = get_char(in);
-        item.intent = (ItemIntent) get_char(in);
-
-        inventory[i] = item;
-    }
-
-    return inventory;
 }

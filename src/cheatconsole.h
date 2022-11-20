@@ -8,7 +8,7 @@
 class CheatConsole;
 
 #include "gamewindow.h"
-#include "inventory_ui.h"
+#include "itemslot.h"
 #include "../ui_cheat.h"
 
 #define QS_TO_INT(i, s) \
@@ -130,17 +130,16 @@ const static std::vector<CheatCommand> COMMANDS = {
     },
     {
         "make",
-        "Make a new item with code ($0) at yx ($1, $2)",
+        "Make a new item with name ($0) at yx ($1, $2)",
         3,
         [](LKGameWindow *game, const QStringList &args) {
-            QS_TO_INT(code, args[0]);
             QS_TO_INT(y, args[1]);
             QS_TO_INT(x, args[2]);
 
             OOB_CHECK(y, x);
 
             game->mutate_state([=](State &state) {
-                state.make_item_at(Item::def_of(code), y, x);
+                state.make_item_at(Item::def_of(args[0].toStdString()), y, x);
             });
 
             qDebug("done");
@@ -247,6 +246,21 @@ const static std::vector<CheatCommand> COMMANDS = {
 
             game->mutate_state([=](State &state) {
                 state.activity.ms_left = ms;
+            });
+
+            qDebug("done");
+        }
+    },
+    {
+        "effect",
+        "Set the effect at n = ($0) to a new item with code ($1)",
+        2,
+        [](LKGameWindow *game, const QStringList &args) {
+            QS_TO_INT(n, args[0]);
+            QS_TO_INT(code, args[1]);
+
+            game->mutate_state([=](State &state) {
+                state.effects[n] = Item(code);
             });
 
             qDebug("done");
