@@ -1,6 +1,4 @@
 #include "effectslot.h"
-#include <qt6/QtWidgets/qwidget.h>
-#include <string>
 
 EffectSlot::EffectSlot(LKGameWindow *game, int n)
     : ItemSlot(game), n(n), effect_code(0)
@@ -9,7 +7,7 @@ EffectSlot::EffectSlot(LKGameWindow *game, int n)
     item_layout->setObjectName(make_internal_name("effect_slot", n));
     item_label->setObjectName(make_internal_name("effect_slot", n));
 
-    game->register_slot_name(objectName().toStdString());
+    game->register_slot_name(objectName());
 }
 
 Item EffectSlot::get_item() {
@@ -19,7 +17,7 @@ Item EffectSlot::get_item() {
 }
 
 void EffectSlot::set_item(const Item &item) {
-    if (Item::def_of(item)->type & IT_EFFECT) {
+    if (item.def()->type & Effect) {
         game->mutate_state([=](State &state) {
             state.effects[n] = item;
         });
@@ -29,8 +27,8 @@ void EffectSlot::set_item(const Item &item) {
     qFatal("Tried to slot non-effect item into effect slot (code %d, slotn %d)", item.code, n);
 }
 
-SlotType EffectSlot::get_type() {
-    return SlotType::EffectSlot;
+ItemDomain EffectSlot::get_item_slot_type() {
+    return Effect;
 }
 
 void EffectSlot::refresh_pixmap() {
@@ -38,13 +36,13 @@ void EffectSlot::refresh_pixmap() {
 }
 
 void EffectSlot::insert_effect_slots(LKGameWindow &window) {
-    for (int i = 0; i < EFFECT_SLOTS; i++) {
+    for (int i {0}; i < EFFECT_SLOTS; i++) {
         window.window.effect_group->layout()->addWidget(new EffectSlot(&window, i));
     }
 }
 
-QString EffectSlot::make_internal_name(const std::string &base, int n) {
-    return QString::fromStdString(base + ";" + std::to_string(n));
+QString EffectSlot::make_internal_name(const QString &base, int n) {
+    return QString("%1;%2").arg(base).arg(n);
 }
 
 void EffectSlot::mousePressEvent(QMouseEvent *) {

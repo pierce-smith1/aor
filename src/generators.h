@@ -8,7 +8,7 @@
 #include <QRandomGenerator>
 
 namespace Generators {
-    using Cluster = std::pair<std::string, double>;
+    using Cluster = std::pair<QString, double>;
 
     QRandomGenerator *rng();
 
@@ -34,5 +34,5 @@ namespace Generators {
         return weights.back().first;
     }
 
-    std::string generate_yokin_name(size_t length = 5);
+    QString generate_yokin_name(size_t length = 5);
 }

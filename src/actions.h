@@ -3,30 +3,21 @@
 #include <cstdint>
 #include <vector>
 #include <algorithm>
+#include <set>
 
 #include "items.h"
+#include "generators.h"
 
-enum CharacterAction : unsigned char {
-    Nothing = 0,
-    Smithing,
-    Eating,
-    Foraging,
-    Mining,
-    Trading,
-    Praying,
-    Sleeping,
-};
-
-const static std::int64_t ACTIVITY_TICK_RATE_MS = 4000;
+const static std::int64_t ACTIVITY_TICK_RATE_MS = 500;
 
 struct CharacterActivity {
-    CharacterActivity(CharacterAction action, std::int64_t ms);
+    CharacterActivity(ItemDomain action, std::int64_t ms);
 
-    CharacterAction action;
+    ItemDomain action;
     std::int64_t ms_left;
     std::int64_t ms_total;
 };
 
 namespace Actions {
-    std::vector<Item> smith(const std::vector<Item> &materials);
+    std::vector<Item> generate_items(const std::vector<Item> &inputs, const Item &tool, ItemDomain action);
 }

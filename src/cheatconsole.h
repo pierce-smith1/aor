@@ -31,8 +31,8 @@ if (ItemSlot::are_yx_coords_oob(y, x)) { \
 using CheatAction = std::function<void(LKGameWindow *game, const QStringList &args)>;
 
 struct CheatCommand {
-    std::string name;
-    std::string help;
+    QString name;
+    QString help;
     int nargs;
     CheatAction action;
 };
@@ -43,18 +43,18 @@ const static std::vector<CheatCommand> COMMANDS = {
         "Display the help text for a command",
         1,
         [](LKGameWindow *, const QStringList &args) {
-            std::string command_name = args[0].toStdString();
+            QString command_name = args[0];
             auto match_name = [&command_name](const CheatCommand command) -> bool {
                 return command.name == command_name;
             };
 
             auto command = std::find_if(begin(COMMANDS), end(COMMANDS), match_name);
             if (command == end(COMMANDS)) {
-                qWarning("Failed to find command for printing help (%s)", command_name.c_str());
+                qWarning("Failed to find command for printing help (%s)", command_name.toStdString().c_str());
                 return;
             }
 
-            qDebug("help: %s", command->help.c_str());
+            qDebug("help: %s", command->help.toStdString().c_str());
         }
     },
     {
@@ -75,7 +75,7 @@ const static std::vector<CheatCommand> COMMANDS = {
                 y, x,
                 item.code,
                 item.id,
-                Item::def_of(item.code)->internal_name.c_str(),
+                Item::def_of(item.code)->internal_name.toStdString().c_str(),
                 item.intent
             );
         }
@@ -96,8 +96,12 @@ const static std::vector<CheatCommand> COMMANDS = {
             Item item = game->read_state<Item>([=](const State &state) -> Item {
                 return state.get_item_instance_at(y0, x0);
             });
-            game->mutate_state([=](State &state) { state.copy_item_to(item, y1, x1); });
-            game->mutate_state([=](State &state) { state.remove_item_at(y0, x0); });
+            game->mutate_state([=](State &state) {
+                state.copy_item_to(item, y1, x1);
+            });
+            game->mutate_state([=](State &state) {
+                state.remove_item_at(y0, x0);
+            });
 
             qDebug("done");
         }
@@ -122,8 +126,12 @@ const static std::vector<CheatCommand> COMMANDS = {
                 return state.get_item_instance_at(y1, x1);
             }));
 
-            game->mutate_state([=](State &state) { state.copy_item_to(item_a, y1, x1); });
-            game->mutate_state([=](State &state) { state.copy_item_to(item_b, y0, x0); });
+            game->mutate_state([=](State &state) {
+                state.copy_item_to(item_a, y1, x1);
+            });
+            game->mutate_state([=](State &state) {
+                state.copy_item_to(item_b, y0, x0);
+            });
 
             qDebug("done");
         }
@@ -139,7 +147,7 @@ const static std::vector<CheatCommand> COMMANDS = {
             OOB_CHECK(y, x);
 
             game->mutate_state([=](State &state) {
-                state.make_item_at(Item::def_of(args[0].toStdString()), y, x);
+                state.make_item_at(Item::def_of(args[0]), y, x);
             });
 
             qDebug("done");
@@ -152,7 +160,7 @@ const static std::vector<CheatCommand> COMMANDS = {
         [](LKGameWindow *game, const QStringList &args) {
             StateSerialize::save_state(game->read_state<State>([](const State &state) {
                 return state;
-            }), args[0].toStdString());
+            }), args[0]);
 
             qDebug("done");
         }
@@ -162,14 +170,11 @@ const static std::vector<CheatCommand> COMMANDS = {
         "Load a saved character state from the file ($0)",
         1,
         [](LKGameWindow *game, const QStringList &args) {
-            State *state = StateSerialize::load_state(args[0].toStdString());
+            State *state = StateSerialize::load_state(args[0]);
 
-            if (state == nullptr) {
-                qWarning("State file is not proper!");
-                return;
-            }
-
-            game->mutate_state([state](State &s) { s = *state; });
+            game->mutate_state([state](State &s) {
+                s = *state;
+            });
             delete state;
 
             qDebug("done");
@@ -180,15 +185,17 @@ const static std::vector<CheatCommand> COMMANDS = {
         "Change the current character's name to ($0); if $0 is '?', show the current name instead",
         1,
         [](LKGameWindow *game, const QStringList &args) {
-            std::string new_name = args[0].toStdString();
+            QString new_name = args[0];
             if (new_name == "?") {
-                qDebug("My name is (%s)", game->read_state<std::string>([](const State &state) {
+                qDebug("My name is (%s)", game->read_state<QString>([](const State &state) {
                     return state.name;
-                }).c_str());
+                }).toStdString().c_str());
                 return;
             }
 
-            game->mutate_state([&](State &state) { state.name = new_name; });
+            game->mutate_state([&](State &state) {
+                state.name = new_name;
+            });
 
             qDebug("done");
         }
@@ -212,7 +219,35 @@ const static std::vector<CheatCommand> COMMANDS = {
                 return;
             }
 
-            game->mutate_state([=](State &state) { state.energy = energy; });
+            game->mutate_state([=](State &state) {
+                state.energy = energy;
+            });
+
+            qDebug("done");
+        }
+    },
+    {
+        "morale",
+        "Change the current character's morale to ($0); if $0 is '?', show the current morale instead",
+        1,
+        [](LKGameWindow *game, const QStringList &args) {
+            if (args[0] == "?") {
+                qDebug("Current morale is (%d)", game->read_state<int>([](const State &state) {
+                    return state.morale;
+                }));
+                return;
+            }
+
+            QS_TO_INT(morale, args[0]);
+
+            if (morale < 0 || morale > 100) {
+                qWarning("New morale value is oob (%d)", morale);
+                return;
+            }
+
+            game->mutate_state([=](State &state) {
+                state.morale = morale;
+            });
 
             qDebug("done");
         }
@@ -225,7 +260,7 @@ const static std::vector<CheatCommand> COMMANDS = {
             QS_TO_INT(action, args[0]);
             QS_TO_INT(ms, args[1]);
 
-            game->start_activity({ (CharacterAction) action, ms });
+            game->start_activity({ (ItemDomain) action, ms });
 
             qDebug("done");
         }
@@ -274,7 +309,7 @@ class CheatConsole : QWidget {
 public:
     CheatConsole(LKGameWindow *window);
 
-    void execute(const std::string &input);
+    void execute(const QString &input);
 
     LKGameWindow *game;
     Ui::CheatWindow console;

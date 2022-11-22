@@ -5,7 +5,7 @@ QRandomGenerator *Generators::rng() {
     return rng;
 }
 
-std::string Generators::generate_yokin_name(size_t length) {
+QString Generators::generate_yokin_name(size_t length) {
     const static std::vector<Cluster> consonant_clusters = {
         {"N", 1.0},
         {"M", 1.4},
@@ -41,8 +41,8 @@ std::string Generators::generate_yokin_name(size_t length) {
         {"II", 0.2},
     };
 
-    bool consonant = rng()->generate() % 2;
-    std::string name;
+    bool consonant {rng()->generate() % 2 == 0};
+    QString name;
 
     while (name.length() < length) {
         name += consonant
@@ -51,9 +51,5 @@ std::string Generators::generate_yokin_name(size_t length) {
         consonant = !consonant;
     }
 
-    if (name.length() > length) {
-        name = name.substr(0, length);
-    }
-
-    return name;
+    return name.left(length);
 }

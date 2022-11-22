@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include <QObject>
 #include <QRecursiveMutex>
 
@@ -25,7 +27,7 @@ class LKGameWindow : public QMainWindow {
 public:
     LKGameWindow();
 
-    void register_slot_name(const std::string &slot_name);
+    void register_slot_name(const QString &slot_name);
 
     template<typename T> T read_state(std::function<T(const State &)> action) {
         QMutexLocker lock(&mutex);
@@ -33,16 +35,18 @@ public:
     }
     void mutate_state(std::function<void(State &)> action);
 
-    void notify(NotificationType type, const std::string &message);
+    void notify(NotificationType type, const QString &message);
 
+    void start_activity(ItemDomain type);
     void start_activity(const CharacterActivity &activity);
     void progress_activity(std::int64_t by_ms);
     void refresh_ui();
+    void refresh_ui_bars();
     bool activity_ongoing();
     void complete_activity();
 
-    std::vector<QPushButton *> get_activity_buttons();
-    const std::vector<std::string> &get_item_slot_names();
+    const std::map<ItemDomain, QPushButton *> get_activity_buttons();
+    const std::vector<QString> &get_item_slot_names();
 
     Ui::LKMainWindow window;
     Tooltip item_tooltip;
@@ -53,5 +57,7 @@ private:
     GameTimers timers;
     QRecursiveMutex mutex;
     State character;
-    std::vector<std::string> slot_names;
+    std::vector<QString> slot_names;
+    double visual_energy;
+    double visual_morale;
 };

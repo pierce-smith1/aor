@@ -12,12 +12,12 @@ ItemSlot::ItemSlot(LKGameWindow *game)
     setMouseTracking(true);
     setAcceptDrops(true);
 
-    QLayout *layout = new QHBoxLayout(this);
+    QLayout *layout {new QHBoxLayout(this)};
     layout->setSpacing(0);
     layout->setContentsMargins(0, 0, 0, 0);
     item_layout = layout;
 
-    QLabel *label = new QLabel(this);
+    QLabel *label {new QLabel(this)};
     label->setMinimumSize(QSize(48, 48));
     label->setMaximumSize(QSize(48, 48));
     label->setMouseTracking(true);
@@ -36,7 +36,7 @@ ItemSlot::ItemSlot(LKGameWindow *game, int y, int x)
     item_layout->setObjectName(make_internal_name("inventory_layout", y, x));
     item_label->setObjectName(make_internal_name("inventory_label", y, x));
 
-    game->register_slot_name(objectName().toStdString());
+    game->register_slot_name(objectName());
 
     this->y = y;
     this->x = x;
@@ -54,16 +54,16 @@ void ItemSlot::set_item(const Item &item) {
     });
 }
 
-SlotType ItemSlot::get_type() {
-    return InventorySlot;
+ItemDomain ItemSlot::get_item_slot_type() {
+    return Ordinary;
 }
 
 void ItemSlot::refresh_pixmap() {
-    Item item = get_item();
+    Item item {get_item()};
 
     item_label->setPixmap(Item::pixmap_of(item));
 
-    if (item.intent != NoIntent && get_type() == InventorySlot) {
+    if (item.intent != None && get_item_slot_type() == Ordinary) {
         opacity_effect.setOpacity(0.5);
     } else {
         opacity_effect.setOpacity(1.0);
@@ -73,14 +73,29 @@ void ItemSlot::refresh_pixmap() {
 std::vector<ItemSlot *> ItemSlot::get_slots_of_same_type() {
     std::vector<ItemSlot *> item_slots;
 
-    for (const std::string &name : game->get_item_slot_names()) {
-        ItemSlot *slot = findChild<ItemSlot *>(QString::fromStdString(name));
-        if (slot->get_type() == get_type()) {
+    for (const QString &name : game->get_item_slot_names()) {
+        ItemSlot *slot = findChild<ItemSlot *>(name);
+        if (slot->get_item_slot_type() == get_item_slot_type()) {
             item_slots.push_back(slot);
         }
     }
 
     return item_slots;
+}
+
+void ItemSlot::drop_external_item() {
+    Item item_to_drop = get_item();
+    if (item_to_drop.id == EMPTY_ID) {
+        return;
+    }
+
+    game->mutate_state([=](State &state) {
+        ItemId external_item_id = get_item().id;
+        state.get_item_ref(external_item_id).intent = None;
+    });
+    set_item(Item());
+
+    refresh_pixmap();
 }
 
 void ItemSlot::insert_inventory_slots(LKGameWindow &window) {
@@ -104,8 +119,8 @@ size_t ItemSlot::inventory_index(int y, int x) {
     return y * INVENTORY_COLS + x;
 }
 
-QString ItemSlot::make_internal_name(const std::string &base, int y, int x) {
-    return QString::fromStdString(base + ";" + std::to_string(y) + ":" + std::to_string(x));
+QString ItemSlot::make_internal_name(const QString &base, int y, int x) {
+    return QString("%1;%2:%3").arg(base).arg(y).arg(x);
 }
 
 void ItemSlot::enterEvent(QEvent *event) {
@@ -139,8 +154,8 @@ void ItemSlot::mousePressEvent(QMouseEvent *event) {
         return;
     }
 
-    bool is_inventory_slot = get_type() == InventorySlot;
-    bool item_being_used = get_item().intent != NoIntent;
+    bool is_inventory_slot = get_item_slot_type() == Ordinary;
+    bool item_being_used = get_item().intent != None;
 
     if (event->button() == Qt::RightButton && !is_inventory_slot && !game->activity_ongoing()) {
         drop_external_item();
@@ -172,7 +187,7 @@ void ItemSlot::dropEvent(QDropEvent *event) {
     QString source_slot_name = event->mimeData()->text();
     ItemSlot *source_slot = game->findChild<ItemSlot *>(source_slot_name);
 
-    if (source_slot->get_type() == InventorySlot) {
+    if (source_slot->get_item_slot_type() == Ordinary) {
         // Dragging between inventory slots swaps the items in each slot.
         game->mutate_state([=](State &state) {
             Item source_item = source_slot->get_item();
@@ -187,14 +202,4 @@ void ItemSlot::dropEvent(QDropEvent *event) {
         source_slot->drop_external_item();
         refresh_pixmap();
     }
-}
-
-void ItemSlot::drop_external_item() {
-    game->mutate_state([=](State &state) {
-        ItemId external_item_id = get_item().id;
-        state.get_item_ref(external_item_id).intent = NoIntent;
-    });
-    set_item(Item());
-
-    refresh_pixmap();
 }

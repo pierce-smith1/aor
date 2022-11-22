@@ -10,11 +10,11 @@ public:
 
     Item get_item() override;
     void set_item(const Item &item) override;
-    SlotType get_type() override;
+    ItemDomain get_item_slot_type() override;
     void refresh_pixmap() override;
 
     static void insert_effect_slots(LKGameWindow &window);
-    static QString make_internal_name(const std::string &base, int n);
+    static QString make_internal_name(const QString &base, int n);
 
     int n;
 

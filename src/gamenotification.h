@@ -2,6 +2,7 @@
 
 #include <QListWidgetItem>
 #include <QTime>
+#include <QString>
 
 enum NotificationType : int {
     Discovery = 2000,
@@ -11,7 +12,7 @@ enum NotificationType : int {
 
 class GameNotification : public QListWidgetItem {
 public:
-    GameNotification(NotificationType type, const std::string &message);
+    GameNotification(NotificationType type, const QString &message);
 
 private:
     static QIcon icon_for(NotificationType type);

@@ -12,7 +12,7 @@ Tooltip::Tooltip()
 }
 
 void Tooltip::set_text(const TooltipText &text) {
-    widget.item_name->setText(QString::fromStdString(text.title));
-    widget.item_subtext->setText(QString::fromStdString(text.subtext));
-    widget.item_description->setText(QString::fromStdString(text.description));
+    widget.item_name->setText(text.title);
+    widget.item_subtext->setText(text.subtext);
+    widget.item_description->setText(text.description);
 }

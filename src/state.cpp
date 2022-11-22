@@ -1,5 +1,4 @@
 #include "state.h"
-#include "generators.h"
 #include "itemslot.h"
 
 ItemId State::get_item_id_at(int y, int x) const {
@@ -7,8 +6,12 @@ ItemId State::get_item_id_at(int y, int x) const {
 }
 
 Item &State::get_item_ref(ItemId id) {
-    auto match_id = [id](const Item &item) -> bool { return item.id == id; };
-    auto search_result = std::find_if(begin(inventory), end(inventory), match_id);
+    if (id == EMPTY_ID) {
+        qFatal("Tried to get reference for the empty id");
+    }
+
+    auto match_id {[id](const Item &item) -> bool { return item.id == id; }};
+    auto search_result {std::find_if(begin(inventory), end(inventory), match_id)};
 
     if (search_result == end(inventory)) {
         qFatal("Searching for an item by id turned up nothing (%lx)", id);
@@ -18,8 +21,13 @@ Item &State::get_item_ref(ItemId id) {
 }
 
 Item State::get_item_instance(ItemId id) const {
-    auto match_id = [id](const Item &item) -> bool { return item.id == id; };
-    auto search_result = std::find_if(begin(inventory), end(inventory), match_id);
+    if (id == EMPTY_ID) {
+        qWarning("Tried to get instance for the empty id");
+        return Item();
+    }
+
+    auto match_id {[id](const Item &item) -> bool { return item.id == id; }};
+    auto search_result {std::find_if(begin(inventory), end(inventory), match_id)};
 
     if (search_result == end(inventory)) {
         qFatal("Searching for an item by id turned up nothing (%lx)", id);
@@ -37,10 +45,6 @@ Item State::get_item_instance_at(int y, int x) const {
 }
 
 void State::copy_item_to(const Item &item, int y, int x) {
-    if (inventory[ItemSlot::inventory_index(y, x)].id != EMPTY_ID) {
-        qWarning("Placed an item (id: %lx, code: %d) into a non-empty inventory space (y: %d, x: %d)", item.id, item.code, y, x);
-    }
-
     inventory[ItemSlot::inventory_index(y, x)] = item;
 }
 
@@ -48,25 +52,37 @@ void State::remove_item_at(int y, int x) {
     inventory[ItemSlot::inventory_index(y, x)] = Item();
 }
 
-ItemId State::make_item(ItemDefinitionPtr def) {
-    for (int y = 0; y < INVENTORY_ROWS; y++) {
-        for (int x = 0; x < INVENTORY_COLS; x++) {
-            if (inventory[ItemSlot::inventory_index(y, x)].id != EMPTY_ID) {
-                return make_item_at(def, y, x);
+void State::remove_item_with_id(ItemId id) {
+    for (size_t i {0}; i < INVENTORY_SIZE; i++) {
+        if (inventory[i].id == id) {
+            inventory[i] = Item();
+            return;
+        }
+    }
+
+    qWarning("Tried to remove item by id, but it didn't exist (%ld)", id);
+}
+
+bool State::add_item(const Item &item) {
+    for (int y {0}; y < INVENTORY_ROWS; y++) {
+        for (int x {0}; x < INVENTORY_COLS; x++) {
+            if (inventory[ItemSlot::inventory_index(y, x)].id == EMPTY_ID) {
+                inventory[ItemSlot::inventory_index(y, x)] = item;
+                return true;
             }
         }
     }
 
-    qWarning("Tried to add item (code %d) to inventory, but there was no open spot", def->code);
-    return EMPTY_ID;
+    qWarning(
+        "Tried to add item (code %d, id %ld) to inventory, but there was no open spot",
+        item.code,
+        item.id
+    );
+    return false;
 }
 
 ItemId State::make_item_at(ItemDefinitionPtr def, int y, int x) {
-    if (inventory[ItemSlot::inventory_index(y, x)].id != EMPTY_ID) {
-        qWarning("Made an item (code %d) at a non-empty inventory space (y %d, x %d)", def->code, y, x);
-    }
-
-    Item new_item = Item(def);
+    Item new_item {Item(def)};
     inventory[ItemSlot::inventory_index(y, x)] = new_item;
 
     return new_item.id;
@@ -76,15 +92,37 @@ void State::mutate_item_at(std::function<void(Item &)> action, int y, int x) {
     action(inventory[ItemSlot::inventory_index(y, x)]);
 }
 
-int State::get_max_energy() {
-    return 50;
+void State::add_energy(std::uint16_t energy) {
+    this->energy += energy;
+    if (this->energy > BASE_MAX_ENERGY) {
+        this->energy = BASE_MAX_ENERGY;
+    }
+}
+
+void State::add_morale(std::uint16_t morale) {
+    this->morale += morale;
+    if (this->morale > BASE_MAX_MORALE) {
+        this->morale = BASE_MAX_ENERGY;
+    }
+}
+
+std::vector<Item> State::get_items_of_intent(ItemDomain intent) {
+    std::vector<Item> items;
+
+    for (size_t i {0}; i < INVENTORY_SIZE; i++) {
+        if (inventory[i].intent == intent) {
+            items.push_back(inventory[i]);
+        }
+    }
+
+    return items;
 }
 
 State::State()
-    : name(Generators::generate_yokin_name()), inventory(), activity({ Nothing, 0 }) { }
+    : name(Generators::generate_yokin_name()), inventory(), activity({ None, 0 }) { }
 
-void StateSerialize::save_state(const State &state, const std::string &filename) {
-    std::ofstream out(filename);
+void StateSerialize::save_state(const State &state, const QString &filename) {
+    std::ofstream out {filename.toStdString()};
 
     put_char(out, 'l');
     put_char(out, 'k');
@@ -92,20 +130,23 @@ void StateSerialize::save_state(const State &state, const std::string &filename)
 
     put_string(out, state.name);
     put_item_array(out, state.inventory);
-    put_char(out, state.activity.action);
+    put_short(out, state.activity.action);
     put_long(out, state.activity.ms_left);
     put_long(out, state.activity.ms_total);
-    put_id_array(out, state.materials);
-    put_id_array(out, state.offered_items);
-    put_id_array(out, state.artifacts);
+    put_id_array(out, state.external_item_ids.at(Material));
+    put_id_array(out, state.external_item_ids.at(Offering));
+    put_id_array(out, state.external_item_ids.at(Artifact));
     put_item_array(out, state.effects);
-    put_long(out, state.tool);
+    put_long(out, state.tool_ids.at(SmithingTool));
+    put_long(out, state.tool_ids.at(ForagingTool));
+    put_long(out, state.tool_ids.at(MiningTool));
+    put_long(out, state.tool_ids.at(PrayerTool));
     put_short(out, state.energy);
     put_short(out, state.morale);
 }
 
-State *StateSerialize::load_state(const std::string &filename) {
-    std::ifstream in(filename);
+State *StateSerialize::load_state(const QString &filename) {
+    std::ifstream in(filename.toStdString());
 
     char header[4];
     header[0] = in.get();
@@ -114,23 +155,30 @@ State *StateSerialize::load_state(const std::string &filename) {
     header[3] = in.get();
 
     if (header[0] != 'l' && header[1] != 'k') {
-        qWarning("Character file (%s) does not start with proper header (%c%c)", filename.c_str(), header[0], header[1]);
-        return nullptr;
+        qFatal(
+            "Character file (%s) does not start with proper header (%c%c)",
+            filename.toStdString().c_str(),
+            header[0],
+            header[1]
+        );
     }
 
     State *state = new State;
     state->name = get_string(in);
     state->inventory = get_item_array<INVENTORY_SIZE>(in);
-    state->activity.action = (CharacterAction) get_char(in);
+    state->activity.action = (ItemDomain) get_short(in);
     state->activity.ms_left = get_long(in);
     state->activity.ms_total = get_long(in);
-    state->materials = get_id_array<SMITHING_SLOTS>(in);
-    state->offered_items = get_id_array<PRAYER_SLOTS>(in);
-    state->artifacts = get_id_array<ARTIFACT_SLOTS>(in);
+    state->external_item_ids[Material] = get_id_array<MAX_ARRAY_SIZE>(in);
+    state->external_item_ids[Offering] = get_id_array<MAX_ARRAY_SIZE>(in);
+    state->external_item_ids[Artifact] = get_id_array<MAX_ARRAY_SIZE>(in);
     state->effects = get_item_array<EFFECT_SLOTS>(in);
-    state->tool = get_long(in);
-    state->energy = get_short(in);
-    state->morale = get_short(in);
+    state->tool_ids[SmithingTool] = get_long(in);
+    state->tool_ids[ForagingTool] = get_long(in);
+    state->tool_ids[MiningTool] = get_long(in);
+    state->tool_ids[PrayerTool] = get_long(in);
+    state->energy = get_long(in);
+    state->morale = get_long(in);
 
     return state;
 }
@@ -155,9 +203,9 @@ void StateSerialize::put_long(std::ostream &out, std::uint64_t n) {
     out.put((n & 0xff00000000000000) >> 56);
 }
 
-void StateSerialize::put_string(std::ostream &out, const std::string &s) {
+void StateSerialize::put_string(std::ostream &out, const QString &s) {
     put_short(out, s.size());
-    for (char c : s) {
+    for (char c : s.toUtf8()) {
         out.put(c);
     }
 }
@@ -190,12 +238,12 @@ std::uint64_t StateSerialize::get_long(std::istream &in) {
     return n;
 }
 
-std::string StateSerialize::get_string(std::istream &in) {
+QString StateSerialize::get_string(std::istream &in) {
     std::uint16_t size = get_short(in);
 
     char str[1 << 16];
     in.read(str, size);
     str[size] = '\0';
 
-    return std::string(str);
+    return QString(str);
 }

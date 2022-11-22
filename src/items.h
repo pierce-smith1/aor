@@ -13,8 +13,10 @@
 #include <QPixmap>
 
 #include "tooltip.h"
+#include "generators.h"
 
 #define USES
+#define LEVEL
 #define NOT_CRAFTABLE {}
 #define NOT_TOOL {}
 
@@ -22,7 +24,7 @@ const static int INVENTORY_ROWS = 4;
 const static int INVENTORY_COLS = 7;
 const static int INVENTORY_SIZE = INVENTORY_COLS * INVENTORY_ROWS;
 
-const static int SMITHING_SLOTS = 6;
+const static int SMITHING_SLOTS = 3;
 const static int SMITHING_SLOTS_PER_ROW = 3;
 
 const static int PRAYER_SLOTS = 6;
@@ -40,20 +42,23 @@ const static ItemId EMPTY_ID = 0;
 const static ItemId INVALID_ID = 0xffffffffffffffff;
 const static ItemCode INVALID_CODE = 0xff;
 
-using ItemType = int;
-
-const static int IT_NONE = 0;
-const static int IT_CONSUMABLE = 1 << 0;
-const static int IT_MATERIAL = 1 << 1;
-const static int IT_FORAGING_TOOL = 1 << 2;
-const static int IT_MINING_TOOL = 1 << 3;
-const static int IT_PRAYER_TOOL = 1 << 4;
-const static int IT_BLESSING = 1 << 5;
-const static int IT_ARTIFACT = 1 << 6;
-const static int IT_EFFECT = 1 << 7;
-const static int IT_RUNE = 1 << 8;
-const static int IT_MAX_FLAG = 1 << 20;
-const static int IT_TOOL = IT_FORAGING_TOOL | IT_MINING_TOOL | IT_PRAYER_TOOL;
+using ItemType = std::uint16_t;
+enum ItemDomain : ItemType {
+    Ordinary      = 0,      None = 0,
+    Consumable    = 1 << 0, Eating = 1 << 0,
+    Material      = 1 << 1,
+    SmithingTool  = 1 << 2, Smithing = 1 << 2,
+    ForagingTool  = 1 << 3, Foraging = 1 << 3,
+    MiningTool    = 1 << 4, Mining = 1 << 4,
+    PrayerTool    = 1 << 5, Praying = 1 << 5,
+    Blessing      = 1 << 6,
+    Artifact      = 1 << 7,
+    Effect        = 1 << 8,
+    Rune          = 1 << 9,
+    Character     = 1 << 10,
+    Offering      = 1 << 11,
+    Tool          = SmithingTool | ForagingTool | MiningTool | PrayerTool
+};
 
 const static int CT_EMPTY = 0;
 const static int CT_CONSUMABLE = 1 << 8;
@@ -65,11 +70,37 @@ const static int CT_RUNE = 1 << 13;
 const static int CT_OTHER = 1 << 14;
 
 enum ItemProperty {
-    EnergyBoost,
-    MoraleBoost,
-    EnergyCost,
-    MoraleCost,
-    GivesEffectOnConsume,
+    ConsumableEnergyBoost,
+    ConsumableMoraleBoost,
+    ConsumableGivesEffect,
+    ToolEnergyCost,
+    SpeedBonus,
+    // WARNING: Item generation behavior in actions.cpp requires that there
+    // are exactly 9 'ToolCanDiscover's, exactly 9 'ToolDiscoverWeight's, and
+    // that the 'ToolDiscoverWeight's comes directly after the 'ToolCanDiscover's!
+    ToolCanDiscover1,
+    ToolCanDiscover2,
+    ToolCanDiscover3,
+    ToolCanDiscover4,
+    ToolCanDiscover5,
+    ToolCanDiscover6,
+    ToolCanDiscover7,
+    ToolCanDiscover8,
+    ToolCanDiscover9,
+    ToolDiscoverWeight1,
+    ToolDiscoverWeight2,
+    ToolDiscoverWeight3,
+    ToolDiscoverWeight4,
+    ToolDiscoverWeight5,
+    ToolDiscoverWeight6,
+    ToolDiscoverWeight7,
+    ToolDiscoverWeight8,
+    ToolDiscoverWeight9,
+    ToolComboIngredient1,
+    ToolComboIngredient2,
+    ToolComboIngredient3,
+    ToolComboResult,
+    MaterialForges,
 };
 
 // This basically just wraps a std::map<ItemPropety, int>,
@@ -77,22 +108,20 @@ enum ItemProperty {
 // behavior of returning zero-initialized values for non-existant keys.
 class ItemProperties {
 public:
-    ItemProperties(std::initializer_list<std::pair<const ItemProperty, int>> map);
-    int operator[](ItemProperty prop) const;
+    ItemProperties(std::initializer_list<std::pair<const ItemProperty, std::uint16_t>> map);
+    std::uint16_t operator[](ItemProperty prop) const;
 
-    std::map<ItemProperty, int> map;
+    std::map<ItemProperty, std::uint16_t> map;
 };
-
-using ItemNameList = std::vector<std::string>;
-using ItemChances = std::set<std::pair<std::string, double>>;
 
 struct ItemDefinition {
     ItemCode code;
-    std::string internal_name;
-    std::string display_name;
-    std::string description;
+    QString internal_name;
+    QString display_name;
+    QString description;
     unsigned char default_uses_left;
     ItemType type;
+    int item_level;
     ItemProperties properties;
 };
 
@@ -103,109 +132,167 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         CT_EMPTY,
         "empty", "Empty",
         "Nothing here.",
-        0 USES, IT_NONE,
+        0 USES, Ordinary, LEVEL 0,
         {}
     },
     {
         CT_CONSUMABLE | 0,
         "globfruit", "Globfruit",
         "A relative of the starfruit, this one is a lot stickier.",
-        1 USES, IT_CONSUMABLE,
+        1 USES, Consumable, LEVEL 1,
         {
-            { EnergyBoost, 20 },
+            { ConsumableEnergyBoost, 20 },
         }
     },
     {
         CT_CONSUMABLE | 1,
-        "silicon_wafer", "Silicon Wafer",
-        "Melts down in your mouth!",
-        1 USES, IT_CONSUMABLE | IT_MATERIAL,
+        "byteberry", "Byteberry",
+        "Grown on the leaves of tries, these make an excellent treat when lightly charred.",
+        1 USES, Consumable, LEVEL 1,
         {
-            { EnergyBoost, 30 },
-            { MoraleBoost, 30 }
+            { ConsumableEnergyBoost, 10 },
+            { ConsumableMoraleBoost, 10 }
+        }
+    },
+    {
+        CT_CONSUMABLE | 2,
+        "norton_ghost_pepper", "Norton Ghost Pepper",
+        "Haunted with a benevolent spirit that will cure your ailments. Often found growing in places you didn't ask them to.",
+        1 USES, Consumable, LEVEL 2,
+        {
+            { ConsumableGivesEffect, 0 }
+        }
+    },
+    {
+        CT_CONSUMABLE | 3,
+        "bleeding_krazaheart", "Bleeding Krazaheart",
+        "Don't read too far into it, Kraza is fine.",
+        1 USES, Consumable, LEVEL 2,
+        {
+            { ConsumableEnergyBoost, 30 },
+            { ConsumableMoraleBoost, 10 }
         }
     },
     {
         CT_MATERIAL | 0,
-        "data_leaf", "Data Leaf",
-        "Gently fallen from a red-black tree.",
-        1 USES, IT_MATERIAL,
-        {}
+        "obsilicon", "Obsilicon",
+        "This glassy stone cooled from the same primordial magma<br>that birthed our wafer-thing planes of reality.",
+        1 USES, Material, LEVEL 1,
+        {
+            { MaterialForges, CT_TOOL | 0 }
+        }
     },
     {
         CT_MATERIAL | 1,
-        "bark_cylinder", "Bark Cylinder",
-        "When you crack open a hard drive, you can tell how old it is by looking at the rings!",
-        1 USES, IT_MATERIAL,
-        {}
+        "oolite", "Oolite",
+        "You've heard small talk from geologists that this may<br>be the first mineral ever constructed.",
+        1 USES, Material, LEVEL 1,
+        {
+            { MaterialForges, CT_TOOL | 1 }
+        }
     },
     {
         CT_MATERIAL | 2,
-        "rusted_bar", "Rusted Bar",
-        "Go ahead and borrow it, I'm sure nobody will mind.",
-        1 USES, IT_MATERIAL,
-        {}
+        "cobolt_bar", "Cobolt Bar",
+        "Once a foundational metal of the Nachian world, now an outdated curiosity owned mostly by<br>the dwindling, elite of people who still know how to mine it.",
+        1 USES, Material, LEVEL 2,
+        {
+            { MaterialForges, CT_TOOL | 3 }
+        }
+    },
+    {
+        CT_MATERIAL | 3,
+        "solid_slate", "Solid Slate",
+        "A crucial improvement over oldschool spinning schists.",
+        1 USES, Material, LEVEL 2,
+        {
+            { MaterialForges, CT_TOOL | 4 }
+        }
+    },
+    {
+        CT_MATERIAL | 4,
+        "scandiskium", "Scandiskium",
+        "The elemental essence of hard reboots, this metal represents<br> a transitional period in Nachi's geologic history.",
+        1 USES, Material, LEVEL 2,
+        {
+            { MaterialForges, CT_TOOL | 5 }
+        }
     },
     {
         CT_TOOL | 0,
-        "eliding_hatchet", "Eliding Hatchet",
-        "They say the bark off some trees has mystical properties, but start stripping it<br>away and you'll realize underneath every magical tree is just a regular one.",
-        3 USES, IT_FORAGING_TOOL,
+        "hello_worldmaker", "Hello Worldmaker",
+        "Even the most talented have to start somewhere.",
+        3 USES, SmithingTool, LEVEL 1,
         {
-            { EnergyCost, 20 }
+            { ToolEnergyCost, 20 },
+            { ToolComboIngredient1, CT_MATERIAL | 0 },
+            { ToolComboIngredient2, CT_MATERIAL | 1 },
+            { ToolComboIngredient3, CT_MATERIAL | 1 },
+            { ToolComboResult, CT_TOOL | 2 }
         }
     },
     {
         CT_TOOL | 1,
-        "spearfisher", "Spearfisher",
-        "I know a friend of yours who will love this.",
-        3 USES, IT_FORAGING_TOOL,
+        "hashcracker", "Hashcracker",
+        "The only known attack against shale-256 is the brute force approach.",
+        4 USES, ForagingTool, LEVEL 1,
         {
-            { EnergyCost, 30 }
+            { ToolEnergyCost, 20 },
+            { ToolCanDiscover1, CT_CONSUMABLE | 2 },
+            { ToolCanDiscover2, CT_CONSUMABLE | 3 },
+            { ToolDiscoverWeight1, 1 },
+            { ToolDiscoverWeight2, 1 },
         }
     },
     {
-        CT_ARTIFACT | 0,
-        "dynamic_backpack", "Dynamic Backpack",
-        "When you encounter another player for trade, you both have an <b>extra slot</b> to use.",
-        0 USES, IT_ARTIFACT,
-        {}
-    }
-};
+        CT_TOOL | 2,
+        "basalt_destructor", "Basalt Destructor",
+        "It's just plain old dirt - this will do me fine.",
+        4 USES, MiningTool, LEVEL 2,
+        {
+            { ToolEnergyCost, 20 },
+            { ToolCanDiscover1, CT_MATERIAL | 2 },
+            { ToolCanDiscover2, CT_MATERIAL | 3 },
+            { ToolCanDiscover3, CT_MATERIAL | 4 },
+            { ToolDiscoverWeight1, 1 },
+            { ToolDiscoverWeight2, 1 },
+            { ToolDiscoverWeight3, 1 },
+        }
+    },
+    {
+        CT_TOOL | 5,
+        "sepulchre_of_corruption", "Sepulchre of Corruption",
+        "Act with care - your own pain will be temporary, but the pain you bring to others, everlasting.",
+        2 USES, PrayerTool, LEVEL 2,
+        {
 
-enum ItemIntent : unsigned char {
-    NoIntent,
-    ToBeMaterial,
-    ToBeOffered,
-    ToBeEaten,
-    UsingAsTool,
-    UsingAsArtifact,
-    IsEffect,
+        }
+    }
 };
 
 struct Item {
     ItemCode code = 0;
     ItemId id = EMPTY_ID;
     unsigned char uses_left = 0;
-    ItemIntent intent = NoIntent;
+    ItemDomain intent = Ordinary;
 
     Item() = default;
     explicit Item(const ItemDefinition &def);
     explicit Item(ItemDefinitionPtr def);
     explicit Item(ItemCode id);
-    explicit Item(const std::string &name);
+    explicit Item(const QString &name);
 
-    TooltipText get_tooltip_text();
-    ItemDefinitionPtr def();
+    TooltipText get_tooltip_text() const;
+    ItemDefinitionPtr def() const;
 
     static ItemDefinitionPtr def_of(ItemCode id);
-    static ItemDefinitionPtr def_of(const std::string &name);
+    static ItemDefinitionPtr def_of(const QString &name);
     static ItemDefinitionPtr def_of(const Item &item);
     static QPixmap pixmap_of(ItemCode id);
-    static QPixmap pixmap_of(const std::string &name);
+    static QPixmap pixmap_of(const QString &name);
     static QPixmap pixmap_of(const ItemDefinition &def);
     static QPixmap pixmap_of(const Item &item);
     static ItemId new_instance_id();
     static Item invalid_item();
-    static std::string type_to_string(ItemType type);
+    static QString type_to_string(ItemType type);
 };

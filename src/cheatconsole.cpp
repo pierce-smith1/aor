@@ -9,24 +9,29 @@ CheatConsole::CheatConsole(LKGameWindow *game)
     show();
 }
 
-void CheatConsole::execute(const std::string &input) {
-    qDebug("$ %s", input.c_str());
+void CheatConsole::execute(const QString &input) {
+    qDebug("$ %s", input.toStdString().c_str());
 
-    QString input_string = QString::fromStdString(input);
-    QStringList tokens = input_string.split(" ");
+    QStringList tokens {input.split(" ")};
+    QString command_name {tokens.takeFirst()};
 
-    std::string command_name = tokens.takeFirst().toStdString();
-
-    auto match_name = [&command_name](CheatCommand command) -> bool { return command_name == command.name; };
-    auto command = std::find_if(begin(COMMANDS), end(COMMANDS), match_name);
+    auto match_name {[&](CheatCommand command) -> bool {
+        return command_name == command.name;
+    }};
+    auto command {std::find_if(begin(COMMANDS), end(COMMANDS), match_name)};
 
     if (command == end(COMMANDS)) {
-        qWarning("Failed to find command (%s)", command_name.c_str());
+        qWarning("Failed to find command (%s)", command_name.toStdString().c_str());
         return;
     }
 
     if (tokens.size() != command->nargs) {
-        qWarning("Wrong number of arguments (%d) for command (%s) (wanted %d)", tokens.size(), command->name.c_str(), command->nargs);
+        qWarning(
+            "Wrong number of arguments (%d) for command (%s) (wanted %d)",
+            tokens.size(),
+            command->name.toStdString().c_str(),
+            command->nargs
+        );
         return;
     }
 
@@ -34,6 +39,6 @@ void CheatConsole::execute(const std::string &input) {
 }
 
 void CheatConsole::consume_input() {
-    execute(console.input->text().toStdString());
+    execute(console.input->text());
     console.input->clear();
 }

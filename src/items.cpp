@@ -1,12 +1,9 @@
 #include "items.h"
-#include <algorithm>
-#include <chrono>
-#include <string>
 
-ItemProperties::ItemProperties(std::initializer_list<std::pair<const ItemProperty, int>> map)
+ItemProperties::ItemProperties(std::initializer_list<std::pair<const ItemProperty, std::uint16_t>> map)
     : map(map) { }
 
-int ItemProperties::operator[](ItemProperty prop) const {
+std::uint16_t ItemProperties::operator[](ItemProperty prop) const {
     try {
         return map.at(prop);
     } catch (std::out_of_range &e) {
@@ -15,8 +12,10 @@ int ItemProperties::operator[](ItemProperty prop) const {
 }
 
 ItemDefinitionPtr Item::def_of(ItemCode code) {
-    auto match_code = [code](const ItemDefinition def) -> bool { return def.code == code; };
-    auto result = std::find_if(begin(ITEM_DEFINITIONS), end(ITEM_DEFINITIONS), match_code);
+    auto match_code {[code](const ItemDefinition def) -> bool {
+        return def.code == code;
+    }};
+    auto result {std::find_if(begin(ITEM_DEFINITIONS), end(ITEM_DEFINITIONS), match_code)};
 
     if (result == ITEM_DEFINITIONS.end()) {
         qFatal("Tried to get definition for invalid item code (%d)", code);
@@ -25,12 +24,12 @@ ItemDefinitionPtr Item::def_of(ItemCode code) {
     return result;
 }
 
-ItemDefinitionPtr Item::def_of(const std::string &name) {
-    auto match_name = [&name](const ItemDefinition def) -> bool { return def.internal_name == name; };
-    auto result = std::find_if(begin(ITEM_DEFINITIONS), end(ITEM_DEFINITIONS), match_name);
+ItemDefinitionPtr Item::def_of(const QString &name) {
+    auto match_name {[&name](const ItemDefinition def) -> bool { return def.internal_name == name; }};
+    auto result {std::find_if(begin(ITEM_DEFINITIONS), end(ITEM_DEFINITIONS), match_name)};
 
     if (result == ITEM_DEFINITIONS.end()) {
-        qFatal("Tried to get definition for invalid item name (%s)", name.c_str());
+        qFatal("Tried to get definition for invalid item name (%s)", name.toStdString().c_str());
     }
 
     return result;
@@ -44,7 +43,7 @@ Item::Item(const ItemDefinition &def)
     : code(def.code),
       id(new_instance_id()),
       uses_left(def.default_uses_left),
-      intent(NoIntent)
+      intent(Ordinary)
 {
     // Don't give an empty item a unique id
     if (code == 0) {
@@ -58,62 +57,66 @@ Item::Item(ItemDefinitionPtr ptr)
 Item::Item(ItemCode code)
     : Item(def_of(code)) { }
 
-Item::Item(const std::string &name)
+Item::Item(const QString &name)
     : Item(def_of(name)) { }
 
-TooltipText Item::get_tooltip_text() {
+TooltipText Item::get_tooltip_text() const {
+    ItemDefinitionPtr this_def {def()};
+
     TooltipText text;
-
-    ItemDefinitionPtr this_def = def_of(code);
-
-    text.title = "<b>" + this_def->display_name + "</b>";
-    text.description = "<i>" + this_def->description + "</i>";
-    text.subtext = Item::type_to_string(this_def->type);
+    text.title = QString("<b>%1</b>").arg(this_def->display_name);
+    text.description = QString("<i>%1</i>").arg(this_def->description);
+    text.subtext = this_def->item_level == 0 ? "" : QString("Level %1 ").arg(this_def->item_level);
+    text.subtext += Item::type_to_string(this_def->type);
 
     switch (intent) {
         default:
-        case NoIntent: {
+        case None: {
             break;
         }
-        case ToBeMaterial: {
+        case Consumable: {
+            text.subtext += " <b><font color=green>(Being eaten)</font></b>";
+            break;
+        }
+        case Material: {
             text.subtext += " <b><font color=green>(Queued for smithing)</font></b>";
             break;
         }
-        case ToBeOffered: {
+        case Offering: {
             text.subtext += " <b><font color=green>(Queued for offering)</font></b>";
             break;
         }
-        case UsingAsTool: {
-            text.subtext += " <b><font color=green>(Current tool)</font></b>";
-            break;
-        }
-        case UsingAsArtifact: {
-            text.subtext += " <b><font color=green>(Active artifact)</font></b>";
+        case SmithingTool:
+        case ForagingTool:
+        case MiningTool:
+        case PrayerTool:
+        case Artifact: {
+            text.subtext += " <b><font color=green>(Equipped)</font></b>";
             break;
         }
     }
 
-    for (const std::pair<const ItemProperty, int> &property_pair : this_def->properties.map) {
+    for (const std::pair<const ItemProperty, std::uint16_t> &property_pair : this_def->properties.map) {
         switch (property_pair.first) {
-            case EnergyBoost: {
-                text.description += "<br>On consumed: +" + std::to_string(property_pair.second) + " energy";
+            case ConsumableEnergyBoost: {
+                text.description += QString("<br>On consumed: <font color=orangered>+ %1 energy</font>").arg(property_pair.second);
                 break;
             }
-            case EnergyCost: {
-                text.description += "<br>Costs " + std::to_string(property_pair.second) + " energy per use";
+            case ToolEnergyCost: {
+                text.description += QString("<br>Costs <font color=orangered>%1 energy</font> per use").arg(property_pair.second);
             }
             default: break;
         }
     }
 
     if (uses_left != 0) {
-        text.subtext += " <font color=gray>(" + std::to_string(uses_left) + " uses left)</font>";
+        text.subtext += QString(" <font color=gray>(%1 uses left)</font>").arg(uses_left);
     }
 
     return text;
 }
 
-ItemDefinitionPtr Item::def() {
+ItemDefinitionPtr Item::def() const {
     return def_of(code);
 }
 
@@ -121,16 +124,16 @@ QPixmap Item::pixmap_of(ItemCode id) {
     return pixmap_of(*def_of(id));
 }
 
-QPixmap Item::pixmap_of(const std::string &name) {
+QPixmap Item::pixmap_of(const QString &name) {
     return pixmap_of(*def_of(name));
 }
 
 QPixmap Item::pixmap_of(const ItemDefinition &def) {
-    QString pixmap_name = QString::fromStdString(":/assets/img/items/" + def.internal_name + ".png");
+    QString pixmap_name {QString(":/assets/img/items/%1.png").arg(def.internal_name)};
 
     if (!QFile(pixmap_name).exists()) {
-        qDebug("Missing item pixmap (%s)", def.internal_name.c_str());
-        pixmap_name = QString::fromStdString(":/assets/img/items/missing.png");
+        qDebug("Missing item pixmap (%s)", def.internal_name.toStdString().c_str());
+        pixmap_name = ":/assets/img/items/missing.png";
     }
 
     return QPixmap(pixmap_name);
@@ -141,14 +144,10 @@ QPixmap Item::pixmap_of(const Item &item) {
 }
 
 ItemId Item::new_instance_id() {
-    auto time = std::chrono::system_clock::now().time_since_epoch();
-    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(time).count();
+    auto time {std::chrono::system_clock::now().time_since_epoch()};
+    auto milliseconds {std::chrono::duration_cast<std::chrono::milliseconds>(time).count()};
 
-    static std::random_device rd;
-    static std::mt19937 rng(rd());
-    static std::uniform_int_distribution<long> dist(0);
-
-    return (milliseconds & 0xffffffff) + ((dist(rng) & 0xffffffff) << 32);
+    return (milliseconds & 0xffffffff) + ((std::uint64_t) Generators::rng()->generate() << 32);
 }
 
 Item Item::invalid_item() {
@@ -159,18 +158,18 @@ Item Item::invalid_item() {
     return item;
 }
 
-std::string Item::type_to_string(ItemType type) {
-    std::string string;
+QString Item::type_to_string(ItemType type) {
+    QString string;
 
-    if (type & IT_CONSUMABLE) string += "Consumable, ";
-    if (type & IT_MATERIAL) string += "Material, ";
-    if (type & IT_FORAGING_TOOL) string += "Foraging Tool, ";
-    if (type & IT_MINING_TOOL) string += "Mining Tool, ";
-    if (type & IT_PRAYER_TOOL) string += "Ceremonial Tool, ";
-    if (type & IT_BLESSING) string += "Blessing, ";
-    if (type & IT_ARTIFACT) string += "Artifact, ";
-    if (type & IT_RUNE) string += "Curse, ";
+    if (type & Consumable) string += "Consumable, ";
+    if (type & Material) string += "Material, ";
+    if (type & ForagingTool) string += "Foraging Tool, ";
+    if (type & MiningTool) string += "Mining Tool, ";
+    if (type & PrayerTool) string += "Ceremonial Tool, ";
+    if (type & Blessing) string += "Blessing, ";
+    if (type & Artifact) string += "Artifact, ";
+    if (type & Rune) string += "Curse, ";
 
     // Chop off the last comma and space
-    return string.substr(0, string.length() - 2);
+    return string.left(string.length() - 2);
 }
