@@ -29,7 +29,11 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Exploits of Welchia</string>
+   <string>Aegis of Welchia</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../../images.qrc">
+    <normaloff>:/assets/img/items/welchian_rune.png</normaloff>:/assets/img/items/welchian_rune.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="minimumSize">

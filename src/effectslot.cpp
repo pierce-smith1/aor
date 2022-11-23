@@ -11,16 +11,12 @@ EffectSlot::EffectSlot(LKGameWindow *game, int n)
 }
 
 Item EffectSlot::get_item() {
-    return game->read_state<Item>([=](const State &state) {
-        return state.effects[n];
-    });
+    return game->character.effects[n];
 }
 
 void EffectSlot::set_item(const Item &item) {
     if (item.def()->type & Effect) {
-        game->mutate_state([=](State &state) {
-            state.effects[n] = item;
-        });
+        game->character.effects[n] = item;
         return;
     }
 

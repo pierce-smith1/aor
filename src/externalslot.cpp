@@ -17,17 +17,13 @@ Item ExternalSlot::get_item() {
         return Item();
     }
 
-    return game->read_state<Item>([=](const State &state) {
-        return state.get_item_instance(held_item_id);
-    });
+    return game->character.get_item_instance(held_item_id);
 }
 
 void ExternalSlot::set_item(const Item &item) {
     held_item_id = item.id;
 
-    game->mutate_state([=](State &state) {
-        state.external_item_ids[get_item_slot_type()][n] = get_item().id;
-    });
+    game->character.external_item_ids[get_item_slot_type()][n] = get_item().id;
 }
 
 ItemDomain ExternalSlot::get_item_slot_type() {
@@ -46,9 +42,7 @@ void ExternalSlot::refresh_pixmap() {
         case Material:
         case Offering:
         case Artifact: {
-            id = game->read_state<ItemId>([=](const State &state) {
-                return state.external_item_ids.at(get_item_slot_type())[n];
-            });
+            id = game->character.external_item_ids.at(get_item_slot_type())[n];
             break;
         }
     }
@@ -94,20 +88,23 @@ void ExternalSlot::dropEvent(QDropEvent *event) {
     if (source_slot->get_item_slot_type() == Ordinary) {
         // Dragging from an inventory slot to an external slot requires the
         // intent of the dragged item to change.
-        game->mutate_state([=](State &state) {
-            Item &item = state.inventory[inventory_index(source_slot->y, source_slot->x)];
-            item.intent = intent_to_assign;
-            set_item(item);
-        });
+        Item &item = game->character.inventory[inventory_index(source_slot->y, source_slot->x)];
+        item.intent = intent_to_assign;
+        set_item(item);
+
+        refresh_pixmap();
+
+        // The item we dragged in may have updated activity eligibility
+        game->refresh_ui_buttons();
     } else if (source_slot->get_item_slot_type() == get_item_slot_type() && source_slot != this) {
         // Dragging between external slots of the same type is purely visual,
         // just change the slot that holds the item id.
         set_item(source_slot->get_item());
         source_slot->set_item(Item());
-
-        source_slot->refresh_pixmap();
-        refresh_pixmap();
     }
+
+    source_slot->refresh_pixmap();
+    refresh_pixmap();
 }
 
 void ExternalSlot::insert_external_slots(LKGameWindow &window) {
@@ -144,15 +141,11 @@ ToolSlot::ToolSlot(LKGameWindow *game, ItemDomain type)
 }
 
 void ToolSlot::set_item(const Item &item) {
-    game->mutate_state([=](State &state) {
-        state.tool_ids[get_tool_slot_type()] = item.id;
-    });
+    game->character.tool_ids[get_tool_slot_type()] = item.id;
 }
 
 void ToolSlot::refresh_pixmap() {
-    held_item_id = game->read_state<ItemId>([=](const State &state) {
-        return state.tool_ids.at(get_tool_slot_type());
-    });
+    held_item_id = game->character.tool_ids[get_tool_slot_type()];
     ExternalSlot::refresh_pixmap();
 }
 
@@ -212,9 +205,9 @@ void PortraitSlot::dropEvent(QDropEvent *event) {
     }
 
     if (item.def()->type & Consumable) {
-        game->mutate_state([=](State &state) {
-            state.get_item_ref(item.id).intent = Consumable;
-        });
+        game->character.get_item_ref(item.id).intent = Consumable;
         game->start_activity(CharacterActivity(Eating, 60 * 1000));
+
+        source_slot->refresh_pixmap();
     }
 }

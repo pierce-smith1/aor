@@ -1,5 +1,6 @@
 #include "state.h"
 #include "itemslot.h"
+#include "buffs.h"
 
 ItemId State::get_item_id_at(int y, int x) const {
     return inventory[ItemSlot::inventory_index(y, x)].id;
@@ -177,8 +178,8 @@ State *StateSerialize::load_state(const QString &filename) {
     state->tool_ids[ForagingTool] = get_long(in);
     state->tool_ids[MiningTool] = get_long(in);
     state->tool_ids[PrayerTool] = get_long(in);
-    state->energy = get_long(in);
-    state->morale = get_long(in);
+    state->energy = get_short(in);
+    state->morale = get_short(in);
 
     return state;
 }

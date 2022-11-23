@@ -35,17 +35,12 @@ LKGameWindow::LKGameWindow()
     activity_buttons.at(Smithing)->setEnabled(false);
 
     notify(Discovery, "The Sun breaks on a new adventure.");
+
+    refresh_ui();
 }
 
 void LKGameWindow::register_slot_name(const QString &slot_name) {
     slot_names.push_back(slot_name);
-}
-
-void LKGameWindow::mutate_state(std::function<void(State &)> action) {
-    QMutexLocker lock(&mutex);
-
-    action(character);
-    refresh_ui();
 }
 
 void LKGameWindow::notify(NotificationType type, const QString &message) {
@@ -57,8 +52,6 @@ void LKGameWindow::start_activity(ItemDomain type) {
 }
 
 void LKGameWindow::start_activity(const CharacterActivity &activity) {
-    QMutexLocker lock(&mutex);
-
     if (activity.action != None) {
         lock_ui();
         timers.activity_timer_id = timers.startTimer(ACTIVITY_TICK_RATE_MS);
@@ -72,8 +65,6 @@ void LKGameWindow::start_activity(const CharacterActivity &activity) {
 }
 
 void LKGameWindow::progress_activity(std::int64_t by_ms) {
-    QMutexLocker lock(&mutex);
-
     character.activity.ms_left -= by_ms;
 
     if (character.activity.ms_left < 0) {
@@ -112,12 +103,30 @@ void LKGameWindow::progress_activity(std::int64_t by_ms) {
 }
 
 void LKGameWindow::refresh_ui() {
-    QMutexLocker lock(&mutex);
-
     for (const QString &slot_name : slot_names) {
         findChild<ItemSlot *>(slot_name)->refresh_pixmap();
     }
 
+    refresh_ui_buttons();
+
+    visual_energy = character.energy;
+    visual_morale = character.morale;
+
+    refresh_ui_bars();
+}
+
+void LKGameWindow::refresh_ui_bars() {
+    window.energy_bar->setValue(visual_energy);
+    window.energy_bar->setMaximum(BASE_MAX_ENERGY);
+
+    window.morale_bar->setValue(visual_morale);
+    window.morale_bar->setMaximum(BASE_MAX_MORALE);
+
+    window.activity_time_bar->setValue(character.activity.ms_total - character.activity.ms_left);
+    window.activity_time_bar->setMaximum(character.activity.ms_total);
+}
+
+void LKGameWindow::refresh_ui_buttons() {
     // Disable other buttons if we don't have enough energy for their tool
     for (ItemDomain domain : { Smithing, Foraging, Mining, Praying }) {
         ItemDefinitionPtr tool_def = character.get_item_instance(character.tool_ids[domain]).def();
@@ -137,33 +146,13 @@ void LKGameWindow::refresh_ui() {
     } else {
         get_activity_buttons().at(Smithing)->setEnabled(false);
     }
-
-    visual_energy = character.energy;
-    visual_morale = character.morale;
-
-    refresh_ui_bars();
-}
-
-void LKGameWindow::refresh_ui_bars() {
-    window.energy_bar->setValue(visual_energy);
-    window.energy_bar->setMaximum(BASE_MAX_ENERGY);
-
-    window.morale_bar->setValue(visual_morale);
-    window.morale_bar->setMaximum(BASE_MAX_MORALE);
-
-    window.activity_time_bar->setValue(character.activity.ms_total - character.activity.ms_left);
-    window.activity_time_bar->setMaximum(character.activity.ms_total);
 }
 
 bool LKGameWindow::activity_ongoing() {
-    QMutexLocker lock(&mutex);
-
     return character.activity.action != None;
 }
 
 void LKGameWindow::complete_activity() {
-    QMutexLocker lock(&mutex);
-
     auto drop_items_in_slots = [=](ItemDomain type) {
         for (const QString &slot_name : get_item_slot_names()) {
             ItemSlot *slot = findChild<ItemSlot *>(slot_name);

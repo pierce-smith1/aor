@@ -7,11 +7,10 @@ int main(int argc, char **argv) {
     LKGameWindow game_window;
     game_window.show();
 
-    CheatConsole console(&game_window);
+    game_window.character.inventory[0] = Item("globfruit");
+    game_window.refresh_ui();
 
-    game_window.mutate_state([](State &s) {
-        s.inventory[0] = Item("globfruit");
-    });
+    CheatConsole console(&game_window);
 
     return app.exec();
 }

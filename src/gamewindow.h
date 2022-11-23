@@ -29,12 +29,6 @@ public:
 
     void register_slot_name(const QString &slot_name);
 
-    template<typename T> T read_state(std::function<T(const State &)> action) {
-        QMutexLocker lock(&mutex);
-        return action(character);
-    }
-    void mutate_state(std::function<void(State &)> action);
-
     void notify(NotificationType type, const QString &message);
 
     void start_activity(ItemDomain type);
@@ -42,6 +36,7 @@ public:
     void progress_activity(std::int64_t by_ms);
     void refresh_ui();
     void refresh_ui_bars();
+    void refresh_ui_buttons();
     bool activity_ongoing();
     void complete_activity();
 
@@ -50,13 +45,12 @@ public:
 
     Ui::LKMainWindow window;
     Tooltip item_tooltip;
+    State character;
 private:
     void lock_ui();
     void unlock_ui();
 
     GameTimers timers;
-    QRecursiveMutex mutex;
-    State character;
     std::vector<QString> slot_names;
     double visual_energy;
     double visual_morale;

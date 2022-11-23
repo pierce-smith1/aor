@@ -1,5 +1,7 @@
 #pragma once
 
+#include <QMutex>
+
 #include <string>
 #include <array>
 #include <map>
@@ -47,7 +49,7 @@ struct State {
     QString name;
     Inventory inventory;
     CharacterActivity activity;
-    ExternalItemIds external_item_ids{
+    ExternalItemIds external_item_ids {
         { Material, {} },
         { Offering, {} },
         { Artifact, {} },

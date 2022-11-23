@@ -73,11 +73,13 @@ enum ItemProperty {
     ConsumableEnergyBoost,
     ConsumableMoraleBoost,
     ConsumableGivesEffect,
+    ConsumableGivesBuff,
     ToolEnergyCost,
     SpeedBonus,
     // WARNING: Item generation behavior in actions.cpp requires that there
-    // are exactly 9 'ToolCanDiscover's, exactly 9 'ToolDiscoverWeight's, and
-    // that the 'ToolDiscoverWeight's comes directly after the 'ToolCanDiscover's!
+    // are exactly 9 ToolCanDiscovers, exactly 9 ToolDiscoverWeights, and
+    // that the ToolDiscoverWeights comes directly after the ToolCanDiscovers!
+    // If you don't like that, fix it in actions.cpp.
     ToolCanDiscover1,
     ToolCanDiscover2,
     ToolCanDiscover3,
@@ -157,7 +159,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_CONSUMABLE | 2,
         "norton_ghost_pepper", "Norton Ghost Pepper",
-        "Haunted with a benevolent spirit that will cure your ailments. Often found growing in places you didn't ask them to.",
+        "Haunted with a benevolent spirit that will cure your ailments.<br>Often found growing in places you didn't ask them to.",
         1 USES, Consumable, LEVEL 2,
         {
             { ConsumableGivesEffect, 0 }
