@@ -110,6 +110,7 @@ public class AOWServer {
 
                 offers.history.remove(keyItem);
             } else {
+
                 exchange.sendResponseHeaders(200, 0);
             }
         } catch (IOException e) {

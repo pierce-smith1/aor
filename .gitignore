@@ -66,3 +66,7 @@ desktop-yokin
 .clangd
 lk
 *.class
+*.kate-swp
+*.png~
+*.kra~
+*.kra-autosave*
