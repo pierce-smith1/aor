@@ -57,6 +57,7 @@ enum ItemDomain : ItemType {
     Rune          = 1 << 9,
     Character     = 1 << 10,
     Offering      = 1 << 11,
+    KeyOffering   = Offering | 1 << 12,
     Tool          = SmithingTool | ForagingTool | MiningTool | PrayerTool
 };
 
@@ -273,8 +274,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
 };
 
 struct Item {
-    ItemCode code = 0;
-    ItemId id = EMPTY_ID;
+    ItemCode code {0};
+    ItemId id {EMPTY_ID};
     unsigned char uses_left = 0;
     ItemDomain intent = Ordinary;
 
@@ -297,4 +298,6 @@ struct Item {
     static ItemId new_instance_id();
     static Item invalid_item();
     static QString type_to_string(ItemType type);
+
+    static Item empty_item;
 };

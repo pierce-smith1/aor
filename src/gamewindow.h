@@ -8,10 +8,10 @@
 class LKGameWindow;
 
 #include "items.h"
-#include "state.h"
 #include "../ui_main.h"
 #include "gamenotification.h"
 #include "tooltip.h"
+#include "character.h"
 
 class GameTimers : public QObject {
     Q_OBJECT;
@@ -37,7 +37,6 @@ public:
     void refresh_ui();
     void refresh_ui_bars();
     void refresh_ui_buttons();
-    bool activity_ongoing();
     void complete_activity();
 
     const std::map<ItemDomain, QPushButton *> get_activity_buttons();
@@ -45,7 +44,7 @@ public:
 
     Ui::LKMainWindow window;
     Tooltip item_tooltip;
-    State character;
+    class::Character character;
 private:
     void lock_ui();
     void unlock_ui();

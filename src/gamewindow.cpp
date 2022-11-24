@@ -18,6 +18,7 @@ LKGameWindow::LKGameWindow()
     : window(), timers(this)
 {
     window.setupUi(this);
+    window.player_name_label->setText(QString("Colonist <b>%1</b>").arg(character.name()));
 
     const auto activity_buttons {get_activity_buttons()};
     for (const auto &pair : activity_buttons) {
@@ -57,47 +58,25 @@ void LKGameWindow::start_activity(const CharacterActivity &activity) {
         timers.activity_timer_id = timers.startTimer(ACTIVITY_TICK_RATE_MS);
     }
 
-    character.activity = activity;
+    character.activity() = activity;
     refresh_ui();
 
-    visual_energy = character.energy;
-    visual_morale = character.morale;
+    visual_energy = character.energy();
+    visual_morale = character.morale();
 }
 
 void LKGameWindow::progress_activity(std::int64_t by_ms) {
-    character.activity.ms_left -= by_ms;
+    character.activity().ms_left -= by_ms;
 
-    if (character.activity.ms_left < 0) {
+    if (character.activity().ms_left < 0) {
         complete_activity();
         return;
     }
 
-    double percent_completed {((double) by_ms / character.activity.ms_total)};
+    double percent_completed {((double) by_ms / character.activity().ms_total)};
 
-    Item current_tool {character.get_item_instance(character.tool_ids[character.activity.action])};
-    visual_energy -= current_tool.def()->properties[ToolEnergyCost]* percent_completed;
-
-    if (character.activity.action == Eating) {
-        std::vector foods {character.get_items_of_intent(Consumable)};
-        int total_energy_gain {std::accumulate(
-            begin(foods),
-            end(foods),
-            0,
-            [](int a, const Item &b) {
-                return b.def()->properties[ConsumableEnergyBoost] + a;
-            }
-        )};
-        int total_morale_gain {std::accumulate(
-            begin(foods),
-            end(foods),
-            0,
-            [](int a, const Item &b) {
-                return b.def()->properties[ConsumableMoraleBoost] + a;
-            }
-        )};
-        visual_energy += total_energy_gain * percent_completed;
-        visual_morale += total_morale_gain * percent_completed;
-    }
+    visual_energy += character.energy_gain() * percent_completed;
+    visual_morale += character.morale_gain() * percent_completed;
 
     refresh_ui_bars();
 }
@@ -107,49 +86,32 @@ void LKGameWindow::refresh_ui() {
         findChild<ItemSlot *>(slot_name)->refresh_pixmap();
     }
 
+    visual_energy = character.energy();
+    visual_morale = character.morale();
+
     refresh_ui_buttons();
-
-    visual_energy = character.energy;
-    visual_morale = character.morale;
-
     refresh_ui_bars();
 }
 
 void LKGameWindow::refresh_ui_bars() {
     window.energy_bar->setValue(visual_energy);
-    window.energy_bar->setMaximum(BASE_MAX_ENERGY);
+    window.energy_bar->setMaximum(character.max_energy());
 
     window.morale_bar->setValue(visual_morale);
-    window.morale_bar->setMaximum(BASE_MAX_MORALE);
+    window.morale_bar->setMaximum(character.max_morale());
 
-    window.activity_time_bar->setValue(character.activity.ms_total - character.activity.ms_left);
-    window.activity_time_bar->setMaximum(character.activity.ms_total);
+    window.activity_time_bar->setValue(character.activity().ms_total - character.activity().ms_left);
+    window.activity_time_bar->setMaximum(character.activity().ms_total);
 }
 
 void LKGameWindow::refresh_ui_buttons() {
-    // Disable other buttons if we don't have enough energy for their tool
     for (ItemDomain domain : { Smithing, Foraging, Mining, Praying }) {
-        ItemDefinitionPtr tool_def = character.get_item_instance(character.tool_ids[domain]).def();
-        if (tool_def->properties[ToolEnergyCost] <= character.energy && character.activity.action == None) {
+        if (character.can_do(domain)) {
             get_activity_buttons().at(domain)->setEnabled(true);
         } else {
             get_activity_buttons().at(domain)->setEnabled(false);
         }
     }
-
-    // Disable smithing button if not enough materials
-    const auto &materials = character.external_item_ids[Material];
-    if (std::all_of(begin(materials), begin(materials) + SMITHING_SLOTS, [&](ItemId id) {
-        return id != EMPTY_ID;
-    }) && character.activity.action == None) {
-        get_activity_buttons().at(Smithing)->setEnabled(true);
-    } else {
-        get_activity_buttons().at(Smithing)->setEnabled(false);
-    }
-}
-
-bool LKGameWindow::activity_ongoing() {
-    return character.activity.action != None;
 }
 
 void LKGameWindow::complete_activity() {
@@ -162,10 +124,9 @@ void LKGameWindow::complete_activity() {
         }
     };
 
-    std::vector<Item> inputs;
-    switch (character.activity.action) {
+    std::vector<Item> inputs = character.inputs();
+    switch (character.activity().action) {
         case Smithing: {
-            inputs = character.get_items_of_intent(Material);
             drop_items_in_slots(Material);
             notify(ActionComplete, "You finished smithing.");
             break;
@@ -179,30 +140,25 @@ void LKGameWindow::complete_activity() {
             break;
         }
         case Praying: {
-            inputs = character.get_items_of_intent(Offering);
             drop_items_in_slots(Offering);
+            drop_items_in_slots(KeyOffering);
             notify(ActionComplete, "You finished your prayers.");
             break;
         }
         case Eating: {
-            inputs = character.get_items_of_intent(Consumable);
             notify(ActionComplete, "You finished eating.");
-            character.add_energy(std::accumulate(begin(inputs), end(inputs), 0, [](int a, const Item &b) {
-                return b.def()->properties[ConsumableEnergyBoost] + a;
-            }));
-            character.add_morale(std::accumulate(begin(inputs), end(inputs), 0, [](int a, const Item &b) {
-                return b.def()->properties[ConsumableMoraleBoost] + a;
-            }));
             break;
         }
-        default: break;
+        default: {
+            break;
+        }
     }
 
     // Generate the items
-    Item tool {character.get_item_instance(character.tool_ids[character.activity.action])};
-    std::vector<Item> new_items {Actions::generate_items(inputs, tool, character.activity.action)};
+    Item tool {character.tool(character.activity().action)};
+    std::vector<Item> new_items {Actions::generate_items(inputs, tool, character.activity().action)};
     for (const Item &item : new_items) {
-        bool add_successful {character.add_item(item)};
+        bool add_successful {character.give_item(item)};
         if (!add_successful) {
             notify(Warning, "Your inventory was too full to recieve all of your new items!");
             break;
@@ -213,34 +169,36 @@ void LKGameWindow::complete_activity() {
     // Dink all of the items used as inputs, unless we are praying, in which
     // case just eat them outright
     for (const Item &input : inputs) {
-        Item &item {character.get_item_ref(input.id)};
+        Item &item {character.item_ref(input.id)};
 
-        if (character.activity.action == Praying) {
-            character.remove_item_with_id(input.id);
+        if (character.activity().action == Praying) {
+            character.remove_item(input.id);
         } else {
             item.uses_left -= 1;
             if (item.uses_left == 0) {
-                character.remove_item_with_id(input.id);
+                character.remove_item(input.id);
             }
         }
     }
 
-    // Dink the tool and deduct its energy cost
-    if (character.tool_ids[character.activity.action] != EMPTY_ID) {
-        Item &tool {character.get_item_ref(character.tool_ids[character.activity.action])};
+    // Dink the tool
+    if (character.tool(character.activity().action).id != EMPTY_ID) {
+        Item &tool {character.item_ref(character.tool(character.activity().action).id)};
         tool.uses_left -= 1;
         if (tool.uses_left == 0) {
             notify(Warning, QString("Your %1 broke.").arg(tool.def()->display_name));
             drop_items_in_slots(Tool);
-            character.remove_item_with_id(tool.id);
+            character.remove_item(tool.id);
         }
-        character.energy -= tool.def()->properties[ToolEnergyCost];
     }
+
+    character.add_energy(character.energy_gain());
+    character.add_morale(character.morale_gain());
 
     killTimer(timers.activity_timer_id);
     timers.activity_timer_id = 0;
 
-    character.activity = CharacterActivity(None, 0);
+    character.activity() = CharacterActivity(None, 0);
 
     unlock_ui();
     refresh_ui();

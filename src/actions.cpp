@@ -70,6 +70,25 @@ std::vector<Item> Actions::generate_items(const std::vector<Item> &inputs, const
 
             break;
         }
+        case Praying: {
+            if (tool.id == EMPTY_ID) {
+                return {};
+            }
+
+            std::vector<std::pair<Item, double>> possible_discoveries;
+            for (int i {(int) ToolCanDiscover1}; i <= (int) ToolCanDiscover9; i++) {
+                if (tool_properties[(ItemProperty) i] != 0) {
+                    possible_discoveries.emplace_back(
+                        tool_properties[(ItemProperty) i],
+                        tool_properties[(ItemProperty) (i + 9)]
+                    );
+                }
+            }
+
+            outputs.emplace_back(Generators::sample_with_weights(possible_discoveries));
+
+            break;
+        }
         default: {
             qWarning("Tried to generate items with unknown action domain (%d)", action);
         }

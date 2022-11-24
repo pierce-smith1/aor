@@ -18,9 +18,6 @@
 const static std::uint16_t STATE_VERSION {1};
 constexpr static int MAX_ARRAY_SIZE {std::max({ SMITHING_SLOTS, PRAYER_SLOTS, ARTIFACT_SLOTS })};
 
-const static std::uint16_t BASE_MAX_ENERGY {50};
-const static std::uint16_t BASE_MAX_MORALE {50};
-
 using Inventory = std::array<Item, INVENTORY_SIZE>;
 using ExternalItemIds = std::map<ItemDomain, std::array<ItemId, MAX_ARRAY_SIZE>>;
 using Effects = std::array<Item, EFFECT_SLOTS>;
@@ -52,6 +49,7 @@ struct State {
     ExternalItemIds external_item_ids {
         { Material, {} },
         { Offering, {} },
+        { KeyOffering, {} },
         { Artifact, {} },
     };
     Effects effects {};

@@ -1,5 +1,7 @@
 #include "items.h"
 
+Item Item::empty_item {Item(0)};
+
 ItemProperties::ItemProperties(std::initializer_list<std::pair<const ItemProperty, std::uint16_t>> map)
     : map(map) { }
 
@@ -66,7 +68,19 @@ TooltipText Item::get_tooltip_text() const {
     TooltipText text;
     text.title = QString("<b>%1</b>").arg(this_def->display_name);
     text.description = QString("<i>%1</i>").arg(this_def->description);
-    text.subtext = this_def->item_level == 0 ? "" : QString("Level %1 ").arg(this_def->item_level);
+
+    switch (this_def->item_level) {
+        case 1: { text.subtext = "Unremarkable "; break; }
+        case 2: { text.subtext = "Common "; break; }
+        case 3: { text.subtext = "Notable "; break; }
+        case 4: { text.subtext = "Rare "; break; }
+        case 5: { text.subtext = "Enchanted "; break; }
+        case 6: { text.subtext = "Truly Extraordinary "; break; }
+        case 7: { text.subtext = "Anomalous "; break; }
+        case 8: { text.subtext = "Incomprehensible "; break; }
+        default: { break; }
+    }
+
     text.subtext += Item::type_to_string(this_def->type);
 
     switch (intent) {
@@ -86,6 +100,10 @@ TooltipText Item::get_tooltip_text() const {
             text.subtext += " <b><font color=green>(Queued for offering)</font></b>";
             break;
         }
+        case KeyOffering: {
+            text.subtext += " <b><font color=#ff7933>(Queued as key offering)</font></b>";
+            break;
+        }
         case SmithingTool:
         case ForagingTool:
         case MiningTool:
@@ -99,7 +117,19 @@ TooltipText Item::get_tooltip_text() const {
     for (const std::pair<const ItemProperty, std::uint16_t> &property_pair : this_def->properties.map) {
         switch (property_pair.first) {
             case ConsumableEnergyBoost: {
-                text.description += QString("<br>On consumed: <font color=orangered>+ %1 energy</font>").arg(property_pair.second);
+                text.description += QString("<br><b>On consumed:</b> <font color=#ff3300>+%1 energy</font>").arg(property_pair.second);
+                break;
+            }
+            case ConsumableMoraleBoost: {
+                text.description += QString("<br><b>On consumed:</b> <font color=#0099d7>+%1 spirit</font>").arg(property_pair.second);
+                break;
+            }
+            case ConsumableGivesEffect: {
+                text.description += QString("<br><b>On consumed:</b> <font color=#6666cc>gives an effect</font>");
+                break;
+            }
+            case ConsumableGivesBuff: {
+                text.description += QString("<br><b>On consumed:</b> <font color=#009900>gives a permanent buff</font>");
                 break;
             }
             case ToolEnergyCost: {

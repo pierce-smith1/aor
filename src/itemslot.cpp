@@ -43,11 +43,11 @@ ItemSlot::ItemSlot(LKGameWindow *game, int y, int x)
 }
 
 Item ItemSlot::get_item() {
-    return game->character.inventory[inventory_index(y, x)];
+    return game->character.item(y, x);
 }
 
 void ItemSlot::set_item(const Item &item) {
-    game->character.copy_item_to(item, y, x);
+    game->character.put_item(item, y, x);
 }
 
 ItemDomain ItemSlot::get_item_slot_type() {
@@ -86,7 +86,7 @@ void ItemSlot::drop_external_item() {
     }
 
     ItemId external_item_id = get_item().id;
-    game->character.get_item_ref(external_item_id).intent = None;
+    game->character.item_ref(external_item_id).intent = None;
     set_item(Item());
 
     refresh_pixmap();
@@ -151,13 +151,13 @@ void ItemSlot::mousePressEvent(QMouseEvent *event) {
     bool is_inventory_slot = get_item_slot_type() == Ordinary;
     bool item_being_used = get_item().intent != None;
 
-    if (event->button() == Qt::RightButton && !is_inventory_slot && !game->activity_ongoing()) {
+    if (event->button() == Qt::RightButton && !is_inventory_slot && !game->character.activity_ongoing()) {
         drop_external_item();
         game->refresh_ui();
         return;
     }
 
-    if (event->button() == Qt::LeftButton && (!item_being_used || (!is_inventory_slot && !game->activity_ongoing()))) {
+    if (event->button() == Qt::LeftButton && (!item_being_used || (!is_inventory_slot && !game->character.activity_ongoing()))) {
         QDrag *drag = new QDrag(this);
         QMimeData *data = new QMimeData;
 
@@ -187,8 +187,8 @@ void ItemSlot::dropEvent(QDropEvent *event) {
         Item source_item = source_slot->get_item();
         Item dest_item = get_item();
 
-        game->character.copy_item_to(source_item, y, x);
-        game->character.copy_item_to(dest_item, source_slot->y, source_slot->x);
+        game->character.put_item(source_item, y, x);
+        game->character.put_item(dest_item, source_slot->y, source_slot->x);
 
         source_slot->refresh_pixmap();
     } else {

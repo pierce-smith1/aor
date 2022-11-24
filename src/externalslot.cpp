@@ -1,6 +1,5 @@
 #include "externalslot.h"
 #include "items.h"
-#include "itemslot.h"
 
 ExternalSlot::ExternalSlot(LKGameWindow *game, ItemDomain type, int n)
     : ItemSlot(game), item_slot_type(type), n(n), held_item_id(EMPTY_ID)
@@ -17,13 +16,13 @@ Item ExternalSlot::get_item() {
         return Item();
     }
 
-    return game->character.get_item_instance(held_item_id);
+    return game->character.item(held_item_id);
 }
 
 void ExternalSlot::set_item(const Item &item) {
     held_item_id = item.id;
 
-    game->character.external_item_ids[get_item_slot_type()][n] = get_item().id;
+    game->character.external_items()[get_item_slot_type()][n] = get_item().id;
 }
 
 ItemDomain ExternalSlot::get_item_slot_type() {
@@ -41,12 +40,18 @@ void ExternalSlot::refresh_pixmap() {
         }
         case Material:
         case Offering:
+        case KeyOffering:
         case Artifact: {
-            id = game->character.external_item_ids.at(get_item_slot_type())[n];
+            id = game->character.external_items().at(get_item_slot_type())[n];
             break;
         }
     }
     held_item_id = id;
+
+    if (get_item_slot_type() == KeyOffering) {
+        setFrameShape(NoFrame);
+        setStyleSheet("border: 1px solid #ffcc66; border-radius: 5px");
+    }
 
     ItemSlot::refresh_pixmap();
 }
@@ -57,7 +62,7 @@ void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
         return;
     }
 
-    if (game->activity_ongoing()) {
+    if (game->character.activity().action != None) {
         return;
     }
 
@@ -67,6 +72,7 @@ void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
     ItemType type {dropped_item.def()->type};
 
     switch (get_item_slot_type()) {
+        case KeyOffering:
         case Offering: {
             if (!(type & Rune)) { event->acceptProposedAction(); } break;
         }
@@ -83,28 +89,19 @@ void ExternalSlot::dropEvent(QDropEvent *event) {
     QString source_slot_name {event->mimeData()->text()};
     ItemSlot *source_slot {game->findChild<ItemSlot *>(source_slot_name)};
 
-    ItemDomain intent_to_assign {get_item_slot_type()};
+    Item source_item {source_slot->get_item()};
+    Item this_item {get_item()};
 
-    if (source_slot->get_item_slot_type() == Ordinary) {
-        // Dragging from an inventory slot to an external slot requires the
-        // intent of the dragged item to change.
-        Item &item = game->character.inventory[inventory_index(source_slot->y, source_slot->x)];
-        item.intent = intent_to_assign;
-        set_item(item);
-
-        refresh_pixmap();
-
-        // The item we dragged in may have updated activity eligibility
-        game->refresh_ui_buttons();
-    } else if (source_slot->get_item_slot_type() == get_item_slot_type() && source_slot != this) {
-        // Dragging between external slots of the same type is purely visual,
-        // just change the slot that holds the item id.
-        set_item(source_slot->get_item());
-        source_slot->set_item(Item());
+    set_item(source_item);
+    if (source_slot->get_item_slot_type() != Ordinary) {
+        source_slot->set_item(this_item);
     }
+
+    game->character.item_ref(source_item.id).intent = get_item_slot_type();
 
     source_slot->refresh_pixmap();
     refresh_pixmap();
+    game->refresh_ui_buttons();
 }
 
 void ExternalSlot::insert_external_slots(LKGameWindow &window) {
@@ -121,11 +118,17 @@ void ExternalSlot::insert_external_slots(LKGameWindow &window) {
     }
 
     for (int i {0}; i < PRAYER_SLOTS; i++) {
-        prayer_layout->addWidget(
-            new ExternalSlot(&window, Offering, i),
-            i / PRAYER_SLOTS_PER_ROW + 1,
-            i % PRAYER_SLOTS_PER_ROW
-        );
+        int y = i / PRAYER_SLOTS_PER_ROW;
+        int x = i % PRAYER_SLOTS_PER_ROW;
+
+        ExternalSlot *slot;
+        if (y == PRAYER_KEY_SLOT_Y && x == PRAYER_KEY_SLOT_X) {
+            slot = new ExternalSlot(&window, KeyOffering, i);
+        } else {
+            slot = new ExternalSlot(&window, Offering, i);
+        }
+
+        prayer_layout->addWidget(slot, y + 1, x);
     }
 
     for (int i {0}; i < ARTIFACT_SLOTS; i++) {
@@ -141,11 +144,11 @@ ToolSlot::ToolSlot(LKGameWindow *game, ItemDomain type)
 }
 
 void ToolSlot::set_item(const Item &item) {
-    game->character.tool_ids[get_tool_slot_type()] = item.id;
+    game->character.tools()[get_tool_slot_type()] = item.id;
 }
 
 void ToolSlot::refresh_pixmap() {
-    held_item_id = game->character.tool_ids[get_tool_slot_type()];
+    held_item_id = game->character.tools()[get_tool_slot_type()];
     ExternalSlot::refresh_pixmap();
 }
 
@@ -205,7 +208,7 @@ void PortraitSlot::dropEvent(QDropEvent *event) {
     }
 
     if (item.def()->type & Consumable) {
-        game->character.get_item_ref(item.id).intent = Consumable;
+        game->character.item_ref(item.id).intent = Consumable;
         game->start_activity(CharacterActivity(Eating, 60 * 1000));
 
         source_slot->refresh_pixmap();

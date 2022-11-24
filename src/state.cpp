@@ -95,16 +95,10 @@ void State::mutate_item_at(std::function<void(Item &)> action, int y, int x) {
 
 void State::add_energy(std::uint16_t energy) {
     this->energy += energy;
-    if (this->energy > BASE_MAX_ENERGY) {
-        this->energy = BASE_MAX_ENERGY;
-    }
 }
 
 void State::add_morale(std::uint16_t morale) {
     this->morale += morale;
-    if (this->morale > BASE_MAX_MORALE) {
-        this->morale = BASE_MAX_ENERGY;
-    }
 }
 
 std::vector<Item> State::get_items_of_intent(ItemDomain intent) {
