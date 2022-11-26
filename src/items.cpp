@@ -1,4 +1,5 @@
 #include "items.h"
+#include "generators.h"
 
 Item Item::empty_item {Item(0)};
 
@@ -43,7 +44,7 @@ ItemDefinitionPtr Item::def_of(const Item &item) {
 
 Item::Item(const ItemDefinition &def)
     : code(def.code),
-      id(new_instance_id()),
+      id(Generators::item_id()),
       uses_left(def.default_uses_left),
       intent(Ordinary)
 {
@@ -67,7 +68,7 @@ TooltipText Item::get_tooltip_text() const {
 
     TooltipText text;
     text.title = QString("<b>%1</b>").arg(this_def->display_name);
-    text.description = QString("<i>%1</i>").arg(this_def->description);
+    text.description = this_def->description;
 
     switch (this_def->item_level) {
         case 1: { text.subtext = "Unremarkable "; break; }
@@ -128,10 +129,6 @@ TooltipText Item::get_tooltip_text() const {
                 text.description += QString("<br><b>On consumed:</b> <font color=#6666cc>gives an effect</font>");
                 break;
             }
-            case ConsumableGivesBuff: {
-                text.description += QString("<br><b>On consumed:</b> <font color=#009900>gives a permanent buff</font>");
-                break;
-            }
             case ToolEnergyCost: {
                 text.description += QString("<br>Costs <font color=orangered>%1 energy</font> per use").arg(property_pair.second);
             }
@@ -171,13 +168,6 @@ QPixmap Item::pixmap_of(const ItemDefinition &def) {
 
 QPixmap Item::pixmap_of(const Item &item) {
     return pixmap_of(*def_of(item));
-}
-
-ItemId Item::new_instance_id() {
-    auto time {std::chrono::system_clock::now().time_since_epoch()};
-    auto milliseconds {std::chrono::duration_cast<std::chrono::milliseconds>(time).count()};
-
-    return (milliseconds & 0xffffffff) + ((std::uint64_t) Generators::rng()->generate() << 32);
 }
 
 Item Item::invalid_item() {

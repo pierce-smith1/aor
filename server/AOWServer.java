@@ -1,4 +1,4 @@
-import java.net.InetSocketAddress;
+import java.net.*;
 import java.io.*;
 import java.util.*;
 
@@ -8,8 +8,13 @@ public class AOWServer {
     public static int AOW_PORT = 10241;
     public static String DATA_FILENAME = "aows.bin";
 
+    public static byte API_VERSION = 1;
+
+    public static byte RT_HEARTBEAT = 0;
+    public static byte RT_OFFERING = 1;
+
     private HttpServer server;
-    private File dataFile;
+    private File dataFile = new File(DATA_FILENAME);
 
     public class Item {
         short code;
@@ -79,11 +84,22 @@ public class AOWServer {
 
     public AOWServer() {
         try {
-            dataFile = new File(DATA_FILENAME);
-
             server = HttpServer.create(new InetSocketAddress(AOW_PORT), 0);
+            server.createContext("heartbeat", this::handleHeartbeat);
             server.createContext("offer", this::handleOffer);
 
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void handleHeartbeat(HttpExchange exchange) {
+        try {
+            DataInputStream input = new DataInputStream(exchange.getRequestBody());
+
+            if (input.readByte() != API_VERSION) {
+                exchange.sendResponseHeaders(400, 0);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -93,6 +109,10 @@ public class AOWServer {
         try {
             OfferHistory offers = new OfferHistory(dataFile);
             DataInputStream input = new DataInputStream(exchange.getRequestBody());
+
+            if (input.readByte() != API_VERSION) {
+                exchange.sendResponseHeaders(400, 0);
+            }
 
             Item keyItem = new Item(input);
             if (offers.history.containsKey(keyItem)) {

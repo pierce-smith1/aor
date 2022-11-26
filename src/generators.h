@@ -7,6 +7,8 @@
 #include <QTime>
 #include <QRandomGenerator>
 
+#include "items.h"
+
 namespace Generators {
     using Cluster = std::pair<QString, double>;
 
@@ -34,5 +36,7 @@ namespace Generators {
         return weights.back().first;
     }
 
-    QString generate_yokin_name(size_t length = 5);
+    QString yokin_name(size_t length = 5);
+    std::vector<Item> base_items(const std::vector<Item> &inputs, const Item &tool, ItemDomain domain);
+    ItemId item_id();
 }

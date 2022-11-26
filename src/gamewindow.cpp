@@ -18,7 +18,7 @@ LKGameWindow::LKGameWindow()
     : window(), timers(this)
 {
     window.setupUi(this);
-    window.player_name_label->setText(QString("Colonist <b>%1</b>").arg(character.name()));
+    window.player_name_label->setText(QString("Explorer <b>%1</b>").arg(character.name()));
 
     const auto activity_buttons {get_activity_buttons()};
     for (const auto &pair : activity_buttons) {
@@ -124,7 +124,7 @@ void LKGameWindow::complete_activity() {
         }
     };
 
-    std::vector<Item> inputs = character.inputs();
+    std::vector<Item> inputs {character.action_inputs()};
     switch (character.activity().action) {
         case Smithing: {
             drop_items_in_slots(Material);
@@ -156,7 +156,7 @@ void LKGameWindow::complete_activity() {
 
     // Generate the items
     Item tool {character.tool(character.activity().action)};
-    std::vector<Item> new_items {Actions::generate_items(inputs, tool, character.activity().action)};
+    std::vector<Item> new_items {character.make_outputs()};
     for (const Item &item : new_items) {
         bool add_successful {character.give_item(item)};
         if (!add_successful) {
@@ -183,12 +183,14 @@ void LKGameWindow::complete_activity() {
 
     // Dink the tool
     if (character.tool(character.activity().action).id != EMPTY_ID) {
-        Item &tool {character.item_ref(character.tool(character.activity().action).id)};
-        tool.uses_left -= 1;
-        if (tool.uses_left == 0) {
-            notify(Warning, QString("Your %1 broke.").arg(tool.def()->display_name));
-            drop_items_in_slots(Tool);
-            character.remove_item(tool.id);
+        Item &tool {character.item_ref(character.tool().id)};
+        if (tool.uses_left != 0) {
+            tool.uses_left -= 1;
+            if (tool.uses_left == 0) {
+                notify(Warning, QString("Your %1 broke.").arg(tool.def()->display_name));
+                drop_items_in_slots(Tool);
+                character.remove_item(tool.id);
+            }
         }
     }
 
@@ -196,7 +198,6 @@ void LKGameWindow::complete_activity() {
     character.add_morale(character.morale_gain());
 
     killTimer(timers.activity_timer_id);
-    timers.activity_timer_id = 0;
 
     character.activity() = CharacterActivity(None, 0);
 

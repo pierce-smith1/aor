@@ -13,12 +13,9 @@
 #include <QPixmap>
 
 #include "tooltip.h"
-#include "generators.h"
 
 #define USES
 #define LEVEL
-#define NOT_CRAFTABLE {}
-#define NOT_TOOL {}
 
 const static int INVENTORY_ROWS = 4;
 const static int INVENTORY_COLS = 7;
@@ -36,7 +33,6 @@ const static int EFFECT_SLOTS = 7;
 
 using ItemCode = std::uint16_t;
 using ItemId = std::uint64_t;
-using ForeignItemId = std::uint64_t;
 
 const static ItemId EMPTY_ID = 0;
 const static ItemId INVALID_ID = 0xffffffffffffffff;
@@ -55,7 +51,7 @@ enum ItemDomain : ItemType {
     Artifact      = 1 << 7,
     Effect        = 1 << 8,
     Rune          = 1 << 9,
-    Character     = 1 << 10,
+    Portrait      = 1 << 10,
     Offering      = 1 << 11,
     KeyOffering   = Offering | 1 << 12,
     Tool          = SmithingTool | ForagingTool | MiningTool | PrayerTool
@@ -74,7 +70,6 @@ enum ItemProperty {
     ConsumableEnergyBoost,
     ConsumableMoraleBoost,
     ConsumableGivesEffect,
-    ConsumableGivesBuff,
     ToolEnergyCost,
     SpeedBonus,
     // WARNING: Item generation behavior in actions.cpp requires that there
@@ -141,7 +136,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_CONSUMABLE | 0,
         "globfruit", "Globfruit",
-        "A relative of the starfruit, this one is a lot stickier.",
+        "<i>A relative of the starfruit, this one is a lot stickier.</i>",
         1 USES, Consumable, LEVEL 1,
         {
             { ConsumableEnergyBoost, 20 },
@@ -150,7 +145,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_CONSUMABLE | 1,
         "byteberry", "Byteberry",
-        "Grown on the leaves of tries, these make an excellent treat when lightly charred.",
+        "<i>Grown on the leaves of tries, these make an excellent treat when lightly charred.</i>",
         1 USES, Consumable, LEVEL 1,
         {
             { ConsumableEnergyBoost, 10 },
@@ -160,7 +155,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_CONSUMABLE | 2,
         "norton_ghost_pepper", "Norton Ghost Pepper",
-        "Haunted with a benevolent spirit that will cure your ailments.<br>Often found growing in places you didn't ask them to.",
+        "<i>Haunted with a benevolent spirit that will cure your ailments.<br>"
+        "Often found growing in places you didn't ask them to.</i>",
         1 USES, Consumable, LEVEL 2,
         {
             { ConsumableGivesEffect, 0 }
@@ -179,7 +175,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_MATERIAL | 0,
         "obsilicon", "Obsilicon",
-        "This glassy stone cooled from the same primordial magma<br>that birthed our wafer-thing planes of reality.",
+        "<i>This glassy stone cooled from the same primordial magma<br>"
+        "that birthed our wafer-thing planes of reality.</i>",
         1 USES, Material, LEVEL 1,
         {
             { MaterialForges, CT_TOOL | 0 }
@@ -188,7 +185,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_MATERIAL | 1,
         "oolite", "Oolite",
-        "You've heard small talk from geologists that this may<br>be the first mineral ever constructed.",
+        "<i>You've heard small talk from geologists that this may<br>"
+        "be the first stone ever constructed.</i>",
         1 USES, Material, LEVEL 1,
         {
             { MaterialForges, CT_TOOL | 1 }
@@ -197,7 +195,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_MATERIAL | 2,
         "cobolt_bar", "Cobolt Bar",
-        "Once a foundational metal of the Nachian world, now an outdated curiosity owned mostly by<br>the dwindling, elite of people who still know how to mine it.",
+        "<i>Once a foundational metal of the Rhodon world, now an outdated curiosity owned mostly by<br>"
+        "the dwindling elite who still know how to mine it.</i>",
         1 USES, Material, LEVEL 2,
         {
             { MaterialForges, CT_TOOL | 3 }
@@ -206,7 +205,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_MATERIAL | 3,
         "solid_slate", "Solid Slate",
-        "A crucial improvement over oldschool spinning schists.",
+        "<i>A crucial improvement over oldschool spinning schists.</i>",
         1 USES, Material, LEVEL 2,
         {
             { MaterialForges, CT_TOOL | 4 }
@@ -215,7 +214,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_MATERIAL | 4,
         "scandiskium", "Scandiskium",
-        "The elemental essence of hard reboots, this metal represents<br> a transitional period in Nachi's geologic history.",
+        "<i>Whenever Rhodon is torn into darkness by a Great Reroot,<br>"
+        "another vein of this soft, yellowish metal is born.</i>",
         1 USES, Material, LEVEL 2,
         {
             { MaterialForges, CT_TOOL | 5 }
@@ -223,8 +223,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     },
     {
         CT_TOOL | 0,
-        "hello_worldmaker", "Hello Worldmaker",
-        "Even the most talented have to start somewhere.",
+        "maven_mallet", "Maven Mallet",
+        "A rudimentary tool. You've named it after the maven, an insufferable<br>"
+        "little bird you've seen around here that never seems to shut up.",
         3 USES, SmithingTool, LEVEL 1,
         {
             { ToolEnergyCost, 20 },
@@ -237,7 +238,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_TOOL | 1,
         "hashcracker", "Hashcracker",
-        "The only known attack against shale-256 is the brute force approach.",
+        "Rhodon is covered in layers of shale-256 - a good axe like this<br>"
+        "should be able to brute-force your way through it",
         4 USES, ForagingTool, LEVEL 1,
         {
             { ToolEnergyCost, 20 },
@@ -250,34 +252,76 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_TOOL | 2,
         "basalt_destructor", "Basalt Destructor",
-        "It's just plain old dirt - this will do me fine.",
+        "It's just plain old dirt - this will be good enough.",
         4 USES, MiningTool, LEVEL 2,
         {
             { ToolEnergyCost, 20 },
             { ToolCanDiscover1, CT_MATERIAL | 2 },
             { ToolCanDiscover2, CT_MATERIAL | 3 },
             { ToolCanDiscover3, CT_MATERIAL | 4 },
+            { ToolDiscoverWeight1, 2 },
+            { ToolDiscoverWeight2, 2 },
+            { ToolDiscoverWeight3, 3 },
+        }
+    },
+    {
+        CT_TOOL | 3,
+        "seaquake", "Seaquake",
+        "And with a thunderous clang, the great towers of<br>"
+        "the sea were assembled from their liquid rubble.",
+        4 USES, SmithingTool, LEVEL 3,
+        {
+            { ToolEnergyCost, 30 },
+            { ToolComboIngredient1, CT_MATERIAL | 2 },
+            { ToolComboIngredient1, CT_MATERIAL | 4 },
+            { ToolComboIngredient1, CT_MATERIAL | 5 },
+            { ToolComboResult, CT_TOOL | 6 }
+        }
+    },
+    {
+        CT_TOOL | 4,
+        "disk_fragmenter", "Disk Fragmenter",
+        "Yeah, this is how it happens.",
+        1 USES, MiningTool, LEVEL 3,
+        {
+            { ToolEnergyCost, 15 },
+            { ToolCanDiscover1, CT_ARTIFACT | 0 },
+            { ToolCanDiscover2, CT_ARTIFACT | 1 },
             { ToolDiscoverWeight1, 1 },
-            { ToolDiscoverWeight2, 1 },
-            { ToolDiscoverWeight3, 1 },
+            { ToolDiscoverWeight2, 1 }
         }
     },
     {
         CT_TOOL | 5,
         "sepulchre_of_corruption", "Sepulchre of Corruption",
-        "Act with care - your own pain will be temporary, but the pain you bring to others, everlasting.",
-        2 USES, PrayerTool, LEVEL 2,
-        {
-
-        }
+        "Consumables you receive from offerings give an <b>extra +10 energy</b>.<br>"
+        "<i>There are some problems you simply cannot solve.</i>",
+        3 USES, PrayerTool, LEVEL 3,
+        {}
+    },
+    {
+        CT_ARTIFACT | 0,
+        "recovered_journal", "Recovered Journal",
+        "You have <b>+20 max spirit</b>.<br>"
+        "<i>Tells a sad story of an orphan far from home.</i>",
+        0 USES, Artifact, LEVEL 3,
+        {}
+    },
+    {
+        CT_ARTIFACT | 1,
+        "scalped_remains", "Scalped Remains",
+        "You have <b>+20 max energy</b>.<br>"
+        "<i>Whoever this was has been long forgotton... but is not gone.</i>",
+        0 USES, Artifact, LEVEL 3,
+        {}
     }
 };
 
 struct Item {
     ItemCode code {0};
     ItemId id {EMPTY_ID};
-    unsigned char uses_left = 0;
-    ItemDomain intent = Ordinary;
+    unsigned char uses_left {0};
+    ItemDomain intent {Ordinary};
 
     Item() = default;
     explicit Item(const ItemDefinition &def);
@@ -295,7 +339,6 @@ struct Item {
     static QPixmap pixmap_of(const QString &name);
     static QPixmap pixmap_of(const ItemDefinition &def);
     static QPixmap pixmap_of(const Item &item);
-    static ItemId new_instance_id();
     static Item invalid_item();
     static QString type_to_string(ItemType type);
 

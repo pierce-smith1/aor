@@ -76,7 +76,7 @@ void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
         case Offering: {
             if (!(type & Rune)) { event->acceptProposedAction(); } break;
         }
-        case Character: {
+        case Portrait: {
             if (type & Consumable) { event->acceptProposedAction(); } break;
         }
         default: {
@@ -164,7 +164,7 @@ void ToolSlot::insert_tool_slots(LKGameWindow &window) {
 }
 
 PortraitSlot::PortraitSlot(LKGameWindow *game)
-    : ExternalSlot(game, Character, 0)
+    : ExternalSlot(game, Portrait, 0)
 {
     setMinimumSize(QSize(0, 0));
     setMaximumSize(QSize(10000, 10000));

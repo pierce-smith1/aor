@@ -1,6 +1,5 @@
 #include "state.h"
 #include "itemslot.h"
-#include "buffs.h"
 
 ItemId State::get_item_id_at(int y, int x) const {
     return inventory[ItemSlot::inventory_index(y, x)].id;
@@ -50,13 +49,24 @@ void State::copy_item_to(const Item &item, int y, int x) {
 }
 
 void State::remove_item_at(int y, int x) {
-    inventory[ItemSlot::inventory_index(y, x)] = Item();
+    Item &item {inventory[ItemSlot::inventory_index(y, x)]};
+
+    if (foreign_sources.find(item.id) != end(foreign_sources)) {
+        foreign_sources.erase(item.id);
+    }
+
+    item = Item();
 }
 
 void State::remove_item_with_id(ItemId id) {
     for (size_t i {0}; i < INVENTORY_SIZE; i++) {
         if (inventory[i].id == id) {
             inventory[i] = Item();
+
+            if (foreign_sources.find(id) != end(foreign_sources)) {
+                foreign_sources.erase(id);
+            }
+
             return;
         }
     }
@@ -69,6 +79,7 @@ bool State::add_item(const Item &item) {
         for (int x {0}; x < INVENTORY_COLS; x++) {
             if (inventory[ItemSlot::inventory_index(y, x)].id == EMPTY_ID) {
                 inventory[ItemSlot::inventory_index(y, x)] = item;
+                history.insert(item.code);
                 return true;
             }
         }
@@ -82,15 +93,21 @@ bool State::add_item(const Item &item) {
     return false;
 }
 
+bool State::give_item_from(const Item &item, const PlayerIdentity &player) {
+    if (add_item(item)) {
+        foreign_sources[item.id] = add_player_identity(player);
+    }
+
+    return false;
+}
+
 ItemId State::make_item_at(ItemDefinitionPtr def, int y, int x) {
     Item new_item {Item(def)};
     inventory[ItemSlot::inventory_index(y, x)] = new_item;
 
-    return new_item.id;
-}
+    history.insert(def->code);
 
-void State::mutate_item_at(std::function<void(Item &)> action, int y, int x) {
-    action(inventory[ItemSlot::inventory_index(y, x)]);
+    return new_item.id;
 }
 
 void State::add_energy(std::uint16_t energy) {
@@ -113,8 +130,31 @@ std::vector<Item> State::get_items_of_intent(ItemDomain intent) {
     return items;
 }
 
+SourcePlayerId State::add_player_identity(const PlayerIdentity &player) {
+    auto result {std::find_if(begin(foreign_players), end(foreign_players), [&](const auto &pair) {
+        return pair.second == player;
+    })};
+
+    if (result != end(foreign_players)) {
+        return result->first;
+    }
+
+    auto biggest_id {std::max_element(begin(foreign_players), end(foreign_players), [&](const auto &a, const auto &b) {
+        return a.first < b.first;
+    })};
+
+    if (biggest_id == end(foreign_players)) {
+        foreign_players[0] = player;
+        return 0;
+    } else {
+        SourcePlayerId id = biggest_id->first + 1;
+        foreign_players[id] = player;
+        return id;
+    }
+}
+
 State::State()
-    : name(Generators::generate_yokin_name()), inventory(), activity({ None, 0 }) { }
+    : name(Generators::yokin_name()), inventory(), activity({ None, 0 }) { }
 
 void StateSerialize::save_state(const State &state, const QString &filename) {
     std::ofstream out {filename.toStdString()};
@@ -136,6 +176,8 @@ void StateSerialize::save_state(const State &state, const QString &filename) {
     put_long(out, state.tool_ids.at(ForagingTool));
     put_long(out, state.tool_ids.at(MiningTool));
     put_long(out, state.tool_ids.at(PrayerTool));
+    put_history(out, state.history);
+    put_foreign_sources(out, state.foreign_sources);
     put_short(out, state.energy);
     put_short(out, state.morale);
 }
@@ -172,6 +214,7 @@ State *StateSerialize::load_state(const QString &filename) {
     state->tool_ids[ForagingTool] = get_long(in);
     state->tool_ids[MiningTool] = get_long(in);
     state->tool_ids[PrayerTool] = get_long(in);
+    state->history = get_history(in);
     state->energy = get_short(in);
     state->morale = get_short(in);
 
@@ -205,6 +248,29 @@ void StateSerialize::put_string(std::ostream &out, const QString &s) {
     }
 }
 
+void StateSerialize::put_history(std::ostream &out, const SeenItems &h) {
+    put_short(out, h.size());
+    for (ItemCode code : h) {
+        put_short(out, code);
+    }
+}
+
+void StateSerialize::put_foreign_sources(std::ostream &out, const ItemForeignSources &s) {
+    put_short(out, s.size());
+    for (const std::pair<const ItemId, SourcePlayerId> &pair : s) {
+        put_long(out, pair.first);
+        put_short(out, pair.second);
+    }
+}
+
+void StateSerialize::put_player_identities(std::ostream &out, const PlayerIdentities &i) {
+    put_short(out, i.size());
+    for (const std::pair<const SourcePlayerId, QString> &pair : i) {
+        put_short(out, pair.first);
+        put_string(out, pair.second);
+    }
+}
+
 unsigned char StateSerialize::get_char(std::istream &in) {
     return in.get();
 }
@@ -219,7 +285,7 @@ std::uint16_t StateSerialize::get_short(std::istream &in) {
 }
 
 std::uint64_t StateSerialize::get_long(std::istream &in) {
-    std::uint64_t n = 0;
+    std::uint64_t n {0};
 
     n += (std::uint64_t) in.get();
     n += (std::uint64_t) in.get() << 8;
@@ -234,11 +300,48 @@ std::uint64_t StateSerialize::get_long(std::istream &in) {
 }
 
 QString StateSerialize::get_string(std::istream &in) {
-    std::uint16_t size = get_short(in);
+    std::uint16_t size {get_short(in)};
 
-    char str[1 << 16];
+    char str[1 << 8];
     in.read(str, size);
     str[size] = '\0';
 
     return QString(str);
+}
+
+SeenItems StateSerialize::get_history(std::istream &in) {
+    std::uint16_t size {get_short(in)};
+    SeenItems history;
+
+    for (std::uint16_t i {0}; i < size; i++) {
+        history.insert(get_short(in));
+    }
+
+    return history;
+}
+
+ItemForeignSources StateSerialize::get_foreign_sources(std::istream &in) {
+    std::uint16_t size {get_short(in)};
+    ItemForeignSources sources;
+
+    for (std::uint16_t i {0}; i < size; i++) {
+        ItemId id {get_long(in)};
+        SourcePlayerId source {get_short(in)};
+        sources[id] = source;
+    }
+
+    return sources;
+}
+
+PlayerIdentities StateSerialize::get_player_identities(std::istream &in) {
+    std::uint16_t size {get_short(in)};
+    PlayerIdentities identities;
+
+    for (std::uint16_t i {0}; i < size; i++) {
+        SourcePlayerId source {get_short(in)};
+        QString name = {get_string(in)};
+        identities[source] = name;
+    }
+
+    return identities;
 }

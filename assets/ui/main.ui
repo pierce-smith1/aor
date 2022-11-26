@@ -155,7 +155,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <property name="elideMode">
        <enum>Qt::ElideNone</enum>
@@ -233,6 +233,10 @@
             </property>
             <property name="text">
              <string>Forage</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../../images.qrc">
+              <normaloff>:/assets/img/icons/leaf.png</normaloff>:/assets/img/icons/leaf.png</iconset>
             </property>
            </widget>
           </item>

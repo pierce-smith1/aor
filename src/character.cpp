@@ -6,12 +6,76 @@ Character::Character() {
     put_item(Item("globfruit"), 0, 2);
 }
 
+QString &Character::name() {
+    return state.name;
+}
+
 CharacterActivity &Character::activity() {
     return state.activity;
 }
 
 bool Character::activity_ongoing() {
     return activity().action != None;
+}
+
+bool Character::can_do(ItemDomain action) {
+    switch (action) {
+        case Eating: {
+            return !activity_ongoing();
+        }
+        case Smithing: {
+            const auto &materials {external_items()[Material]};
+            bool enough_materials {std::all_of(begin(materials), begin(materials) + SMITHING_SLOTS, [&](ItemId a) {
+                return a != EMPTY_ID;
+            })};
+
+            return enough_materials && !activity_ongoing();
+        }
+        case Praying: {
+            const auto &offerings {external_items()[Offering]};
+            bool enough_offerings {std::any_of(begin(offerings), begin(offerings) + PRAYER_SLOTS, [&](ItemId a) {
+                return a != EMPTY_ID;
+            })};
+
+            return enough_offerings && !activity_ongoing();
+        }
+        case Foraging:
+        case Mining: {
+            return energy() >= tool(action).def()->properties[ToolEnergyCost] && !activity_ongoing();
+        }
+        default: {
+            qFatal("Tried to assess whether character can do invalid action domain (%d)", action);
+        }
+    }
+}
+
+std::vector<Item> Character::action_inputs() {
+    switch (activity().action) {
+        case Eating: {
+            return items_of_intent(Eating);
+        }
+        case Smithing: {
+            return items_of_intent(Material);
+        }
+        case Praying: {
+            return items_of_intent(Offering);
+        }
+        case Foraging:
+        case Mining: {
+            return {};
+        }
+        default: {
+            qFatal("Tried to get inputs for unknown action domain (%d)", activity().action);
+        }
+    }
+}
+
+std::vector<Item> Character::items_of_intent(ItemDomain domain) {
+    return state.get_items_of_intent(domain);
+}
+
+std::vector<Item> Character::make_outputs() {
+    return Generators::base_items(action_inputs(), tool(), activity().action);
 }
 
 int Character::energy() {
@@ -92,7 +156,7 @@ int Character::morale_gain() {
             break;
         }
         case Praying: {
-            gain = std::accumulate(begin(inputs()), end(inputs()), 0, [&](int a, const Item &b) {
+            gain = std::accumulate(begin(action_inputs()), end(action_inputs()), 0, [&](int a, const Item &b) {
                 return b.def()->item_level * 10 + a;
             });
             break;
@@ -147,6 +211,10 @@ bool Character::give_item(Item item) {
     return state.add_item(item);
 }
 
+Item Character::tool() {
+    return tool(activity().action);
+}
+
 Item Character::tool(ItemDomain domain) {
     return item(state.tool_ids[domain]);
 }
@@ -163,33 +231,14 @@ Effects &Character::effects() {
     return state.effects;
 }
 
-std::vector<Item> Character::inputs() {
-    switch (activity().action) {
-        case Eating: {
-            return items_of_intent(Eating);
-        }
-        case Smithing: {
-            return items_of_intent(Material);
-        }
-        case Praying: {
-            return items_of_intent(Offering);
-        }
-        case Foraging:
-        case Mining: {
-            return {};
-        }
-        default: {
-            qFatal("Tried to get inputs for unknown action domain (%d)", activity().action);
-        }
+TooltipText Character::tooltip_text(const Item &item) {
+    TooltipText text {item.get_tooltip_text()};
+
+    if (state.foreign_sources.find(item.id) != end(state.foreign_sources)) {
+        text.title += QString("<i>(from %1)</i>").arg(state.foreign_players[state.foreign_sources[item.id]]);
     }
-}
 
-QString Character::name() {
-    return state.name;
-}
-
-std::vector<Item> Character::items_of_intent(ItemDomain domain) {
-    return state.get_items_of_intent(domain);
+    return text;
 }
 
 int Character::accumulate_property(const std::vector<Item> &items, ItemProperty prop) {
@@ -198,33 +247,3 @@ int Character::accumulate_property(const std::vector<Item> &items, ItemProperty 
     });
 }
 
-bool Character::can_do(ItemDomain action) {
-    switch (action) {
-        case Eating: {
-            return !activity_ongoing();
-        }
-        case Smithing: {
-            const auto &materials {external_items()[Material]};
-            bool enough_materials {std::all_of(begin(materials), begin(materials) + SMITHING_SLOTS, [&](ItemId a) {
-                return a != EMPTY_ID;
-            })};
-
-            return enough_materials && !activity_ongoing();
-        }
-        case Praying: {
-            const auto &offerings {external_items()[Offering]};
-            bool enough_offerings {std::any_of(begin(offerings), begin(offerings) + PRAYER_SLOTS, [&](ItemId a) {
-                return a != EMPTY_ID;
-            })};
-
-            return enough_offerings && !activity_ongoing();
-        }
-        case Foraging:
-        case Mining: {
-            return energy() >= tool(action).def()->properties[ToolEnergyCost] && !activity_ongoing();
-        }
-        default: {
-            qFatal("Tried to assess whether character can do invalid action domain (%d)", action);
-        }
-    }
-}
