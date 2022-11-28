@@ -1,89 +1,42 @@
 #include "character.h"
 
-Character::Character() {
-    put_item(Item("globfruit"), 0, 0);
-    put_item(Item("globfruit"), 0, 1);
-    put_item(Item("globfruit"), 0, 2);
-}
+Character::Character(CharacterId id, const QString &name)
+    : m_name(name), m_color(Generators::color()), m_id(id) { }
 
 QString &Character::name() {
-    return state.name;
+    return m_name;
+}
+
+QColor &Character::color() {
+    return m_color;
 }
 
 CharacterActivity &Character::activity() {
-    return state.activity;
+    return m_activity;
+}
+
+CharacterId Character::id() {
+    return m_id;
 }
 
 bool Character::activity_ongoing() {
     return activity().action != None;
 }
 
-bool Character::can_do(ItemDomain action) {
-    switch (action) {
-        case Eating: {
-            return !activity_ongoing();
-        }
-        case Smithing: {
-            const auto &materials {external_items()[Material]};
-            bool enough_materials {std::all_of(begin(materials), begin(materials) + SMITHING_SLOTS, [&](ItemId a) {
-                return a != EMPTY_ID;
-            })};
-
-            return enough_materials && !activity_ongoing();
-        }
-        case Praying: {
-            const auto &offerings {external_items()[Offering]};
-            bool enough_offerings {std::any_of(begin(offerings), begin(offerings) + PRAYER_SLOTS, [&](ItemId a) {
-                return a != EMPTY_ID;
-            })};
-
-            return enough_offerings && !activity_ongoing();
-        }
-        case Foraging:
-        case Mining: {
-            return energy() >= tool(action).def()->properties[ToolEnergyCost] && !activity_ongoing();
-        }
-        default: {
-            qFatal("Tried to assess whether character can do invalid action domain (%d)", action);
-        }
+double Character::activity_percent_complete() {
+    if (activity().action == None) {
+        return 0.0;
     }
+
+    return ((double) (activity().ms_total - activity().ms_left) / activity().ms_total);
 }
 
-std::vector<Item> Character::action_inputs() {
-    switch (activity().action) {
-        case Eating: {
-            return items_of_intent(Eating);
-        }
-        case Smithing: {
-            return items_of_intent(Material);
-        }
-        case Praying: {
-            return items_of_intent(Offering);
-        }
-        case Foraging:
-        case Mining: {
-            return {};
-        }
-        default: {
-            qFatal("Tried to get inputs for unknown action domain (%d)", activity().action);
-        }
-    }
+std::uint16_t &Character::energy() {
+    return m_energy;
 }
 
-std::vector<Item> Character::items_of_intent(ItemDomain domain) {
-    return state.get_items_of_intent(domain);
-}
-
-std::vector<Item> Character::make_outputs() {
-    return Generators::base_items(action_inputs(), tool(), activity().action);
-}
-
-int Character::energy() {
-    return state.energy;
-}
-
-int Character::morale() {
-    return state.morale;
+std::uint16_t &Character::morale() {
+    return m_morale;
 }
 
 int Character::max_energy() {
@@ -95,155 +48,50 @@ int Character::max_morale() {
 }
 
 void Character::add_energy(int add) {
-    if (add > state.energy) {
-        state.energy = 0;
+    if (add > m_energy) {
+        m_energy = 0;
         return;
     }
 
-    state.energy += add;
-    if (state.energy > max_energy()) {
-        state.energy = max_energy();
+    m_energy += add;
+    if (m_energy > max_energy()) {
+        m_energy = max_energy();
     }
 }
 
 void Character::add_morale(int add) {
-    if (add > state.morale) {
-        state.morale = 0;
+    if (add > m_morale) {
+        m_morale = 0;
         return;
     }
 
-    state.morale += add;
-    if (state.morale > max_morale()) {
-        state.morale = max_morale();
+    m_morale += add;
+    if (m_morale > max_morale()) {
+        m_morale = max_morale();
     }
-}
-
-int Character::energy_gain() {
-    int gain;
-
-    switch (activity().action) {
-        case Eating: {
-            gain = accumulate_property(items_of_intent(Eating), ConsumableEnergyBoost);
-            break;
-        }
-        case Smithing:
-        case Foraging:
-        case Mining: {
-            gain = -tool(activity().action).def()->properties[ToolEnergyCost];
-            break;
-        }
-        default: {
-            gain = 0;
-            break;
-        }
-    }
-
-    if (morale() > (double) max_morale() * 0.7) {
-        if (gain < 0) {
-            gain /= 2;
-        }
-    }
-
-    return gain;
-}
-
-int Character::morale_gain() {
-    int gain;
-
-    switch (activity().action) {
-        case Eating: {
-            gain = (items_of_intent(Eating), ConsumableMoraleBoost);
-            break;
-        }
-        case Praying: {
-            gain = std::accumulate(begin(action_inputs()), end(action_inputs()), 0, [&](int a, const Item &b) {
-                return b.def()->item_level * 10 + a;
-            });
-            break;
-        }
-        default: {
-            gain = -base_morale_cost();
-            break;
-        }
-    }
-
-    return gain;
 }
 
 int Character::base_morale_cost() {
     return 5;
 }
 
-Item &Character::item_ref(ItemId id) {
-    if (id == EMPTY_ID) {
-        Item::empty_item = Item(0);
-        return Item::empty_item;
-    }
-
-    return state.get_item_ref(id);
+ItemId Character::tool_id() {
+    return m_tool_ids[m_activity.action];
 }
 
-Item Character::item(ItemId id) {
-    return item_ref(id);
-}
-
-Item Character::item(int y, int x) {
-    return item_ref(state.get_item_id_at(y, x));
-}
-
-Item &Character::item_ref(int y, int x) {
-    return item_ref(state.get_item_id_at(y, x));
-}
-
-void Character::remove_item(ItemId id) {
-    state.remove_item_with_id(id);
-}
-
-void Character::remove_item(int y, int x) {
-    remove_item(state.get_item_id_at(y, x));
-}
-
-void Character::put_item(const Item &item, int y, int x) {
-    state.copy_item_to(item, y, x);
-}
-
-bool Character::give_item(Item item) {
-    return state.add_item(item);
-}
-
-Item Character::tool() {
-    return tool(activity().action);
-}
-
-Item Character::tool(ItemDomain domain) {
-    return item(state.tool_ids[domain]);
+ItemId Character::tool_id(ItemDomain domain) {
+    return m_tool_ids[domain];
 }
 
 ToolIds &Character::tools() {
-    return state.tool_ids;
+    return m_tool_ids;
 }
 
 ExternalItemIds &Character::external_items() {
-    return state.external_item_ids;
+    return m_external_item_ids;
 }
 
 Effects &Character::effects() {
-    return state.effects;
-}
-
-TooltipText Character::tooltip_text(const Item &item) {
-    TooltipText text {item.get_tooltip_text()};
-
-    if (state.foreign_sources.find(item.id) != end(state.foreign_sources)) {
-        text.title += QString("<i>(from %1)</i>").arg(state.foreign_players[state.foreign_sources[item.id]]);
-    }
-
-    return text;
-}
-
-int Character::accumulate_property(const std::vector<Item> &items, ItemProperty prop) {
-    return std::accumulate(begin(items), end(items), 0, [&](int a, const Item& b) {
-        return b.def()->properties[prop] + a;
-    });
+    return m_effects;
 }
 

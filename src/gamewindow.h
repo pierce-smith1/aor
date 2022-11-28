@@ -12,45 +12,51 @@ class LKGameWindow;
 #include "gamenotification.h"
 #include "tooltip.h"
 #include "character.h"
+#include "game.h"
+#include "explorerbutton.h"
 
-class GameTimers : public QObject {
-    Q_OBJECT;
-public:
-    GameTimers(LKGameWindow *game);
-    LKGameWindow *game;
-    int activity_timer_id;
-protected:
-    void timerEvent(QTimerEvent *event) override;
-};
+using ActivityTimers = std::map<CharacterId, int>;
 
 class LKGameWindow : public QMainWindow {
+    Q_OBJECT
+
 public:
     LKGameWindow();
+
+    Game &game();
+    Ui::LKMainWindow &window();
+    Tooltip &tooltip();
+    CharacterId &selected_char_id();
+
+    Character &selected_char();
+    void swap_char(CharacterId char_id);
 
     void register_slot_name(const QString &slot_name);
 
     void notify(NotificationType type, const QString &message);
 
-    void start_activity(ItemDomain type);
+    void start_activity(CharacterId char_id, ItemDomain type);
     void start_activity(const CharacterActivity &activity);
-    void progress_activity(std::int64_t by_ms);
+    void start_activity(CharacterId char_id, const CharacterActivity &activity);
+    void progress_activity(CharacterId char_id, std::int64_t by_ms);
+    void complete_activity(CharacterId char_id);
+
     void refresh_ui();
+    void refresh_slots();
     void refresh_ui_bars();
     void refresh_ui_buttons();
-    void complete_activity();
 
     const std::map<ItemDomain, QPushButton *> get_activity_buttons();
-    const std::vector<QString> &get_item_slot_names();
+    const std::vector<QString> &item_slot_names();
 
-    Ui::LKMainWindow window;
-    Tooltip item_tooltip;
-    class::Character character;
+protected:
+    void timerEvent(QTimerEvent *event) override;
+
 private:
-    void lock_ui();
-    void unlock_ui();
-
-    GameTimers timers;
-    std::vector<QString> slot_names;
-    double visual_energy;
-    double visual_morale;
+    Ui::LKMainWindow m_window;
+    Tooltip m_item_tooltip;
+    Game m_game;
+    CharacterId m_selected_char_id {0};
+    ActivityTimers m_timers;
+    std::vector<QString> m_slot_names;
 };

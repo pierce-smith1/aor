@@ -4,6 +4,7 @@
 #include <utility>
 
 #include <QtGlobal>
+#include <QColor>
 #include <QTime>
 #include <QRandomGenerator>
 
@@ -39,4 +40,5 @@ namespace Generators {
     QString yokin_name(size_t length = 5);
     std::vector<Item> base_items(const std::vector<Item> &inputs, const Item &tool, ItemDomain domain);
     ItemId item_id();
+    QColor color();
 }

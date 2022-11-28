@@ -155,3 +155,15 @@ ItemId Generators::item_id() {
     return (milliseconds & 0xffffffff) + ((std::uint64_t) Generators::rng()->generate() << 32);
 }
 
+QColor Generators::color() {
+    return sample_with_weights<QColor>({
+        { QColor(255, 204, 0), 1 },
+        { QColor(255, 153, 51), 1 },
+        { QColor(255, 51, 0), 1, },
+        { QColor(0, 102, 204), 1 },
+        { QColor(0, 153, 255), 1 },
+        { QColor(102, 102, 204), 1 },
+        { QColor(0, 153, 0), 1 },
+        { QColor(102, 204, 51), 1 },
+    });
+}

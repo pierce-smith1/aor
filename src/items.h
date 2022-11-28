@@ -17,10 +17,6 @@
 #define USES
 #define LEVEL
 
-const static int INVENTORY_ROWS = 4;
-const static int INVENTORY_COLS = 7;
-const static int INVENTORY_SIZE = INVENTORY_COLS * INVENTORY_ROWS;
-
 const static int SMITHING_SLOTS = 3;
 const static int SMITHING_SLOTS_PER_ROW = 3;
 
@@ -33,10 +29,12 @@ const static int EFFECT_SLOTS = 7;
 
 using ItemCode = std::uint16_t;
 using ItemId = std::uint64_t;
+using CharacterId = std::uint16_t;
 
 const static ItemId EMPTY_ID = 0;
 const static ItemId INVALID_ID = 0xffffffffffffffff;
 const static ItemCode INVALID_CODE = 0xff;
+const static CharacterId NOBODY = 0xffff;
 
 using ItemType = std::uint16_t;
 enum ItemDomain : ItemType {
@@ -322,6 +320,7 @@ struct Item {
     ItemId id {EMPTY_ID};
     unsigned char uses_left {0};
     ItemDomain intent {Ordinary};
+    CharacterId intent_holder {NOBODY};
 
     Item() = default;
     explicit Item(const ItemDefinition &def);

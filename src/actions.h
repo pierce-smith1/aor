@@ -10,6 +10,7 @@
 const static std::int64_t ACTIVITY_TICK_RATE_MS = 500;
 
 struct CharacterActivity {
+    CharacterActivity() = default;
     CharacterActivity(ItemDomain action, std::int64_t ms);
 
     ItemDomain action;

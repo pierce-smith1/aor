@@ -23,7 +23,7 @@ int i; \
 }
 
 #define OOB_CHECK(y, x) \
-if (ItemSlot::are_yx_coords_oob(y, x)) { \
+if (Inventory::are_yx_coords_oob(y, x)) { \
     qWarning("Yx coords were oob (y: %d, x: %d)", y, x); \
     return; \
 }
@@ -67,7 +67,7 @@ const static std::vector<CheatCommand> COMMANDS = {
 
             OOB_CHECK(y, x);
 
-            Item item = game->character.item(y, x);
+            Item item = game->game().inventory().get_item(y, x);
 
             qDebug("print: item yx (%d, %d): code (%d), id (%lx), name (%s), intent (%d)",
                 y, x,
@@ -91,9 +91,9 @@ const static std::vector<CheatCommand> COMMANDS = {
             OOB_CHECK(y0, x0);
             OOB_CHECK(y1, x1);
 
-            Item item {game->character.item(y0, x0)};
-            game->character.put_item(item, y1, x1);
-            game->character.remove_item(y0, x0);
+            Item item {game->game().inventory().get_item(y0, x0)};
+            game->game().inventory().put_item(item, y1, x1);
+            game->game().inventory().remove_item(y0, x0);
 
             qDebug("done");
         }
@@ -111,11 +111,11 @@ const static std::vector<CheatCommand> COMMANDS = {
             OOB_CHECK(y0, x0);
             OOB_CHECK(y1, x1);
 
-            Item item_a {game->character.item(y0, x0)};
-            Item item_b {game->character.item(y1, x1)};
+            Item item_a {game->game().inventory().get_item(y0, x0)};
+            Item item_b {game->game().inventory().get_item(y1, x1)};
 
-            game->character.put_item(item_a, y1, x1);
-            game->character.put_item(item_b, y0, x0);
+            game->game().inventory().put_item(item_a, y1, x1);
+            game->game().inventory().put_item(item_b, y0, x0);
 
             qDebug("done");
         }
@@ -130,17 +130,18 @@ const static std::vector<CheatCommand> COMMANDS = {
 
             OOB_CHECK(y, x);
 
-            game->character.put_item(Item(Item::def_of(args[0])), y, x);
+            game->game().inventory().put_item(Item(Item::def_of(args[0])), y, x);
 
             qDebug("done");
         }
     },
+    /*
     {
         "save",
         "Save the current state of the game to the file ($0)",
         1,
         [](LKGameWindow *game, const QStringList &args) {
-            StateSerialize::save_state(game->character.state, args[0]);
+            StateSerialize::save_state(game->game().inventory().state, args[0]);
 
             qDebug("done");
         }
@@ -152,12 +153,13 @@ const static std::vector<CheatCommand> COMMANDS = {
         [](LKGameWindow *game, const QStringList &args) {
             State *state = StateSerialize::load_state(args[0]);
 
-            game->character.state = *state;
+            game->game().inventory().state = *state;
             delete state;
 
             qDebug("done");
         }
     },
+    */
     {
         "name",
         "Change the current character's name to ($0); if $0 is '?', show the current name instead",
@@ -165,11 +167,11 @@ const static std::vector<CheatCommand> COMMANDS = {
         [](LKGameWindow *game, const QStringList &args) {
             QString new_name = args[0];
             if (new_name == "?") {
-                qDebug("My name is (%s)", game->character.state.name.toStdString().c_str());
+                qDebug("My name is (%s)", game->selected_char().name().toStdString().c_str());
                 return;
             }
 
-            game->character.state.name = new_name;
+            game->selected_char().name() = new_name;
 
             qDebug("done");
         }
@@ -180,7 +182,7 @@ const static std::vector<CheatCommand> COMMANDS = {
         1,
         [](LKGameWindow *game, const QStringList &args) {
             if (args[0] == "?") {
-                qDebug("Current energy is (%d)", game->character.state.energy);
+                qDebug("Current energy is (%d)", game->selected_char().energy());
                 return;
             }
 
@@ -191,7 +193,7 @@ const static std::vector<CheatCommand> COMMANDS = {
                 return;
             }
 
-            game->character.state.energy = energy;
+            game->selected_char().energy() = energy;
 
             qDebug("done");
         }
@@ -202,7 +204,7 @@ const static std::vector<CheatCommand> COMMANDS = {
         1,
         [](LKGameWindow *game, const QStringList &args) {
             if (args[0] == "?") {
-                qDebug("Current morale is (%d)", game->character.state.morale);
+                qDebug("Current morale is (%d)", game->selected_char().morale());
                 return;
             }
 
@@ -213,7 +215,7 @@ const static std::vector<CheatCommand> COMMANDS = {
                 return;
             }
 
-            game->character.state.morale = morale;
+            game->selected_char().morale() = morale;
 
             qDebug("done");
         }
@@ -237,13 +239,13 @@ const static std::vector<CheatCommand> COMMANDS = {
         1,
         [](LKGameWindow *game, const QStringList &args) {
             if (args[0] == "?") {
-                qDebug("Amount of ms left in activity is (%ld)", game->character.activity().ms_left);
+                qDebug("Amount of ms left in activity is (%ld)", game->selected_char().activity().ms_left);
                 return;
             }
 
             QS_TO_INT(ms, args[0]);
 
-            game->character.activity().ms_left = ms;
+            game->selected_char().activity().ms_left = ms;
 
             qDebug("done");
         }
@@ -256,7 +258,7 @@ const static std::vector<CheatCommand> COMMANDS = {
             QS_TO_INT(n, args[0]);
             QS_TO_INT(code, args[1]);
 
-            game->character.effects()[n] = Item(code);
+            game->selected_char().effects()[n] = Item(code);
 
             qDebug("done");
         }

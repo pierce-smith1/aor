@@ -13,7 +13,7 @@ public:
 
     virtual Item get_item() override;
     virtual void set_item(const Item &item) override;
-    virtual ItemDomain get_item_slot_type() override;
+    virtual ItemDomain type() override;
     virtual void refresh_pixmap() override;
 
     static void insert_external_slots(LKGameWindow &window);
@@ -25,7 +25,7 @@ protected:
     virtual void dragEnterEvent(QDragEnterEvent *event) override;
     virtual void dropEvent(QDropEvent *event) override;
 
-    ItemId held_item_id;
+    ItemId m_held_item_id;
 };
 
 class ToolSlot : public ExternalSlot {
@@ -41,7 +41,7 @@ public:
     static void insert_tool_slots(LKGameWindow &window);
 
 private:
-    ItemDomain tool_slot_type;
+    ItemDomain m_tool_slot_type;
 };
 
 class PortraitSlot : public ExternalSlot {
