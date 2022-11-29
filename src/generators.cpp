@@ -34,8 +34,6 @@ QString Generators::yokin_name(size_t length) {
         {"AE", 1.5},
         {"EA", 1.0},
         {"AI", 1.0},
-        {"U", 0.2},
-        {"UH", 0.4},
         {"Y", 0.5},
         {"O", 0.2},
         {"II", 0.2},

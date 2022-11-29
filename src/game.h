@@ -22,6 +22,7 @@ public:
     bool character_can_perform_action(CharacterId char_id, ItemDomain action);
     int energy_to_gain_from_current_activity(CharacterId char_id);
     int morale_to_gain_from_current_activity(CharacterId char_id);
+    std::vector<Item> input_items_for_current_activity(CharacterId char_id);
 
     QString id_to_name(CharacterId char_id);
 

@@ -55,7 +55,7 @@ ItemDomain ItemSlot::type() {
 }
 
 void ItemSlot::refresh_pixmap() {
-    Item item {get_item()};
+    Item item = get_item();
 
     m_item_label->setPixmap(Item::pixmap_of(item));
 
@@ -90,6 +90,8 @@ void ItemSlot::drop_external_item() {
     set_item(Item());
 
     refresh_pixmap();
+    m_game_window->refresh_slots();
+    m_game_window->refresh_ui();
 }
 
 void ItemSlot::insert_inventory_slots(LKGameWindow &window) {
@@ -145,7 +147,6 @@ void ItemSlot::mousePressEvent(QMouseEvent *event) {
 
     if (event->button() == Qt::RightButton && !is_inventory_slot && !m_game_window->selected_char().activity_ongoing()) {
         drop_external_item();
-        m_game_window->refresh_slots();
         return;
     }
 

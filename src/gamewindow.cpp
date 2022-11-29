@@ -135,55 +135,20 @@ void LKGameWindow::complete_activity(CharacterId char_id) {
     Character &character = m_game.characters().at(char_id);
     ItemDomain domain = character.activity().action;
 
-    auto drop_items_in_slots = [=](ItemDomain type) {
-        if (char_id == m_selected_char_id) {
-            for (const QString &slot_name : item_slot_names()) {
-                ItemSlot *slot = findChild<ItemSlot *>(slot_name);
-                if (slot->type() & type) {
-                    slot->drop_external_item();
-                }
-            }
+    auto destroy_items_in_slots = [=](ItemDomain type) {
+        for (ItemId &item_id : m_game.characters().at(char_id).external_items().at(type)) {
+            item_id = EMPTY_ID;
         }
     };
 
-    std::vector<Item> inputs;
-    switch (character.activity().action) {
-        case Smithing: {
-            inputs = m_game.inventory().items_of_intent(char_id, Material);
-            drop_items_in_slots(Material);
-            notify(ActionComplete, QString("%1 finished smithing.").arg(character.name()));
-            break;
-        }
-        case Foraging: {
-            notify(ActionComplete, QString("%1 finished foraging.").arg(character.name()));
-            break;
-        }
-        case Mining: {
-            notify(ActionComplete, QString("%1 finished mining.").arg(character.name()));
-            break;
-        }
-        case Praying: {
-            inputs = m_game.inventory().items_of_intent(char_id, Offering);
-            drop_items_in_slots(Offering);
-            drop_items_in_slots(KeyOffering);
-            notify(ActionComplete, QString("%1 finished their prayers.").arg(character.name()));
-            break;
-        }
-        case Eating: {
-            inputs = m_game.inventory().items_of_intent(char_id, Eating);
-            notify(ActionComplete, QString("%1 finished eating.").arg(character.name()));
-            break;
-        }
-        default: {
-            break;
-        }
-    }
+    character.add_energy(game().energy_to_gain_from_current_activity(char_id));
+    character.add_morale(game().morale_to_gain_from_current_activity(char_id));
 
     // Generate the items
-    Item tool {m_game.inventory().get_item(character.tools()[domain])};
-    std::vector<Item> new_items {Generators::base_items(inputs, tool, domain)};
+    Item tool = m_game.inventory().get_item(character.tools()[domain]);
+    std::vector<Item> new_items = Generators::base_items(m_game.input_items_for_current_activity(char_id), tool, domain);
     for (const Item &item : new_items) {
-        bool add_successful {m_game.inventory().add_item(item)};
+        bool add_successful = m_game.inventory().add_item(item);
         if (!add_successful) {
             notify(Warning, QString("The inventory was too full to recieve all of %1's new items!").arg(character.name()));
             break;
@@ -193,8 +158,8 @@ void LKGameWindow::complete_activity(CharacterId char_id) {
 
     // Dink all of the items used as inputs, unless we are praying, in which
     // case just eat them outright
-    for (const Item &input : inputs) {
-        Item &item {m_game.inventory().get_item_ref(input.id)};
+    for (const Item &input : m_game.input_items_for_current_activity(char_id)) {
+        Item &item = m_game.inventory().get_item_ref(input.id);
 
         if (selected_char().activity().action == Praying) {
             m_game.inventory().remove_item(input.id);
@@ -207,20 +172,46 @@ void LKGameWindow::complete_activity(CharacterId char_id) {
     }
 
     // Dink the tool
-    if (selected_char().tool_id() != EMPTY_ID) {
-        Item &tool {m_game.inventory().get_item_ref(selected_char().tool_id())};
+    if (character.tool_id() != EMPTY_ID) {
+        Item &tool = m_game.inventory().get_item_ref(selected_char().tool_id());
         if (tool.uses_left != 0) {
             tool.uses_left -= 1;
             if (tool.uses_left == 0) {
                 notify(Warning, QString("%2's %1 broke.").arg(tool.def()->display_name).arg(character.name()));
-                drop_items_in_slots(Tool);
+                destroy_items_in_slots(character.activity().action);
                 m_game.inventory().remove_item(tool.id);
             }
         }
     }
 
-    character.add_energy(game().energy_to_gain_from_current_activity(char_id));
-    character.add_morale(game().morale_to_gain_from_current_activity(char_id));
+    switch (character.activity().action) {
+        case Smithing: {
+            destroy_items_in_slots(Material);
+            notify(ActionComplete, QString("%1 finished smithing.").arg(character.name()));
+            break;
+        }
+        case Foraging: {
+            notify(ActionComplete, QString("%1 finished foraging.").arg(character.name()));
+            break;
+        }
+        case Mining: {
+            notify(ActionComplete, QString("%1 finished mining.").arg(character.name()));
+            break;
+        }
+        case Praying: {
+            destroy_items_in_slots(Offering);
+            destroy_items_in_slots(KeyOffering);
+            notify(ActionComplete, QString("%1 finished their prayers.").arg(character.name()));
+            break;
+        }
+        case Eating: {
+            notify(ActionComplete, QString("%1 finished eating.").arg(character.name()));
+            break;
+        }
+        default: {
+            break;
+        }
+    }
 
     killTimer(m_timers[char_id]);
     m_timers[char_id] = 0;

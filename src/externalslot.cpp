@@ -2,7 +2,7 @@
 #include "items.h"
 
 ExternalSlot::ExternalSlot(LKGameWindow *game, ItemDomain type, int n)
-    : ItemSlot(game), item_slot_type(type), n(n), m_held_item_id(EMPTY_ID)
+    : ItemSlot(game), item_slot_type(type), n(n)
 {
     setObjectName(make_internal_name("external_slot", type, n));
     m_item_layout->setObjectName(make_internal_name("external_layout", type, n));
@@ -12,16 +12,15 @@ ExternalSlot::ExternalSlot(LKGameWindow *game, ItemDomain type, int n)
 }
 
 Item ExternalSlot::get_item() {
-    if (m_held_item_id == EMPTY_ID) {
+    if (held_item_id() == EMPTY_ID) {
         return Item();
     }
 
-    return m_game_window->game().inventory().get_item(m_held_item_id);
+    return m_game_window->game().inventory().get_item(held_item_id());
 }
 
 void ExternalSlot::set_item(const Item &item) {
-    m_held_item_id = item.id;
-    m_game_window->selected_char().external_items()[type()][n] = get_item().id;
+    m_game_window->selected_char().external_items()[type()][n] = item.id;
 }
 
 ItemDomain ExternalSlot::type() {
@@ -29,23 +28,6 @@ ItemDomain ExternalSlot::type() {
 }
 
 void ExternalSlot::refresh_pixmap() {
-    // After a reload, we need to refresh the item behind this external slot
-    ItemId id;
-    switch (type()) {
-        default:
-        case Ordinary: {
-            ItemSlot::refresh_pixmap();
-            return;
-        }
-        case Material:
-        case Offering:
-        case KeyOffering:
-        case Artifact: {
-            id = m_game_window->selected_char().external_items().at(type())[n];
-            break;
-        }
-    }
-    m_held_item_id = id;
 
     if (type() == KeyOffering) {
         setFrameShape(NoFrame);
@@ -53,6 +35,10 @@ void ExternalSlot::refresh_pixmap() {
     }
 
     ItemSlot::refresh_pixmap();
+}
+
+ItemId ExternalSlot::held_item_id() {
+    return m_game_window->selected_char().external_items().at(type())[n];
 }
 
 void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
@@ -85,11 +71,11 @@ void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
 }
 
 void ExternalSlot::dropEvent(QDropEvent *event) {
-    QString source_slot_name {event->mimeData()->text()};
-    ItemSlot *source_slot {m_game_window->findChild<ItemSlot *>(source_slot_name)};
+    QString source_slot_name = event->mimeData()->text();
+    ItemSlot *source_slot = m_game_window->findChild<ItemSlot *>(source_slot_name);
 
-    Item source_item {source_slot->get_item()};
-    Item this_item {get_item()};
+    Item source_item = source_slot->get_item();
+    Item this_item = get_item();
 
     set_item(source_item);
     if (source_slot->type() != Ordinary) {
@@ -105,9 +91,9 @@ void ExternalSlot::dropEvent(QDropEvent *event) {
 }
 
 void ExternalSlot::insert_external_slots(LKGameWindow &window) {
-    QGridLayout *smith_layout {window.window().smith_layout};
-    QGridLayout *prayer_layout {window.window().prayer_layout};
-    QLayout *aritfact_layout {window.window().artifact_box->layout()};
+    QGridLayout *smith_layout = window.window().smith_layout;
+    QGridLayout *prayer_layout = window.window().prayer_layout;
+    QLayout *aritfact_layout = window.window().artifact_box->layout();
 
     for (int i {0}; i < SMITHING_SLOTS; i++) {
         smith_layout->addWidget(
@@ -148,8 +134,11 @@ void ToolSlot::set_item(const Item &item) {
 }
 
 void ToolSlot::refresh_pixmap() {
-    m_held_item_id = m_game_window->selected_char().tools()[get_tool_slot_type()];
     ExternalSlot::refresh_pixmap();
+}
+
+ItemId ToolSlot::held_item_id() {
+    return m_game_window->selected_char().tools()[get_tool_slot_type()];
 }
 
 ItemDomain ToolSlot::get_tool_slot_type() {
@@ -199,9 +188,9 @@ void PortraitSlot::mousePressEvent(QMouseEvent *) {
 }
 
 void PortraitSlot::dropEvent(QDropEvent *event) {
-    QString source_slot_name {event->mimeData()->text()};
-    ItemSlot *source_slot {m_game_window->findChild<ItemSlot *>(source_slot_name)};
-    Item item {source_slot->get_item()};
+    QString source_slot_name = event->mimeData()->text();
+    ItemSlot *source_slot = m_game_window->findChild<ItemSlot *>(source_slot_name);
+    Item item = source_slot->get_item();
 
     if (source_slot->type() != Ordinary) {
         return;

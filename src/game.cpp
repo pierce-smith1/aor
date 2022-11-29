@@ -49,18 +49,18 @@ bool Game::character_can_perform_action(CharacterId char_id, ItemDomain domain) 
             return !character.activity_ongoing();
         }
         case Smithing: {
-            const auto &materials {character.external_items()[Material]};
-            bool enough_materials {std::all_of(begin(materials), begin(materials) + SMITHING_SLOTS, [&](ItemId a) {
+            const auto &materials = character.external_items()[Material];
+            bool enough_materials = std::all_of(begin(materials), begin(materials) + SMITHING_SLOTS, [&](ItemId a) {
                 return a != EMPTY_ID;
-            })};
+            });
 
             return enough_materials && !character.activity_ongoing();
         }
         case Praying: {
-            const auto &offerings {character.external_items()[Offering]};
-            bool enough_offerings {std::any_of(begin(offerings), begin(offerings) + PRAYER_SLOTS, [&](ItemId a) {
+            const auto &offerings = character.external_items().at(Offering);
+            bool enough_offerings = std::any_of(begin(offerings), begin(offerings) + PRAYER_SLOTS, [&](ItemId a) {
                 return a != EMPTY_ID;
-            })};
+            });
 
             return enough_offerings && !character.activity_ongoing();
         }
@@ -82,7 +82,7 @@ int Game::energy_to_gain_from_current_activity(CharacterId char_id) {
     switch (character.activity().action) {
         case Eating: {
             std::vector<Item> inputs = m_inventory.items_of_intent(char_id, Eating);
-            gain = std::accumulate(begin(inputs), end(inputs), 0, [&](int a, const Item &b) {
+            gain = std::accumulate(begin(inputs), end(inputs), 0, [](int a, const Item &b) {
                 return a + b.def()->properties[ConsumableEnergyBoost];
             });
             break;
@@ -115,12 +115,15 @@ int Game::morale_to_gain_from_current_activity(CharacterId char_id) {
 
     switch (character.activity().action) {
         case Eating: {
-            gain = (m_inventory.items_of_intent(char_id, Eating), ConsumableMoraleBoost);
+            std::vector<Item> inputs = m_inventory.items_of_intent(char_id, Eating);
+            gain = std::accumulate(begin(inputs), end(inputs), 0, [](int a, const Item &b) {
+                return a + b.def()->properties[ConsumableMoraleBoost];
+            });
             break;
         }
         case Praying: {
             std::vector<Item> offerings = m_inventory.items_of_intent(char_id, Offering);
-            gain = std::accumulate(begin(offerings), end(offerings), 0, [&](int a, const Item &b) {
+            gain = std::accumulate(begin(offerings), end(offerings), 0, [](int a, const Item &b) {
                 return b.def()->item_level * 10 + a;
             });
             break;
@@ -132,6 +135,25 @@ int Game::morale_to_gain_from_current_activity(CharacterId char_id) {
     }
 
     return gain;
+}
+
+std::vector<Item> Game::input_items_for_current_activity(CharacterId char_id) {
+    Character &character = characters().at(char_id);
+
+    switch (character.activity().action) {
+        case Eating: {
+            return inventory().items_of_intent(char_id, Eating);
+        }
+        case Smithing: {
+            return inventory().items_of_intent(char_id, Material);
+        }
+        case Praying: {
+            return inventory().items_of_intent(char_id, Offering);
+        }
+        default: {
+            return {};
+        }
+    }
 }
 
 void Game::refresh_ui_bars(QProgressBar *activity, QProgressBar *morale, QProgressBar *energy, CharacterId char_id) {
