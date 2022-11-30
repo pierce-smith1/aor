@@ -123,7 +123,7 @@ void LKGameWindow::refresh_ui_bars() {
 
 void LKGameWindow::refresh_ui_buttons() {
     for (ItemDomain domain : { Smithing, Foraging, Mining, Praying }) {
-        if (m_game.character_can_perform_action(m_selected_char_id, domain)) {
+        if (selected_char().can_perform_action(domain)) {
             get_activity_buttons().at(domain)->setEnabled(true);
         } else {
             get_activity_buttons().at(domain)->setEnabled(false);
@@ -141,12 +141,21 @@ void LKGameWindow::complete_activity(CharacterId char_id) {
         }
     };
 
-    character.add_energy(game().energy_to_gain_from_current_activity(char_id));
-    character.add_morale(game().morale_to_gain_from_current_activity(char_id));
+    character.add_energy(character.energy_to_gain());
+    character.add_morale(character.morale_to_gain());
+
+    if (domain == Eating) {
+        for (const Item &consumable : character.input_items()) {
+            character.push_effect(Item(consumable.def()->properties[ConsumableGivesEffect]));
+            for (int i = 0; i < consumable.def()->properties[ConsumableClearsNumEffects]; i++) {
+                character.clear_last_effect();
+            }
+        }
+    }
 
     // Generate the items
     Item tool = m_game.inventory().get_item(character.tools()[domain]);
-    std::vector<Item> new_items = Generators::base_items(m_game.input_items_for_current_activity(char_id), tool, domain);
+    std::vector<Item> new_items = Generators::base_items(character.input_items(), tool, domain);
     for (const Item &item : new_items) {
         bool add_successful = m_game.inventory().add_item(item);
         if (!add_successful) {
@@ -158,7 +167,7 @@ void LKGameWindow::complete_activity(CharacterId char_id) {
 
     // Dink all of the items used as inputs, unless we are praying, in which
     // case just eat them outright
-    for (const Item &input : m_game.input_items_for_current_activity(char_id)) {
+    for (const Item &input : character.input_items()) {
         Item &item = m_game.inventory().get_item_ref(input.id);
 
         if (selected_char().activity().action == Praying) {

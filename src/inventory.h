@@ -2,7 +2,7 @@
 
 #include "items.h"
 
-const static int INVENTORY_ROWS = 4;
+const static int INVENTORY_ROWS = 16;
 const static int INVENTORY_COLS = 7;
 const static int INVENTORY_SIZE = INVENTORY_COLS * INVENTORY_ROWS;
 

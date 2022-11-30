@@ -90,7 +90,6 @@ void ItemSlot::drop_external_item() {
     set_item(Item());
 
     refresh_pixmap();
-    m_game_window->refresh_slots();
     m_game_window->refresh_ui();
 }
 
@@ -103,7 +102,7 @@ void ItemSlot::insert_inventory_slots(LKGameWindow &window) {
 }
 
 void ItemSlot::insert_inventory_slot(LKGameWindow &window, unsigned y, unsigned x) {
-    QGridLayout *inventory_grid = dynamic_cast<QGridLayout*>(window.window().inventory_group->layout());
+    QGridLayout *inventory_grid = dynamic_cast<QGridLayout*>(window.window().inventory_slots->layout());
     inventory_grid->addWidget(new ItemSlot(&window, y, x), y, x);
 }
 
@@ -120,7 +119,7 @@ void ItemSlot::enterEvent(QEvent *event) {
 
     QEnterEvent *enter_event = (QEnterEvent *) event;
     m_game_window->tooltip().move(enter_event->globalPos());
-    m_game_window->tooltip().set_text(item.get_tooltip_text());
+    m_game_window->tooltip().set_text(m_game_window->game().tooltip_text_for(item));
     m_game_window->tooltip().widget.item_image->setPixmap(Item::pixmap_of(item));
     m_game_window->tooltip().show();
 }
@@ -191,5 +190,6 @@ void ItemSlot::dropEvent(QDropEvent *event) {
         // slot and returns the intent of the original item to NoIntent.
         source_slot->drop_external_item();
     }
-    refresh_pixmap();
+
+    m_game_window->refresh_ui();
 }

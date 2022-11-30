@@ -63,86 +63,6 @@ Item::Item(ItemCode code)
 Item::Item(const QString &name)
     : Item(def_of(name)) { }
 
-TooltipText Item::get_tooltip_text() const {
-    ItemDefinitionPtr this_def {def()};
-
-    TooltipText text;
-    text.title = QString("<b>%1</b>").arg(this_def->display_name);
-    text.description = this_def->description;
-
-    switch (this_def->item_level) {
-        case 1: { text.subtext = "Unremarkable "; break; }
-        case 2: { text.subtext = "Common "; break; }
-        case 3: { text.subtext = "Notable "; break; }
-        case 4: { text.subtext = "Rare "; break; }
-        case 5: { text.subtext = "Enchanted "; break; }
-        case 6: { text.subtext = "Truly Extraordinary "; break; }
-        case 7: { text.subtext = "Anomalous "; break; }
-        case 8: { text.subtext = "Incomprehensible "; break; }
-        default: { break; }
-    }
-
-    text.subtext += Item::type_to_string(this_def->type);
-
-    switch (intent) {
-        default:
-        case None: {
-            break;
-        }
-        case Consumable: {
-            text.subtext += " <b><font color=green>(Being eaten)</font></b>";
-            break;
-        }
-        case Material: {
-            text.subtext += " <b><font color=green>(Queued for smithing)</font></b>";
-            break;
-        }
-        case Offering: {
-            text.subtext += " <b><font color=green>(Queued for offering)</font></b>";
-            break;
-        }
-        case KeyOffering: {
-            text.subtext += " <b><font color=#ff7933>(Queued as key offering)</font></b>";
-            break;
-        }
-        case SmithingTool:
-        case ForagingTool:
-        case MiningTool:
-        case PrayerTool:
-        case Artifact: {
-            text.subtext += " <b><font color=green>(Equipped)</font></b>";
-            break;
-        }
-    }
-
-    for (const std::pair<const ItemProperty, std::uint16_t> &property_pair : this_def->properties.map) {
-        switch (property_pair.first) {
-            case ConsumableEnergyBoost: {
-                text.description += QString("<br><b>On consumed:</b> <font color=#ff3300>+%1 energy</font>").arg(property_pair.second);
-                break;
-            }
-            case ConsumableMoraleBoost: {
-                text.description += QString("<br><b>On consumed:</b> <font color=#0099d7>+%1 spirit</font>").arg(property_pair.second);
-                break;
-            }
-            case ConsumableGivesEffect: {
-                text.description += QString("<br><b>On consumed:</b> <font color=#6666cc>gives an effect</font>");
-                break;
-            }
-            case ToolEnergyCost: {
-                text.description += QString("<br>Costs <font color=orangered>%1 energy</font> per use").arg(property_pair.second);
-            }
-            default: break;
-        }
-    }
-
-    if (uses_left != 0) {
-        text.subtext += QString(" <font color=gray>(%1 uses left)</font>").arg(uses_left);
-    }
-
-    return text;
-}
-
 ItemDefinitionPtr Item::def() const {
     return def_of(code);
 }
@@ -183,6 +103,7 @@ QString Item::type_to_string(ItemType type) {
 
     if (type & Consumable) string += "Consumable, ";
     if (type & Material) string += "Material, ";
+    if (type & SmithingTool) string += "Smithing Tool, ";
     if (type & ForagingTool) string += "Foraging Tool, ";
     if (type & MiningTool) string += "Mining Tool, ";
     if (type & PrayerTool) string += "Ceremonial Tool, ";
@@ -192,4 +113,27 @@ QString Item::type_to_string(ItemType type) {
 
     // Chop off the last comma and space
     return string.left(string.length() - 2);
+}
+
+QString Item::properties_to_string(const ItemProperties &props) {
+    QString string;
+
+    const static std::map<ItemProperty, QString> property_descriptions = {
+        { ToolEnergyCost, "Costs <b>%1 energy</b> per use." },
+        { ConsumableEnergyBoost, "Gives <b>+%1 energy</b>." },
+        { ConsumableMoraleBoost, "Gives <b>+%1 spirit</b>." },
+        { ConsumableClearsNumEffects, "Clears up to <b>%1 effect(s)</b>, moving from right to left." },
+        { ArtifactMaxEnergyBoost, "You have <b>+%1 max energy</b>." },
+        { ArtifactMaxMoraleBoost, "You have <b>+%1 max morale</b>." },
+        { ArtifactSpeedBonus, "Your actions complete <b>%1x faster</b>." },
+    };
+
+    for (const auto &pair : props.map) {
+        if (property_descriptions.find(pair.first) != end(property_descriptions)) {
+            string += property_descriptions.at(pair.first).arg(pair.second);
+        }
+        string += "<br>";
+    }
+
+    return string.left(string.size() - 4); // cut off the last <br>
 }

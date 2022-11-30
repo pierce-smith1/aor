@@ -17,16 +17,6 @@ compile() {
     make
 }
 
-test() {
-    compile
-
-    cd $WHEREAMI/test
-    qmake
-    make
-
-    ./test
-}
-
 generate_qrc() {
     cd $WHEREAMI
 
@@ -65,11 +55,4 @@ generate_qrc() {
     rm .images.qrc
 }
 
-if [[ $# -eq 0 || $1 == "compile" ]]; then
-    compile
-elif [[ $1 == "test" ]]; then
-    test
-else
-    echo "please specify either \"compile\" or \"test\""
-    exit 1
-fi
+compile

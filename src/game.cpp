@@ -30,10 +30,10 @@ void Game::add_character(const QString &name) {
     });
 
     if (max_id_search == end(m_explorers)) {
-        m_explorers.emplace(0, Character(0, name));
+        m_explorers.emplace(0, Character(0, name, this));
     } else {
         max_id = max_id_search->first;
-        m_explorers.emplace(max_id + 1, Character(max_id + 1, name));
+        m_explorers.emplace(max_id + 1, Character(max_id + 1, name, this));
     }
 
 }
@@ -42,118 +42,66 @@ void Game::add_item(const Item &item) {
     m_inventory.add_item(item);
 }
 
-bool Game::character_can_perform_action(CharacterId char_id, ItemDomain domain) {
-    Character &character = m_explorers.at(char_id);
-    switch (domain) {
-        case Eating: {
-            return !character.activity_ongoing();
-        }
-        case Smithing: {
-            const auto &materials = character.external_items()[Material];
-            bool enough_materials = std::all_of(begin(materials), begin(materials) + SMITHING_SLOTS, [&](ItemId a) {
-                return a != EMPTY_ID;
-            });
+TooltipText Game::tooltip_text_for(const Item &item) {
+    ItemDefinitionPtr this_def = item.def();
+    QString character_name = item.intent_holder == NOBODY ? "" : m_explorers.at(item.intent_holder).name();
 
-            return enough_materials && !character.activity_ongoing();
-        }
-        case Praying: {
-            const auto &offerings = character.external_items().at(Offering);
-            bool enough_offerings = std::any_of(begin(offerings), begin(offerings) + PRAYER_SLOTS, [&](ItemId a) {
-                return a != EMPTY_ID;
-            });
+    TooltipText text;
+    text.title = QString("<b>%1</b>").arg(this_def->display_name);
+    text.description = this_def->description;
 
-            return enough_offerings && !character.activity_ongoing();
-        }
-        case Foraging:
-        case Mining: {
-            Item tool = m_inventory.get_item(character.tool_id(domain));
-            return character.energy() >= tool.def()->properties[ToolEnergyCost] && !character.activity_ongoing();
-        }
-        default: {
-            qFatal("Tried to assess whether character (%d) can do invalid action domain (%d)", char_id, domain);
-        }
+    switch (this_def->item_level) {
+        case 1: { text.subtext = "Unremarkable "; break; }
+        case 2: { text.subtext = "Common "; break; }
+        case 3: { text.subtext = "Notable "; break; }
+        case 4: { text.subtext = "Rare "; break; }
+        case 5: { text.subtext = "Enchanted "; break; }
+        case 6: { text.subtext = "Truly Extraordinary "; break; }
+        case 7: { text.subtext = "Anomalous "; break; }
+        case 8: { text.subtext = "Incomprehensible "; break; }
+        default: { break; }
     }
-}
 
-int Game::energy_to_gain_from_current_activity(CharacterId char_id) {
-    Character &character = m_explorers.at(char_id);
-    int gain;
+    text.subtext += Item::type_to_string(this_def->type);
 
-    switch (character.activity().action) {
-        case Eating: {
-            std::vector<Item> inputs = m_inventory.items_of_intent(char_id, Eating);
-            gain = std::accumulate(begin(inputs), end(inputs), 0, [](int a, const Item &b) {
-                return a + b.def()->properties[ConsumableEnergyBoost];
-            });
+    switch (item.intent) {
+        default:
+        case None: {
             break;
         }
-        case Smithing:
-        case Foraging:
-        case Mining: {
-            Item tool = m_inventory.get_item(character.tool_id());
-            gain = tool.def()->properties[ToolEnergyCost];
+        case Consumable: {
+            text.subtext += QString(" <b><font color=green>(Being eaten by %1)</font></b>").arg(character_name);
             break;
         }
-        default: {
-            gain = 0;
+        case Material: {
+            text.subtext += QString(" <b><font color=green>(Queued for smithing by %1)</font></b>").arg(character_name);
+            break;
+        }
+        case Offering: {
+            text.subtext += QString(" <b><font color=green>(Queued for offering by %1)</font></b>").arg(character_name);
+            break;
+        }
+        case KeyOffering: {
+            text.subtext += QString(" <b><font color=#ff7933>(Queued as key offering by %1)</font></b>").arg(character_name);
+            break;
+        }
+        case SmithingTool:
+        case ForagingTool:
+        case MiningTool:
+        case PrayerTool:
+        case Artifact: {
+            text.subtext += QString(" <b><font color=green>(Equipped by %1)</font></b>").arg(character_name);
             break;
         }
     }
 
-    if (character.morale() > (double) character.max_morale() * 0.5) {
-        if (gain < 0) {
-            gain /= 2;
-        }
+    text.description += "<br>" + Item::properties_to_string(this_def->properties);
+
+    if (item.uses_left != 0) {
+        text.subtext += QString(" <font color=gray>(%1 uses left)</font>").arg(item.uses_left);
     }
 
-    return gain;
-}
-
-int Game::morale_to_gain_from_current_activity(CharacterId char_id) {
-    Character &character = m_explorers.at(char_id);
-    int gain;
-
-    switch (character.activity().action) {
-        case Eating: {
-            std::vector<Item> inputs = m_inventory.items_of_intent(char_id, Eating);
-            gain = std::accumulate(begin(inputs), end(inputs), 0, [](int a, const Item &b) {
-                return a + b.def()->properties[ConsumableMoraleBoost];
-            });
-            break;
-        }
-        case Praying: {
-            std::vector<Item> offerings = m_inventory.items_of_intent(char_id, Offering);
-            gain = std::accumulate(begin(offerings), end(offerings), 0, [](int a, const Item &b) {
-                return b.def()->item_level * 10 + a;
-            });
-            break;
-        }
-        default: {
-            gain = -character.base_morale_cost();
-            break;
-        }
-    }
-
-    return gain;
-}
-
-std::vector<Item> Game::input_items_for_current_activity(CharacterId char_id) {
-    Character &character = characters().at(char_id);
-
-    switch (character.activity().action) {
-        case Eating: {
-            return inventory().items_of_intent(char_id, Eating);
-        }
-        case Smithing: {
-            return inventory().items_of_intent(char_id, Material);
-        }
-        case Praying: {
-            return inventory().items_of_intent(char_id, Offering);
-        }
-        default: {
-            return {};
-        }
-    }
+    return text;
 }
 
 void Game::refresh_ui_bars(QProgressBar *activity, QProgressBar *morale, QProgressBar *energy, CharacterId char_id) {
@@ -162,11 +110,11 @@ void Game::refresh_ui_bars(QProgressBar *activity, QProgressBar *morale, QProgre
     activity->setMaximum(100);
     activity->setValue(character.activity_percent_complete() * 100);
 
-    double morale_gain = morale_to_gain_from_current_activity(char_id) * character.activity_percent_complete();
+    double morale_gain = character.morale_to_gain() * character.activity_percent_complete();
     morale->setMaximum(character.max_morale());
     morale->setValue(character.morale() + morale_gain);
 
-    double energy_gain = energy_to_gain_from_current_activity(char_id) * character.activity_percent_complete();
+    double energy_gain = character.energy_to_gain() * character.activity_percent_complete();
     energy->setMaximum(character.max_energy());
     energy->setValue(character.energy() + energy_gain);
 }

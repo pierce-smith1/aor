@@ -85,9 +85,7 @@ void ExternalSlot::dropEvent(QDropEvent *event) {
     m_game_window->game().inventory().get_item_ref(source_item.id).intent = type();
     m_game_window->game().inventory().get_item_ref(source_item.id).intent_holder = m_game_window->selected_char().id();
 
-    source_slot->refresh_pixmap();
-    refresh_pixmap();
-    m_game_window->refresh_ui_buttons();
+    m_game_window->refresh_ui();
 }
 
 void ExternalSlot::insert_external_slots(LKGameWindow &window) {

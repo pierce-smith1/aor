@@ -65,9 +65,6 @@ const static int CT_RUNE = 1 << 13;
 const static int CT_OTHER = 1 << 14;
 
 enum ItemProperty {
-    ConsumableEnergyBoost,
-    ConsumableMoraleBoost,
-    ConsumableGivesEffect,
     ToolEnergyCost,
     SpeedBonus,
     // WARNING: Item generation behavior in actions.cpp requires that there
@@ -96,7 +93,14 @@ enum ItemProperty {
     ToolComboIngredient2,
     ToolComboIngredient3,
     ToolComboResult,
+    ConsumableEnergyBoost,
+    ConsumableMoraleBoost,
+    ConsumableGivesEffect,
+    ConsumableClearsNumEffects,
     MaterialForges,
+    ArtifactMaxEnergyBoost,
+    ArtifactMaxMoraleBoost,
+    ArtifactSpeedBonus,
 };
 
 // This basically just wraps a std::map<ItemPropety, int>,
@@ -151,26 +155,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         }
     },
     {
-        CT_CONSUMABLE | 2,
-        "norton_ghost_pepper", "Norton Ghost Pepper",
-        "<i>Haunted with a benevolent spirit that will cure your ailments.<br>"
-        "Often found growing in places you didn't ask them to.</i>",
-        1 USES, Consumable, LEVEL 2,
-        {
-            { ConsumableGivesEffect, 0 }
-        }
-    },
-    {
-        CT_CONSUMABLE | 3,
-        "bleeding_krazaheart", "Bleeding Krazaheart",
-        "Don't read too far into it, Kraza is fine.",
-        1 USES, Consumable, LEVEL 2,
-        {
-            { ConsumableEnergyBoost, 30 },
-            { ConsumableMoraleBoost, 10 }
-        }
-    },
-    {
         CT_MATERIAL | 0,
         "obsilicon", "Obsilicon",
         "<i>This glassy stone cooled from the same primordial magma<br>"
@@ -184,11 +168,84 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         CT_MATERIAL | 1,
         "oolite", "Oolite",
         "<i>You've heard small talk from geologists that this may<br>"
-        "be the first stone ever constructed.</i>",
+        "have been the first rock ever constructed by the earth.</i>",
         1 USES, Material, LEVEL 1,
         {
             { MaterialForges, CT_TOOL | 1 }
         }
+    },
+    {
+        CT_TOOL | 0,
+        "maven_mallet", "Maven Mallet",
+        "<i>A rudimentary tool. You've named it after the maven, a strange<br>"
+        "little bird you've seen around here that tells you long-winded stories.</i>",
+        3 USES, SmithingTool, LEVEL 1,
+        {
+            { ToolEnergyCost, 20 },
+            { ToolComboIngredient1, CT_MATERIAL | 0 },
+            { ToolComboIngredient2, CT_MATERIAL | 1 },
+            { ToolComboIngredient3, CT_MATERIAL | 1 },
+            { ToolComboResult, CT_TOOL | 2 }
+        }
+    },
+    {
+        CT_TOOL | 1,
+        "hashcracker", "Hashcracker",
+        "<i>Rhodon is covered in layers of hard shale-256 - but with a good axe like this,<br>"
+        "you should be able to brute-force your way through it to find the goodies underneath.</i>",
+        4 USES, ForagingTool, LEVEL 1,
+        {
+            { ToolEnergyCost, 20 },
+            { ToolCanDiscover1, CT_CONSUMABLE | 2 },
+            { ToolCanDiscover2, CT_CONSUMABLE | 3 },
+            { ToolCanDiscover3, CT_MATERIAL | 3 },
+            { ToolDiscoverWeight1, 1 },
+            { ToolDiscoverWeight2, 1 },
+            { ToolDiscoverWeight3, 1 },
+        }
+    },
+    {
+        CT_TOOL | 2,
+        "basalt_destructor", "Basalt Destructor",
+        "<i>It's just plain old dirt - this will be good enough.</i>",
+        4 USES, MiningTool, LEVEL 2,
+        {
+            { ToolEnergyCost, 20 },
+            { ToolCanDiscover1, CT_MATERIAL | 2 },
+            { ToolCanDiscover2, CT_MATERIAL | 3 },
+            { ToolCanDiscover3, CT_MATERIAL | 4 },
+            { ToolDiscoverWeight1, 2 },
+            { ToolDiscoverWeight2, 2 },
+            { ToolDiscoverWeight3, 3 },
+        }
+    },
+    {
+        CT_CONSUMABLE | 2,
+        "norton_ghost_pepper", "Norton Ghost Pepper",
+        "<i>Haunted with a benevolent spirit that will cure your ailments.<br>"
+        "Often found growing in places you didn't ask them to.</i>",
+        1 USES, Consumable, LEVEL 2,
+        {
+            { ConsumableClearsNumEffects, 1 }
+        }
+    },
+    {
+        CT_CONSUMABLE | 3,
+        "bleeding_krazaheart", "Bleeding Krazaheart",
+        "<iDon't read too far into it, Kraza is fine.</i>",
+        1 USES, Consumable, LEVEL 2,
+        {
+            { ConsumableEnergyBoost, 30 },
+            { ConsumableMoraleBoost, 10 }
+        }
+    },
+    {
+        CT_MATERIAL | 5,
+        "fireclay", "Fireclay",
+        "<i>Used to build firewalls, this peculiar substance is selectively<br>"
+        "porous to microbes on its surface.</i>",
+        1 USES, Material, LEVEL 2,
+        {}
     },
     {
         CT_MATERIAL | 2,
@@ -220,53 +277,10 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         }
     },
     {
-        CT_TOOL | 0,
-        "maven_mallet", "Maven Mallet",
-        "A rudimentary tool. You've named it after the maven, an insufferable<br>"
-        "little bird you've seen around here that never seems to shut up.",
-        3 USES, SmithingTool, LEVEL 1,
-        {
-            { ToolEnergyCost, 20 },
-            { ToolComboIngredient1, CT_MATERIAL | 0 },
-            { ToolComboIngredient2, CT_MATERIAL | 1 },
-            { ToolComboIngredient3, CT_MATERIAL | 1 },
-            { ToolComboResult, CT_TOOL | 2 }
-        }
-    },
-    {
-        CT_TOOL | 1,
-        "hashcracker", "Hashcracker",
-        "Rhodon is covered in layers of shale-256 - a good axe like this<br>"
-        "should be able to brute-force your way through it",
-        4 USES, ForagingTool, LEVEL 1,
-        {
-            { ToolEnergyCost, 20 },
-            { ToolCanDiscover1, CT_CONSUMABLE | 2 },
-            { ToolCanDiscover2, CT_CONSUMABLE | 3 },
-            { ToolDiscoverWeight1, 1 },
-            { ToolDiscoverWeight2, 1 },
-        }
-    },
-    {
-        CT_TOOL | 2,
-        "basalt_destructor", "Basalt Destructor",
-        "It's just plain old dirt - this will be good enough.",
-        4 USES, MiningTool, LEVEL 2,
-        {
-            { ToolEnergyCost, 20 },
-            { ToolCanDiscover1, CT_MATERIAL | 2 },
-            { ToolCanDiscover2, CT_MATERIAL | 3 },
-            { ToolCanDiscover3, CT_MATERIAL | 4 },
-            { ToolDiscoverWeight1, 2 },
-            { ToolDiscoverWeight2, 2 },
-            { ToolDiscoverWeight3, 3 },
-        }
-    },
-    {
         CT_TOOL | 3,
         "seaquake", "Seaquake",
-        "And with a thunderous clang, the great towers of<br>"
-        "the sea were assembled from their liquid rubble.",
+        "<i>And with a thunderous clang, the great towers of<br>"
+        "the sea were assembled from liquid rubble.</i>",
         4 USES, SmithingTool, LEVEL 3,
         {
             { ToolEnergyCost, 30 },
@@ -292,7 +306,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_TOOL | 5,
         "sepulchre_of_corruption", "Sepulchre of Corruption",
-        "Consumables you receive from offerings give an <b>extra +10 energy</b>.<br>"
         "<i>There are some problems you simply cannot solve.</i>",
         3 USES, PrayerTool, LEVEL 3,
         {}
@@ -300,18 +313,20 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_ARTIFACT | 0,
         "recovered_journal", "Recovered Journal",
-        "You have <b>+20 max spirit</b>.<br>"
         "<i>Tells a sad story of an orphan far from home.</i>",
         0 USES, Artifact, LEVEL 3,
-        {}
+        {
+            { ArtifactMaxMoraleBoost, 20 }
+        }
     },
     {
         CT_ARTIFACT | 1,
         "scalped_remains", "Scalped Remains",
-        "You have <b>+20 max energy</b>.<br>"
         "<i>Whoever this was has been long forgotton... but is not gone.</i>",
         0 USES, Artifact, LEVEL 3,
-        {}
+        {
+            { ArtifactMaxEnergyBoost, 20 }
+        }
     }
 };
 
@@ -328,7 +343,6 @@ struct Item {
     explicit Item(ItemCode id);
     explicit Item(const QString &name);
 
-    TooltipText get_tooltip_text() const;
     ItemDefinitionPtr def() const;
 
     static ItemDefinitionPtr def_of(ItemCode id);
@@ -339,7 +353,9 @@ struct Item {
     static QPixmap pixmap_of(const ItemDefinition &def);
     static QPixmap pixmap_of(const Item &item);
     static Item invalid_item();
+
     static QString type_to_string(ItemType type);
+    static QString properties_to_string(const ItemProperties &props);
 
     static Item empty_item;
 };

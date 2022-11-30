@@ -19,10 +19,7 @@ public:
 
     void add_character(const QString &name);
     void add_item(const Item &item);
-    bool character_can_perform_action(CharacterId char_id, ItemDomain action);
-    int energy_to_gain_from_current_activity(CharacterId char_id);
-    int morale_to_gain_from_current_activity(CharacterId char_id);
-    std::vector<Item> input_items_for_current_activity(CharacterId char_id);
+    TooltipText tooltip_text_for(const Item &item);
 
     QString id_to_name(CharacterId char_id);
 

@@ -3,6 +3,7 @@
 #include <QProgressBar>
 #include <QGraphicsColorizeEffect>
 #include <QGroupBox>
+#include <QLabel>
 
 class LKGameWindow;
 
@@ -27,8 +28,7 @@ private:
     QLabel *m_name;
     QLabel *m_portrait;
     QLabel *m_activity_icon;
-    QProgressBar *m_activity_bar;
-    QProgressBar *m_morale_bar;
-    QProgressBar *m_energy_bar;
+    std::map<ItemDomain, QLabel*> m_tool_status_labels;
+    std::array<QLabel*, ARTIFACT_SLOTS> m_artifact_status_labels {};
     QGraphicsColorizeEffect *m_portrait_effect;
 };

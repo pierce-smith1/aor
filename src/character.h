@@ -11,14 +11,19 @@
 #include "actions.h"
 #include "generators.h"
 
+class Game;
+
 constexpr static int MAX_ARRAY_SIZE {std::max({ SMITHING_SLOTS, PRAYER_SLOTS, ARTIFACT_SLOTS })};
+
+const static int BASE_MAX_ENERGY = 50;
+const static int BASE_MAX_MORALE = 50;
 
 using ExternalItemIds = std::map<ItemDomain, std::array<ItemId, MAX_ARRAY_SIZE>>;
 using Effects = std::array<Item, EFFECT_SLOTS>;
 using ToolIds = std::map<ItemDomain, ItemId>;
 
 struct Character {
-    Character(CharacterId id, const QString &name);
+    Character(CharacterId id, const QString &name, Game *game);
 
     QString &name();
     QColor &color();
@@ -27,6 +32,7 @@ struct Character {
 
     bool activity_ongoing();
     double activity_percent_complete();
+    std::uint64_t activity_time();
 
     std::uint16_t &energy();
     std::uint16_t &morale();
@@ -34,7 +40,14 @@ struct Character {
     int max_morale();
     void add_energy(int add);
     void add_morale(int add);
-    int base_morale_cost();
+
+    bool can_perform_action(ItemDomain action);
+    int energy_to_gain();
+    int morale_to_gain();
+    std::vector<Item> input_items();
+
+    bool clear_last_effect();
+    bool push_effect(const Item &effect);
 
     ItemId tool_id();
     ItemId tool_id(ItemDomain domain);
@@ -62,4 +75,6 @@ private:
     std::uint16_t m_energy {40};
     std::uint16_t m_morale {40};
     std::uint16_t m_id;
+
+    Game *m_game;
 };
