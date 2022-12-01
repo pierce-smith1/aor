@@ -2,33 +2,35 @@
 
 #include <QString>
 #include <QNetworkAccessManager>
+#include <QNetworkReply>
 #include <QBuffer>
-#include <QTcpServer>
+#include <QTcpSocket>
 
 #include "character.h"
 #include "items.h"
+#include "bytearrayio.h"
+#include "game.h"
 
 const static char API_VERSION = 1;
+
+const static char REQ_CHECKIN = 0;
+const static char REQ_OFFER = 1;
+
+const static char RES_NOTHING_TO_DO = 0;
+const static char RES_OFFER = 1;
+const static char RES_ERROR = 2;
+
 const static int AOW_PORT = 10241;
-const static int HEARTBEAT_INTERVAL_MS = 1000 * 20;
+const static int CHECKIN_INTERVAL_MS = 5000;
 
 struct TradeOffering {
     ItemCode key;
     std::vector<Item> items;
 };
 
-class DoughbyteConnection {
-public:
-    static QUrl remote_url;
+namespace DoughbyteConnection {
+    static QString remote_url("doughbyte.com");
 
-    DoughbyteConnection();
-
-    void heartbeat();
-    void recieve_offering(Character &character, const TradeOffering &offering);
-private:
-    void recieve();
-    void on_recieve_hb_response();
-    void on_recieve_offer();
-
-    QNetworkAccessManager client;
+    void checkin(Game &game);
+    void offer(Game &game, const std::vector<Item> &items, ItemCode key);
 };

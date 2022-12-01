@@ -165,3 +165,7 @@ QColor Generators::color() {
         { QColor(102, 204, 51), 1 },
     });
 }
+
+GameId Generators::game_id() {
+    return item_id();
+}

@@ -41,4 +41,5 @@ namespace Generators {
     std::vector<Item> base_items(const std::vector<Item> &inputs, const Item &tool, ItemDomain domain);
     ItemId item_id();
     QColor color();
+    GameId game_id();
 }

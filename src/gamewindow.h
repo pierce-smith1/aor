@@ -60,6 +60,5 @@ private:
     CharacterId m_selected_char_id {0};
     ActivityTimers m_timers;
     std::vector<QString> m_slot_names;
-    int m_heartbeat_timer;
-    DoughbyteConnection m_db_connection;
+    int m_checkin_timer;
 };

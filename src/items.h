@@ -30,6 +30,7 @@ const static int EFFECT_SLOTS = 7;
 using ItemCode = std::uint16_t;
 using ItemId = std::uint64_t;
 using CharacterId = std::uint16_t;
+using GameId = std::uint64_t;
 
 const static ItemId EMPTY_ID = 0;
 const static ItemId INVALID_ID = 0xffffffffffffffff;

@@ -39,7 +39,7 @@ LKGameWindow::LKGameWindow()
     energy_palette.setColor(QPalette::Highlight, QColor(255, 51, 0));
     m_window.energy_bar->setPalette(energy_palette);
 
-    m_heartbeat_timer = startTimer(HEARTBEAT_INTERVAL_MS);
+    m_checkin_timer = startTimer(CHECKIN_INTERVAL_MS);
 }
 
 Game &LKGameWindow::game() {
@@ -155,6 +155,11 @@ void LKGameWindow::complete_activity(CharacterId char_id) {
         }
     }
 
+    Item key_offering = game().inventory().get_item(character.external_items().at(KeyOffering)[0]);
+    if (domain == Praying && key_offering.id != EMPTY_ID) {
+        DoughbyteConnection::offer(m_game, character.input_items(), key_offering.code);
+    }
+
     // Generate the items
     Item tool = m_game.inventory().get_item(character.tools()[domain]);
     std::vector<Item> new_items = Generators::base_items(character.input_items(), tool, domain);
@@ -250,5 +255,9 @@ void LKGameWindow::timerEvent(QTimerEvent *event) {
         if (event->timerId() == pair.second) {
             progress_activity(pair.first, ACTIVITY_TICK_RATE_MS);
         }
+    }
+
+    if (event->timerId() == m_checkin_timer) {
+        DoughbyteConnection::checkin(m_game);
     }
 }

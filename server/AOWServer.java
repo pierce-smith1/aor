@@ -47,50 +47,74 @@ public class AOWServer {
 
     public static class Item extends ByteArraySerializable {
         short code;
-        long id;
         byte uses_left;
-        short intent;
 
         public Item(DataInput in) throws IOException {
             code = in.readShort();
-            id = in.readLong();
             uses_left = in.readByte();
-            intent = in.readShort();
         }
 
         @Override
         public void serialize(DataOutput out) throws IOException {
             out.writeShort(code);
-            out.writeLong(id);
             out.writeByte(uses_left);
-            out.writeShort(intent);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(code, id, uses_left, intent);
+            return Objects.hash(code, uses_left);
         }
 
         @Override
         public String toString() {
-            return String.format("Item(code %d, id %d, uses %d, intent %d)", code, id, uses_left, intent);
+            return String.format("Item(code %d, uses %d)", code, uses_left);
         }
     }
 
-    public static class OfferRequest extends ByteArraySerializable {
-        public short key;
+    public static class Items extends ByteArraySerializable {
         public List<Item> items;
+        public long sourceGameId;
 
-        public OfferRequest(DataInput in) throws IOException {
-            key = in.readShort();
+        public Items(List<Item> items, long sourceGameId) {
+            this.items = items;
+            this.sourceGameId = sourceGameId;
+        }
+
+        public Items(DataInput in) throws IOException {
             items = new ArrayList<>();
-            int size = in.readInt();
+
+            sourceGameId = in.readLong();
+            short size = in.readShort();
             for (int i = 0; i < size; i++) {
                 items.add(new Item(in));
             }
         }
 
-        public OfferRequest(short key, List<Item> items) {
+        @Override
+        public void serialize(DataOutput out) throws IOException {
+            out.writeLong(sourceGameId);
+            out.writeShort(items.size());
+            for (Item item : items) {
+                item.serialize(out);
+            }
+        }
+
+        @Override
+        public String toString() {
+            return String.format("Items(items %s, sourceGameId %s)", items, sourceGameId);
+        }
+    }
+
+    public static class OfferRequest extends ByteArraySerializable {
+        public short key;
+        public Items items;
+
+        public OfferRequest(DataInput in) throws IOException {
+            key = in.readShort();
+            items = new Items(in);
+        }
+
+        public OfferRequest(short key, Items items) {
             this.key = key;
             this.items = items;
         }
@@ -98,10 +122,7 @@ public class AOWServer {
         @Override
         public void serialize(DataOutput out) throws IOException {
             out.writeShort(key);
-            out.writeInt(items.size());
-            for (Item item : items) {
-                item.serialize(out);
-            }
+            items.serialize(out);
         }
 
         @Override
@@ -114,7 +135,7 @@ public class AOWServer {
         public Map<Short, OfferRequest> map;
 
         public OfferHistory() throws IOException {
-            this(new DataInputStream(new ByteArrayInputStream(new byte[] { 0, 0, 0, 0 })));
+            this(new DataInputStream(new ByteArrayInputStream(new byte[] { 0, 0 })));
         }
 
         public OfferHistory(File dataFile) throws IOException {
@@ -124,7 +145,7 @@ public class AOWServer {
         public OfferHistory(DataInput in) throws IOException {
             map = Collections.synchronizedMap(new HashMap<Short, OfferRequest>());
 
-            int numEntries = in.readInt();
+            short numEntries = in.readShort();
             for (int i = 0; i < numEntries; i++) {
                 short key = in.readShort();
                 map.put(key, new OfferRequest(in));
@@ -133,7 +154,7 @@ public class AOWServer {
 
         @Override
         public void serialize(DataOutput out) throws IOException {
-            out.writeInt(map.size());
+            out.writeShort((short) map.size());
             for (Map.Entry<Short, OfferRequest> entry : map.entrySet()) {
                 out.writeShort(entry.getKey());
                 entry.getValue().serialize(out);
@@ -142,46 +163,37 @@ public class AOWServer {
     }
 
     public static class OfferQueue extends ByteArraySerializable {
-        public Map<Long, List<Item>> map;
+        public Map<Long, Items> map;
 
         public OfferQueue() throws IOException {
-            this(new DataInputStream(new ByteArrayInputStream(new byte[] { 0, 0, 0, 0 })));
+            this(new DataInputStream(new ByteArrayInputStream(new byte[] { 0, 0 })));
         }
 
         public OfferQueue(DataInput in) throws IOException {
-            map = Collections.synchronizedMap(new HashMap<Long, List<Item>>());
+            map = Collections.synchronizedMap(new HashMap<Long, Items>());
 
-            int size = in.readInt();
+            short size = in.readShort();
             for (int i = 0; i < size; i++) {
-                long key = in.readLong();
-                int itemsSize = in.readInt();
-                List<Item> items = new ArrayList<>();
-                for (int j = 0; j < itemsSize; j++) {
-                    items.add(new Item(in));
-                }
-                map.put(key, items);
+                map.put(in.readLong(), new Items(in));
             }
         }
 
         @Override
         public void serialize(DataOutput out) throws IOException {
-            out.writeInt(map.size());
-            for (Map.Entry<Long, List<Item>> entry : map.entrySet()) {
+            out.writeShort((short) map.size());
+            for (Map.Entry<Long, Items> entry : map.entrySet()) {
                 out.writeLong(entry.getKey());
-                out.writeInt(entry.getValue().size());
-                for (Item item : entry.getValue()) {
-                    item.serialize(out);
-                }
+                entry.getValue().serialize(out);
             }
         }
     }
 
     public AOWServer() throws IOException {
         if (dataFile.exists()) {
-            history = new OfferHistory(dataFile);
+            deserialize(new DataInputStream(new FileInputStream(dataFile)));
         } else {
             dataFile.createNewFile();
-            history.serialize(new DataOutputStream(new FileOutputStream(dataFile)));
+            serialize(new DataOutputStream(new FileOutputStream(dataFile)));
         }
 
         server = new ServerSocket(AOW_PORT);
@@ -250,28 +262,32 @@ public class AOWServer {
             ));
 
             OfferRequest thisOffering = new OfferRequest(input);
-
             System.out.println(String.format("Offering: %s", thisOffering));
 
             if (history.map.containsKey(thisOffering.key)) {
                 System.out.println("Offer key exists");
 
-                // Send back the previously offered items
                 OfferRequest originalOffering = history.map.get(thisOffering.key);
-                OfferRequest response = new OfferRequest(thisOffering.key, originalOffering.items);
-
                 System.out.println(String.format("Original offering from history: %s", originalOffering));
 
+                if (gameId == originalOffering.items.sourceGameId) {
+                    out.writeByte(RES_NOTHING_TO_DO);
+                    history.map.put(thisOffering.key, thisOffering);
+                    return;
+                }
+
+                // Send the previously offered items to the game that just offered
+                OfferRequest response = new OfferRequest(thisOffering.key, originalOffering.items);
                 out.writeByte(RES_OFFER);
                 out.write(response.asBytes());
                 System.out.println(String.format("Writing response: %s", bytesToString(response.asBytes())));
-
                 history.map.remove(thisOffering.key);
-                queue.map.put(gameId, originalOffering.items);
+
+                // Send the items just offered to the previous offerer (by queuing them for the next checkin)
+                queue.map.put(originalOffering.items.sourceGameId, thisOffering.items);
             } else {
                 System.out.println("Offer key did not exist");
                 history.map.put(thisOffering.key, thisOffering);
-
                 out.writeByte(RES_NOTHING_TO_DO);
             }
         } catch (IOException e) {
@@ -290,6 +306,11 @@ public class AOWServer {
     public void serialize(DataOutput out) throws IOException {
         history.serialize(out);
         queue.serialize(out);
+    }
+
+    public void deserialize(DataInput in) throws IOException {
+        history = new OfferHistory(in);
+        queue = new OfferQueue(in);
     }
 
     public static String bytesToString(byte[] bytes) {

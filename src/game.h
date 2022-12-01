@@ -16,6 +16,7 @@ public:
 
     Characters &characters();
     Inventory &inventory();
+    GameId game_id();
 
     void add_character(const QString &name);
     void add_item(const Item &item);
@@ -28,4 +29,5 @@ public:
 private:
     Characters m_explorers;
     Inventory m_inventory;
+    GameId m_game_id;
 };

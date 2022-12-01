@@ -107,7 +107,7 @@ void ExternalSlot::insert_external_slots(LKGameWindow &window) {
 
         ExternalSlot *slot;
         if (y == PRAYER_KEY_SLOT_Y && x == PRAYER_KEY_SLOT_X) {
-            slot = new ExternalSlot(&window, KeyOffering, i);
+            slot = new ExternalSlot(&window, KeyOffering, 0);
         } else {
             slot = new ExternalSlot(&window, Offering, i);
         }

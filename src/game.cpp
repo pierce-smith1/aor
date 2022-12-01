@@ -1,6 +1,8 @@
 #include "game.h"
 
-Game::Game() {
+Game::Game()
+    : m_game_id(Generators::game_id())
+{
     add_character(Generators::yokin_name());
     add_character(Generators::yokin_name());
     add_character(Generators::yokin_name());
@@ -13,6 +15,9 @@ Game::Game() {
     add_item(Item("globfruit"));
     add_item(Item("globfruit"));
     add_item(Item("globfruit"));
+    add_item(Item("byteberry"));
+    add_item(Item("byteberry"));
+    add_item(Item("byteberry"));
 }
 
 Characters &Game::characters() {
@@ -21,6 +26,10 @@ Characters &Game::characters() {
 
 Inventory &Game::inventory() {
     return m_inventory;
+}
+
+GameId Game::game_id() {
+    return m_game_id;
 }
 
 void Game::add_character(const QString &name) {
