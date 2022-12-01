@@ -38,6 +38,8 @@ LKGameWindow::LKGameWindow()
     QPalette energy_palette;
     energy_palette.setColor(QPalette::Highlight, QColor(255, 51, 0));
     m_window.energy_bar->setPalette(energy_palette);
+
+    m_heartbeat_timer = startTimer(HEARTBEAT_INTERVAL_MS);
 }
 
 Game &LKGameWindow::game() {
@@ -64,8 +66,8 @@ void LKGameWindow::register_slot_name(const QString &slot_name) {
     m_slot_names.push_back(slot_name);
 }
 
-void LKGameWindow::notify(NotificationType type, const QString &message) {
-    m_window.event_list->addItem(new GameNotification(type, message));
+void LKGameWindow::notify(NotificationType, const QString &message) {
+    m_window.statusbar->showMessage(message);
 }
 
 void LKGameWindow::start_activity(CharacterId char_id, ItemDomain type) {

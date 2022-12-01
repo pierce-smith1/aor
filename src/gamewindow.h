@@ -14,6 +14,7 @@ class LKGameWindow;
 #include "character.h"
 #include "game.h"
 #include "explorerbutton.h"
+#include "trade.h"
 
 using ActivityTimers = std::map<CharacterId, int>;
 
@@ -59,4 +60,6 @@ private:
     CharacterId m_selected_char_id {0};
     ActivityTimers m_timers;
     std::vector<QString> m_slot_names;
+    int m_heartbeat_timer;
+    DoughbyteConnection m_db_connection;
 };
