@@ -106,7 +106,6 @@ QString Item::type_to_string(ItemType type) {
     if (type & SmithingTool) string += "Smithing Tool, ";
     if (type & ForagingTool) string += "Foraging Tool, ";
     if (type & MiningTool) string += "Mining Tool, ";
-    if (type & PrayerTool) string += "Ceremonial Tool, ";
     if (type & Blessing) string += "Blessing, ";
     if (type & Artifact) string += "Artifact, ";
     if (type & Rune) string += "Curse, ";

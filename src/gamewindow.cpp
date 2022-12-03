@@ -5,6 +5,7 @@
 #include "effectslot.h"
 
 LKGameWindow::LKGameWindow()
+    : m_connection(this)
 {
     m_window.setupUi(this);
 
@@ -14,6 +15,23 @@ LKGameWindow::LKGameWindow()
             start_activity(m_selected_char_id, pair.first);
         });
     }
+
+    connect(m_window.trade_accept_button, &QPushButton::clicked, [=]() {
+        m_connection.accept();
+        selected_char().accepting_trade() = true;
+        refresh_ui_buttons();
+    });
+
+    connect(m_window.trade_unaccept_button, &QPushButton::clicked, [=]() {
+        m_connection.unaccept();
+        selected_char().accepting_trade() = false;
+        refresh_ui_buttons();
+    });
+
+    connect(m_window.trade_partner_combobox, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index) {
+        m_selected_tribe_id = m_window.trade_partner_combobox->itemData(index).toLongLong(nullptr);
+        refresh_ui();
+    });
 
     ItemSlot::insert_inventory_slots(*this);
     ExternalSlot::insert_external_slots(*this);
@@ -39,11 +57,15 @@ LKGameWindow::LKGameWindow()
     energy_palette.setColor(QPalette::Highlight, QColor(255, 51, 0));
     m_window.energy_bar->setPalette(energy_palette);
 
-    m_checkin_timer = startTimer(CHECKIN_INTERVAL_MS);
+    m_connection.connect_to_ping_server();
 }
 
 Game &LKGameWindow::game() {
     return m_game;
+}
+
+DoughbyteConnection &LKGameWindow::connection() {
+    return m_connection;
 }
 
 Ui::LKMainWindow &LKGameWindow::window() {
@@ -60,6 +82,10 @@ Character &LKGameWindow::selected_char() {
 
 CharacterId &LKGameWindow::selected_char_id() {
     return m_selected_char_id;
+}
+
+GameId &LKGameWindow::selected_tribe_id() {
+    return m_selected_tribe_id;
 }
 
 void LKGameWindow::register_slot_name(const QString &slot_name) {
@@ -103,6 +129,8 @@ void LKGameWindow::progress_activity(CharacterId char_id, std::int64_t by_ms) {
 
 void LKGameWindow::refresh_ui() {
     m_window.player_name_label->setText(QString("Explorer <b>%1</b>").arg(selected_char().name()));
+    m_window.tribe_name_label->setText(QString("of <b>%1</b>").arg(m_game.tribe_name()));
+
     refresh_slots();
     refresh_ui_buttons();
     refresh_ui_bars();
@@ -124,12 +152,31 @@ void LKGameWindow::refresh_ui_bars() {
 }
 
 void LKGameWindow::refresh_ui_buttons() {
-    for (ItemDomain domain : { Smithing, Foraging, Mining, Praying }) {
+    for (ItemDomain domain : { Smithing, Foraging, Mining }) {
         if (selected_char().can_perform_action(domain)) {
             get_activity_buttons().at(domain)->setEnabled(true);
         } else {
             get_activity_buttons().at(domain)->setEnabled(false);
         }
+    }
+
+    if (!m_connection.is_connected() || selected_char().activity_ongoing()) {
+        m_window.trade_accept_button->setEnabled(false);
+        m_window.trade_unaccept_button->setEnabled(false);
+    } else if (selected_char().accepting_trade()) {
+        m_window.trade_accept_button->setEnabled(false);
+        m_window.trade_unaccept_button->setEnabled(true);
+    } else {
+        m_window.trade_accept_button->setEnabled(true);
+        m_window.trade_unaccept_button->setEnabled(false);
+    }
+}
+
+void LKGameWindow::refresh_trade_ui() {
+    if (m_selected_tribe_id != NOBODY && m_game.tribes().at(m_selected_tribe_id).remote_accepted) {
+        m_window.trade_remote_accept_icon->setPixmap(QPixmap(":/assets/img/icons/check.png"));
+    } else {
+        m_window.trade_remote_accept_icon->setPixmap(QPixmap(":/assets/img/icons/warning.png"));
     }
 }
 
@@ -155,11 +202,6 @@ void LKGameWindow::complete_activity(CharacterId char_id) {
         }
     }
 
-    Item key_offering = game().inventory().get_item(character.external_items().at(KeyOffering)[0]);
-    if (domain == Praying && key_offering.id != EMPTY_ID) {
-        DoughbyteConnection::offer(m_game, character.input_items(), key_offering.code);
-    }
-
     // Generate the items
     Item tool = m_game.inventory().get_item(character.tools()[domain]);
     std::vector<Item> new_items = Generators::base_items(character.input_items(), tool, domain);
@@ -172,14 +214,11 @@ void LKGameWindow::complete_activity(CharacterId char_id) {
         notify(Discovery, QString("%2 discovered a %1!").arg(item.def()->display_name).arg(character.name()));
     }
 
-    // Dink all of the items used as inputs, unless we are praying, in which
-    // case just eat them outright
+    // Dink all of the items used as inputs
     for (const Item &input : character.input_items()) {
         Item &item = m_game.inventory().get_item_ref(input.id);
 
-        if (selected_char().activity().action == Praying) {
-            m_game.inventory().remove_item(input.id);
-        } else {
+        if (item.uses_left != 0) {
             item.uses_left -= 1;
             if (item.uses_left == 0) {
                 m_game.inventory().remove_item(input.id);
@@ -214,10 +253,9 @@ void LKGameWindow::complete_activity(CharacterId char_id) {
             notify(ActionComplete, QString("%1 finished mining.").arg(character.name()));
             break;
         }
-        case Praying: {
+        case Trading: {
             destroy_items_in_slots(Offering);
-            destroy_items_in_slots(KeyOffering);
-            notify(ActionComplete, QString("%1 finished their prayers.").arg(character.name()));
+            notify(ActionComplete, QString("%1 finished trading.").arg(character.name()));
             break;
         }
         case Eating: {
@@ -242,7 +280,6 @@ const std::map<ItemDomain, QPushButton *> LKGameWindow::get_activity_buttons() {
         { Smithing, m_window.smith_button },
         { Foraging, m_window.forage_button },
         { Mining, m_window.mine_button },
-        { Praying, m_window.pray_button },
     };
 }
 
@@ -255,9 +292,5 @@ void LKGameWindow::timerEvent(QTimerEvent *event) {
         if (event->timerId() == pair.second) {
             progress_activity(pair.first, ACTIVITY_TICK_RATE_MS);
         }
-    }
-
-    if (event->timerId() == m_checkin_timer) {
-        DoughbyteConnection::checkin(m_game);
     }
 }

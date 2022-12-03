@@ -13,7 +13,7 @@
 
 class Game;
 
-constexpr static int MAX_ARRAY_SIZE {std::max({ SMITHING_SLOTS, PRAYER_SLOTS, ARTIFACT_SLOTS })};
+constexpr static int MAX_ARRAY_SIZE {std::max({ SMITHING_SLOTS, TRADE_SLOTS, ARTIFACT_SLOTS })};
 
 const static int BASE_MAX_ENERGY = 50;
 const static int BASE_MAX_MORALE = 50;
@@ -29,6 +29,7 @@ struct Character {
     QColor &color();
     CharacterActivity &activity();
     CharacterId id();
+    bool &accepting_trade();
 
     bool activity_ongoing();
     double activity_percent_complete();
@@ -62,7 +63,6 @@ private:
     ExternalItemIds m_external_item_ids {
         { Material, {} },
         { Offering, {} },
-        { KeyOffering, {} },
         { Artifact, {} },
     };
     Effects m_effects {};
@@ -70,11 +70,11 @@ private:
         { SmithingTool, EMPTY_ID },
         { ForagingTool, EMPTY_ID },
         { MiningTool, EMPTY_ID },
-        { PrayerTool, EMPTY_ID },
     };
     std::uint16_t m_energy {40};
     std::uint16_t m_morale {40};
     std::uint16_t m_id;
+    bool m_accepting_trade;
 
     Game *m_game;
 };

@@ -37,7 +37,7 @@ ExplorerButton::ExplorerButton(QWidget *parent, LKGameWindow *game_window, Chara
     layout->addWidget(status_area, 2, 0);
 
     int i = 0;
-    for (ItemDomain domain : { Smithing, Foraging, Mining, Praying }) {
+    for (ItemDomain domain : { Smithing, Foraging, Mining }) {
         QLabel *label = new QLabel(this);
         label->setText("");
         label->setMinimumSize(QSize(8, 8));
@@ -66,7 +66,7 @@ void ExplorerButton::refresh() {
         setFlat(true);
     }
 
-    for (ItemDomain domain : { Smithing, Foraging, Mining, Praying }) {
+    for (ItemDomain domain : { Smithing, Foraging, Mining }) {
         if (character.tools().at(domain) != EMPTY_ID) {
             m_tool_status_labels.at(domain)->setPixmap(Icons::active_status_icons().at(domain));
         } else {
@@ -84,6 +84,20 @@ void ExplorerButton::refresh() {
 }
 
 void ExplorerButton::mousePressEvent(QMouseEvent *) {
+    Character &character = m_game_window->game().characters().at(m_id);
+
     m_game_window->selected_char_id() = m_id;
+
+    for (int i = 0; i < TRADE_SLOTS; i++) {
+        Inventory &inventory = m_game_window->game().inventory();
+        m_game_window->connection().set_offering(i,inventory.get_item(character.external_items().at(Offering)[i]));
+    }
+
+    if (character.accepting_trade()) {
+        m_game_window->connection().accept();
+    } else {
+        m_game_window->connection().unaccept();
+    }
+
     m_game_window->refresh_ui();
 }

@@ -1,7 +1,7 @@
 #include "game.h"
 
 Game::Game()
-    : m_game_id(Generators::game_id())
+    : m_game_id(Generators::game_id()), m_tribe_name(Generators::tribe_name())
 {
     add_character(Generators::yokin_name());
     add_character(Generators::yokin_name());
@@ -28,8 +28,16 @@ Inventory &Game::inventory() {
     return m_inventory;
 }
 
+ForeignTribes &Game::tribes() {
+    return m_tribes;
+}
+
 GameId Game::game_id() {
     return m_game_id;
+}
+
+QString &Game::tribe_name() {
+    return m_tribe_name;
 }
 
 void Game::add_character(const QString &name) {
@@ -87,17 +95,12 @@ TooltipText Game::tooltip_text_for(const Item &item) {
             break;
         }
         case Offering: {
-            text.subtext += QString(" <b><font color=green>(Queued for offering by %1)</font></b>").arg(character_name);
-            break;
-        }
-        case KeyOffering: {
-            text.subtext += QString(" <b><font color=#ff7933>(Queued as key offering by %1)</font></b>").arg(character_name);
+            text.subtext += QString(" <b><font color=green>(Queued for trading by %1)</font></b>").arg(character_name);
             break;
         }
         case SmithingTool:
         case ForagingTool:
         case MiningTool:
-        case PrayerTool:
         case Artifact: {
             text.subtext += QString(" <b><font color=green>(Equipped by %1)</font></b>").arg(character_name);
             break;

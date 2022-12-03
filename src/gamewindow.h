@@ -28,6 +28,8 @@ public:
     Ui::LKMainWindow &window();
     Tooltip &tooltip();
     CharacterId &selected_char_id();
+    GameId &selected_tribe_id();
+    DoughbyteConnection &connection();
 
     Character &selected_char();
     void swap_char(CharacterId char_id);
@@ -46,6 +48,7 @@ public:
     void refresh_slots();
     void refresh_ui_bars();
     void refresh_ui_buttons();
+    void refresh_trade_ui();
 
     const std::map<ItemDomain, QPushButton *> get_activity_buttons();
     const std::vector<QString> &item_slot_names();
@@ -57,8 +60,9 @@ private:
     Ui::LKMainWindow m_window;
     Tooltip m_item_tooltip;
     Game m_game;
-    CharacterId m_selected_char_id {0};
+    CharacterId m_selected_char_id = 0;
+    GameId m_selected_tribe_id = NOBODY;
     ActivityTimers m_timers;
     std::vector<QString> m_slot_names;
-    int m_checkin_timer;
+    DoughbyteConnection m_connection;
 };

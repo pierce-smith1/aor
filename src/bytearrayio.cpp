@@ -20,12 +20,6 @@ void ByteArrayIO::write_long(QByteArray &array, std::uint64_t n) {
     array.append(n & 0xff);
 }
 
-void ByteArrayIO::write_item(QByteArray &array, const Item &item) {
-    write_short(array, item.code);
-    write_long(array, item.id);
-    write_byte(array, item.uses_left);
-}
-
 char ByteArrayIO::read_byte(const QByteArray &array, size_t from) {
     return array.at(from);
 }
@@ -44,13 +38,4 @@ std::uint64_t ByteArrayIO::read_long(const QByteArray &array, size_t from) {
         | ((std::uint64_t) array.at(from + 5) << 40)
         | ((std::uint64_t) array.at(from + 6) << 48)
         | ((std::uint64_t) array.at(from + 7) << 56);
-}
-
-std::pair<Item, int> ByteArrayIO::read_item(const QByteArray &array, size_t from) {
-    Item item;
-
-    item.code = read_short(array, from);
-    item.uses_left = read_byte(array, from + 2);
-
-    return std::make_pair(item, 3);
 }

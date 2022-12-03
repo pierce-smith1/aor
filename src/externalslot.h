@@ -2,9 +2,6 @@
 
 #include "itemslot.h"
 
-const static int PRAYER_KEY_SLOT_Y = 0;
-const static int PRAYER_KEY_SLOT_X = 1;
-
 class ExternalSlot : public ItemSlot {
     Q_OBJECT
 

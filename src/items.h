@@ -20,8 +20,7 @@
 const static int SMITHING_SLOTS = 3;
 const static int SMITHING_SLOTS_PER_ROW = 3;
 
-const static int PRAYER_SLOTS = 6;
-const static int PRAYER_SLOTS_PER_ROW = 3;
+const static int TRADE_SLOTS = 3;
 
 const static int ARTIFACT_SLOTS = 4;
 
@@ -39,21 +38,20 @@ const static CharacterId NOBODY = 0xffff;
 
 using ItemType = std::uint16_t;
 enum ItemDomain : ItemType {
-    Ordinary      = 0,      None = 0,
-    Consumable    = 1 << 0, Eating = 1 << 0,
-    Material      = 1 << 1,
-    SmithingTool  = 1 << 2, Smithing = 1 << 2,
-    ForagingTool  = 1 << 3, Foraging = 1 << 3,
-    MiningTool    = 1 << 4, Mining = 1 << 4,
-    PrayerTool    = 1 << 5, Praying = 1 << 5,
-    Blessing      = 1 << 6,
-    Artifact      = 1 << 7,
-    Effect        = 1 << 8,
-    Rune          = 1 << 9,
-    Portrait      = 1 << 10,
-    Offering      = 1 << 11,
-    KeyOffering   = Offering | 1 << 12,
-    Tool          = SmithingTool | ForagingTool | MiningTool | PrayerTool
+    Ordinary        = 0,      None = 0,
+    Consumable      = 1 << 0, Eating   = 1 << 0,
+    Material        = 1 << 1,
+    SmithingTool    = 1 << 2, Smithing = 1 << 2,
+    ForagingTool    = 1 << 3, Foraging = 1 << 3,
+    MiningTool      = 1 << 4, Mining   = 1 << 4,
+    Offering        = 1 << 5, Trading  = 1 << 5,
+    Blessing        = 1 << 6,
+    Artifact        = 1 << 7,
+    Effect          = 1 << 8,
+    Rune            = 1 << 9,
+    Portrait        = 1 << 10,
+    ForeignOffering = 1 << 11,
+    Tool            = SmithingTool | ForagingTool | MiningTool
 };
 
 const static int CT_EMPTY = 0;
@@ -303,13 +301,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
             { ToolDiscoverWeight1, 1 },
             { ToolDiscoverWeight2, 1 }
         }
-    },
-    {
-        CT_TOOL | 5,
-        "sepulchre_of_corruption", "Sepulchre of Corruption",
-        "<i>There are some problems you simply cannot solve.</i>",
-        3 USES, PrayerTool, LEVEL 3,
-        {}
     },
     {
         CT_ARTIFACT | 0,

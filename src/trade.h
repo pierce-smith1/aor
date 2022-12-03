@@ -11,26 +11,38 @@
 #include "bytearrayio.h"
 #include "game.h"
 
+class LKGameWindow;
+
 const static char API_VERSION = 1;
 
-const static char REQ_CHECKIN = 0;
-const static char REQ_OFFER = 1;
+const static char MT_IGNORE = '\0';
+const static char MT_UPDATE = 'u';
+const static char MT_UPDATEAGREEMENTS = 'a';
+const static char MT_EXECUTE = 'e';
+const static char MT_IDENTIFY = 'i';
 
-const static char RES_NOTHING_TO_DO = 0;
-const static char RES_OFFER = 1;
-const static char RES_ERROR = 2;
+class DoughbyteConnection {
+public:
+    const static QString remote_http_url;
+    const static QString remote_tcp_url;
 
-const static int AOW_PORT = 10241;
-const static int CHECKIN_INTERVAL_MS = 5000;
+    DoughbyteConnection(LKGameWindow *game_window);
 
-struct TradeOffering {
-    ItemCode key;
-    std::vector<Item> items;
-};
+    bool is_connected();
 
-namespace DoughbyteConnection {
-    static QString remote_url("doughbyte.com");
+    void connect_to_ping_server();
+    void set_offering(int n, const Item &item);
+    void update();
+    void update_identities();
+    void update_agreements();
+    void accept();
+    void unaccept();
+    void execute_trade();
+    void identify();
 
-    void checkin(Game &game);
-    void offer(Game &game, const std::vector<Item> &items, ItemCode key);
+private:
+    void http_request(std::function<void(QNetworkReply *)> on_finish, QString payload, QString path);
+
+    LKGameWindow *m_game_window;
+    bool m_is_connected = false;
 };

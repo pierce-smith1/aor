@@ -52,6 +52,55 @@ QString Generators::yokin_name(size_t length) {
     return name.left(length);
 }
 
+QString Generators::tribe_name() {
+    const static std::vector<Cluster> LOCATION_ADJECTIVES = {
+        {"Clear", 1.0},
+        {"Warm", 1.0},
+        {"Sandy", 1.0},
+        {"Dark", 1.0},
+        {"Murk", 1.0},
+        {"Ashen", 1.0},
+        {"Painted", 1.0},
+        {"Striped", 1.0},
+        {"Dry", 1.0},
+        {"Wet", 1.0},
+        {"Frost", 1.0},
+        {"Crystal", 1.0},
+        {"Rock", 1.0},
+        {"Lucent", 1.0},
+        {"Shining", 1.0},
+        {"High", 1.0},
+        {"Lush", 1.0},
+        {"Vivid", 1.0},
+        {"Under", 1.0},
+    };
+
+    const static std::vector<Cluster> LOCATION_NOUNS = {
+        {"stone", 1.0},
+        {"garden", 1.0},
+        {"spines", 1.0},
+        {"spires", 1.0},
+        {"tail", 1.0},
+        {"foot", 1.0},
+        {"head", 1.0},
+        {"mesa", 1.0},
+        {"woods", 1.0},
+        {"plains", 1.0},
+        {"fields", 1.0},
+        {"cliffs", 1.0},
+        {"thorns", 1.0},
+        {"canyons", 1.0},
+        {"chasms", 1.0},
+        {"hills", 1.0},
+        {"crater", 1.0},
+        {"caves", 1.0},
+        {"caverns", 1.0},
+        {"lake", 1.0}
+    };
+
+    return sample_with_weights(LOCATION_ADJECTIVES) + sample_with_weights(LOCATION_NOUNS);
+}
+
 std::vector<Item> Generators::base_items(const std::vector<Item> &inputs, const Item &tool, ItemDomain action) {
     std::vector<Item> outputs;
     const ItemProperties &tool_properties {tool.def()->properties};
@@ -119,25 +168,6 @@ std::vector<Item> Generators::base_items(const std::vector<Item> &inputs, const 
 
             break;
         }
-        case Praying: {
-            if (tool.id == EMPTY_ID) {
-                return {};
-            }
-
-            std::vector<std::pair<Item, double>> possible_discoveries;
-            for (int i {(int) ToolCanDiscover1}; i <= (int) ToolCanDiscover9; i++) {
-                if (tool_properties[(ItemProperty) i] != 0) {
-                    possible_discoveries.emplace_back(
-                        tool_properties[(ItemProperty) i],
-                        tool_properties[(ItemProperty) (i + 9)]
-                    );
-                }
-            }
-
-            outputs.emplace_back(Generators::sample_with_weights(possible_discoveries));
-
-            break;
-        }
         default: {
             qWarning("Tried to generate items with unknown action domain (%d)", action);
         }
@@ -150,7 +180,7 @@ ItemId Generators::item_id() {
     auto time {std::chrono::system_clock::now().time_since_epoch()};
     auto milliseconds {std::chrono::duration_cast<std::chrono::milliseconds>(time).count()};
 
-    return (milliseconds & 0xffffffff) + ((std::uint64_t) Generators::rng()->generate() << 32);
+    return ((milliseconds & 0xffffffff) + ((std::uint64_t) Generators::rng()->generate() << 32)) & 0x7fffffffffffffff;
 }
 
 QColor Generators::color() {

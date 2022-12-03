@@ -20,6 +20,10 @@ CharacterId Character::id() {
     return m_id;
 }
 
+bool &Character::accepting_trade() {
+    return m_accepting_trade;
+}
+
 bool Character::activity_ongoing() {
     return activity().action != None;
 }
@@ -105,14 +109,6 @@ bool Character::can_perform_action(ItemDomain domain) {
 
             return enough_materials && !activity_ongoing();
         }
-        case Praying: {
-            const auto &offerings = external_items().at(Offering);
-            bool enough_offerings = std::any_of(begin(offerings), begin(offerings) + PRAYER_SLOTS, [&](ItemId a) {
-                return a != EMPTY_ID;
-            });
-
-            return enough_offerings && !activity_ongoing();
-        }
         case Foraging:
         case Mining: {
             Item tool = m_game->inventory().get_item(tool_id(domain));
@@ -168,13 +164,6 @@ int Character::morale_to_gain() {
             });
             break;
         }
-        case Praying: {
-            std::vector<Item> offerings = m_game->inventory().items_of_intent(m_id, Offering);
-            gain = std::accumulate(begin(offerings), end(offerings), 0, [](int a, const Item &b) {
-                return b.def()->item_level * 10 + a;
-            });
-            break;
-        }
         default: {
             gain = 0;
             break;
@@ -192,7 +181,7 @@ std::vector<Item> Character::input_items() {
         case Smithing: {
             return m_game->inventory().items_of_intent(m_id, Material);
         }
-        case Praying: {
+        case Trading: {
             return m_game->inventory().items_of_intent(m_id, Offering);
         }
         default: {

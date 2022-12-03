@@ -15,6 +15,9 @@ compile() {
     echo -e "CompileFlags:\n\tAdd: [${INCFLAGS},-std=c++17]" > .clangd
 
     make
+
+    cd $WHEREAMI/server
+    ./build.sh
 }
 
 generate_qrc() {

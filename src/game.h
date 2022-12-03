@@ -8,7 +8,13 @@
 #include "inventory.h"
 #include "generators.h"
 
+struct TradeState {
+    bool remote_accepted = false;
+    std::array<Item, TRADE_SLOTS> offer {};
+};
+
 using Characters = std::map<CharacterId, Character>;
+using ForeignTribes = std::map<GameId, TradeState>;
 
 class Game {
 public:
@@ -16,7 +22,9 @@ public:
 
     Characters &characters();
     Inventory &inventory();
+    ForeignTribes &tribes();
     GameId game_id();
+    QString &tribe_name();
 
     void add_character(const QString &name);
     void add_item(const Item &item);
@@ -29,5 +37,7 @@ public:
 private:
     Characters m_explorers;
     Inventory m_inventory;
+    ForeignTribes m_tribes;
     GameId m_game_id;
+    QString m_tribe_name;
 };

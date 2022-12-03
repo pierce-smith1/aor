@@ -1,5 +1,6 @@
 #include "externalslot.h"
 #include "items.h"
+#include "foreigntradeslot.h"
 
 ExternalSlot::ExternalSlot(LKGameWindow *game, ItemDomain type, int n)
     : ItemSlot(game), item_slot_type(type), n(n)
@@ -21,6 +22,10 @@ Item ExternalSlot::get_item() {
 
 void ExternalSlot::set_item(const Item &item) {
     m_game_window->selected_char().external_items()[type()][n] = item.id;
+
+    if (type() == Offering) {
+        m_game_window->connection().set_offering(n, item);
+    }
 }
 
 ItemDomain ExternalSlot::type() {
@@ -28,12 +33,6 @@ ItemDomain ExternalSlot::type() {
 }
 
 void ExternalSlot::refresh_pixmap() {
-
-    if (type() == KeyOffering) {
-        setFrameShape(NoFrame);
-        setStyleSheet("border: 1px solid #ffcc66; border-radius: 5px");
-    }
-
     ItemSlot::refresh_pixmap();
 }
 
@@ -57,7 +56,6 @@ void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
     ItemType dropped_type {dropped_item.def()->type};
 
     switch (type()) {
-        case KeyOffering:
         case Offering: {
             if (!(dropped_type & Rune)) { event->acceptProposedAction(); } break;
         }
@@ -90,10 +88,11 @@ void ExternalSlot::dropEvent(QDropEvent *event) {
 
 void ExternalSlot::insert_external_slots(LKGameWindow &window) {
     QGridLayout *smith_layout = window.window().smith_layout;
-    QGridLayout *prayer_layout = window.window().prayer_layout;
+    QHBoxLayout *trade_layout = window.window().trade_slot_layout;
+    QHBoxLayout *foreign_trade_layout = window.window().foreign_trade_slot_layout;
     QLayout *aritfact_layout = window.window().artifact_box->layout();
 
-    for (int i {0}; i < SMITHING_SLOTS; i++) {
+    for (int i = 0; i < SMITHING_SLOTS; i++) {
         smith_layout->addWidget(
             new ExternalSlot(&window, Material, i),
             i / SMITHING_SLOTS_PER_ROW + 1,
@@ -101,21 +100,12 @@ void ExternalSlot::insert_external_slots(LKGameWindow &window) {
         );
     }
 
-    for (int i {0}; i < PRAYER_SLOTS; i++) {
-        int y = i / PRAYER_SLOTS_PER_ROW;
-        int x = i % PRAYER_SLOTS_PER_ROW;
-
-        ExternalSlot *slot;
-        if (y == PRAYER_KEY_SLOT_Y && x == PRAYER_KEY_SLOT_X) {
-            slot = new ExternalSlot(&window, KeyOffering, 0);
-        } else {
-            slot = new ExternalSlot(&window, Offering, i);
-        }
-
-        prayer_layout->addWidget(slot, y + 1, x);
+    for (int i = 0; i < TRADE_SLOTS; i++) {
+        trade_layout->addWidget(new ExternalSlot(&window, Offering, i));
+        foreign_trade_layout->addWidget(new ForeignTradeSlot(&window, i));
     }
 
-    for (int i {0}; i < ARTIFACT_SLOTS; i++) {
+    for (int i = 0; i < ARTIFACT_SLOTS; i++) {
         aritfact_layout->addWidget(new ExternalSlot(&window, Artifact, i));
     }
 }
@@ -147,7 +137,6 @@ void ToolSlot::insert_tool_slots(LKGameWindow &window) {
     window.window().smith_layout->addWidget(new ToolSlot(&window, SmithingTool), 0, 0, 1, 3);
     window.window().exploring_layout->addWidget(new ToolSlot(&window, ForagingTool), 0, 0);
     window.window().exploring_layout->addWidget(new ToolSlot(&window, MiningTool), 2, 0);
-    window.window().prayer_layout->addWidget(new ToolSlot(&window, PrayerTool), 0, 0, 1, 3);
 }
 
 PortraitSlot::PortraitSlot(LKGameWindow *game)
