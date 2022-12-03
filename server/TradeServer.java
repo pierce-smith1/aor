@@ -7,329 +7,198 @@ import java.nio.file.*;
 
 import com.sun.net.httpserver.*;
 
-class Item {
-    public short code;
-    public byte uses;
+class TradeWorker extends Thread {
+    public TradeServer server;
+    public Socket connection;
+    public DataInputStream in;
+    public DataOutputStream out;
+    public long gameId;
 
-    public Item() {
-        this((short) 0, (byte) 0);
-    }
+    public TradeWorker(TradeServer server, Socket connection, long gameId) throws IOException {
+        this.server = server;
+        this.connection = connection;
+        this.gameId = gameId;
 
-    public Item(short code, byte uses) {
-        this.code = code;
-        this.uses = uses;
-    }
-
-    @Override
-    public String toString() {
-        return String.format(":%x;%x", code, uses);
-    }
-}
-
-class Offer {
-    public final static int OFFER_SIZE = 3;
-
-    public Item[] items = new Item[OFFER_SIZE];
-
-    public Offer() {
-        for (int i = 0; i < OFFER_SIZE; i++) {
-            items[i] = new Item();
-        }
+        in = new DataInputStream(connection.getInputStream());
+        out = new DataOutputStream(connection.getOutputStream());
     }
 
     @Override
-    public String toString() {
-        StringBuilder s = new StringBuilder("+");
+    public void run() {
+        try {
+            while (true) {
+                synchronized (in) {
+                    byte messageCode = in.readByte();
+                    dispatch(messageCode);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                connection.close();
+                System.out.printf("Lost connection from %s, gameId %x\n", connection.getInetAddress(), gameId);
 
-        for (int i = 0; i < OFFER_SIZE; i++) {
-            s.append(items[i]);
-        }
+                DataOutputStream others = server.sendAllOthers(gameId);
 
-        return s.toString();
-    }
-}
-
-class Offers {
-    public Map<Long, Offer> map = Collections.synchronizedMap(new HashMap<>());
-
-    public Offers(Path dataPath) throws IOException {
-        if (!Files.exists(dataPath)) {
-            Files.createFile(dataPath);
-            return;
-        }
-
-        String data = new String(Files.readAllBytes(dataPath), "UTF-8");
-
-        String[] offers = data.split("#");
-        for (int i = 1; i < offers.length; i++) {
-            long gameId = Long.parseLong(offers[i].split("\\+")[0], 16);
-            map.put(gameId, new Offer());
-
-            String[] items = offers[i].split(":");
-
-            for (int j = 1; j < items.length; j++) {
-                short code = Short.parseShort(items[j].split(";")[0], 16);
-                byte uses = Byte.parseByte(items[j].split(";")[1], 16);
-                map.get(gameId).items[j - 1] = new Item(code, uses);
+                others.writeByte(TradeServer.MT_TRIBEAVAILABILITYCHANGED);
+                others.writeLong(gameId);
+                others.writeBoolean(false);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
     }
 
-    @Override
-    public String toString() {
-        StringBuilder s = new StringBuilder("-");
-
-        for (Map.Entry<Long, Offer> entry : map.entrySet()) {
-            s.append(String.format("#%x%s", entry.getKey(), entry.getValue()));
+    public void dispatch(byte messageCode) throws IOException {
+        switch (messageCode) {
+            case TradeServer.MT_OFFERCHANGED: {
+                System.out.printf("[%x] notifying offer change\n", gameId);
+                offerChanged();
+                break;
+            }
+            case TradeServer.MT_AGREEMENTCHANGED: {
+                System.out.printf("[%x] notifying agreement change\n", gameId);
+                agreementChanged();
+                break;
+            }
+            case TradeServer.MT_TRIBEAVAILABILITYCHANGED: {
+                System.out.printf("[%x] notifying availability change\n", gameId);
+                tribeAvailabilityChanged();
+                break;
+            }
+            case TradeServer.MT_WANTGAMESTATE: {
+                System.out.printf("[%x] wants game state\n", gameId);
+                wantGameState();
+                break;
+            }
+            default: {
+                System.out.printf("[%x] ! Got unknown messageCode %x (%c)\n", gameId, messageCode, messageCode);
+            }
         }
+    }
 
-        return s.toString();
+    public void offerChanged() throws IOException {
+        short itemCode = in.readShort();
+        byte  itemUses = in.readByte();
+        short index    = in.readShort();
+
+        DataOutputStream others = server.sendAllOthers(gameId);
+
+        others.writeByte(TradeServer.MT_OFFERCHANGED);
+        others.writeLong(gameId);
+        others.writeShort(itemCode);
+        others.writeByte(itemUses);
+        others.writeShort(index);
+    }
+
+    public void agreementChanged() throws IOException {
+        long partnerId = in.readLong();
+        boolean accepted  = in.readBoolean();
+
+        DataOutputStream partner = server.send(partnerId);
+
+        synchronized (partner) {
+            partner.writeByte(TradeServer.MT_AGREEMENTCHANGED);
+            partner.writeLong(gameId);
+            partner.writeBoolean(accepted);
+        }
+    }
+
+    public void tribeAvailabilityChanged() throws IOException {
+        boolean nowAvailable = in.readBoolean();
+
+        DataOutputStream others = server.sendAllOthers(gameId);
+
+        others.writeByte(TradeServer.MT_TRIBEAVAILABILITYCHANGED);
+        others.writeLong(gameId);
+        others.writeBoolean(nowAvailable);
+    }
+
+    public void wantGameState() throws IOException {
+        DataOutputStream others = server.sendAllOthers(gameId);
+
+        others.writeByte(TradeServer.MT_WANTGAMESTATE);
+        others.writeLong(gameId); // please address your game state to this id
+    }
+
+    public void myInfo() throws IOException {
+        long reportTo = in.readLong();
+        short itemCode1 = in.readShort();
+        byte itemUses1 = in.readByte();
+        short itemCode2 = in.readShort();
+        byte itemUses2 = in.readByte();
+        short itemCode3 = in.readShort();
+        byte itemUses3 = in.readByte();
+        boolean acceptingTrade = in.readBoolean();
+
+        DataOutputStream client = server.send(reportTo);
+
+        synchronized (client) {
+            client.writeByte(TradeServer.MT_MYINFO);
+            client.writeLong(gameId);
+            client.writeShort(itemCode1);
+            client.writeByte(itemUses1);
+            client.writeShort(itemCode2);
+            client.writeByte(itemCode2);
+            client.writeShort(itemCode3);
+            client.writeByte(itemCode3);
+            client.writeBoolean(acceptingTrade);
+        }
     }
 }
 
 public class TradeServer {
-    public static Path dataPath = Path.of("tsstate");
     public final static int PORT = 10241;
 
-    public Offers offers = new Offers(dataPath);
+    public ServerSocket server = new ServerSocket(PORT);
+    public Map<Long, TradeWorker> workers = Collections.synchronizedMap(new HashMap<>());
 
-    public Map<Long, Long> agreements = Collections.synchronizedMap(new HashMap<>());
-    public ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
-    public Map<Long, String> identities = Collections.synchronizedMap(new HashMap<>());
-    public TradePingServer pingServer = new TradePingServer();
-    public HttpServer server;
+    public final static byte MT_IGNORE = 0;
+    public final static byte MT_OFFERCHANGED = 'o';
+    public final static byte MT_AGREEMENTCHANGED = 'g';
+    public final static byte MT_TRIBEAVAILABILITYCHANGED = 't';
+    public final static byte MT_WANTGAMESTATE = 'w';
+    public final static byte MT_MYINFO = 'i';
 
-    public TradeServer() throws IOException {
-        server = HttpServer.create(new InetSocketAddress(PORT), 0);
-
-        server.createContext("/offeradd/", this::offerAdd);
-        server.createContext("/update/", this::update);
-        server.createContext("/updateidentities/", this::updateIdentities);
-        server.createContext("/accept/", this::accept);
-        server.createContext("/unaccept/", this::unaccept);
-        server.createContext("/agreements/", this::agreements);
-        server.createContext("/identify/", this::identify);
-
-        timer.scheduleWithFixedDelay(() -> {
-            pingServer.ping(TradePingServer.MT_IDENTIFY);
-        }, 0, 1, TimeUnit.MINUTES);
-    }
+    public TradeServer() throws IOException { }
 
     public static void main(String[] args) throws IOException {
-        TradeServer s = new TradeServer();
-        try {
-            s.server.start();
-            s.pingServer.listen();
-        } finally {
-            s.pingServer.server.close();
-        }
+        TradeServer server = new TradeServer();
+        server.listen();
     }
-
-    public void saveServerState() throws IOException {
-        Files.write(dataPath, offers.toString().getBytes("UTF-8"));
-    }
-
-    public void offerAdd(HttpExchange exchange) throws IOException {
-        try {
-            String request = new String(exchange.getRequestBody().readAllBytes(), "UTF-8");
-            System.out.printf("Request to offeradd: %s\n", request);
-
-            String[] args = request.split(";");
-
-            long gameId = Long.parseLong(args[0], 16);
-            int index = Integer.parseInt(args[1], 16);
-            short itemCode = Short.parseShort(args[2], 16);
-            byte itemUses = Byte.parseByte(args[3], 16);
-
-            if (!offers.map.containsKey(gameId)) {
-                offers.map.put(gameId, new Offer());
-            }
-            offers.map.get(gameId).items[index] = new Item(itemCode, itemUses);
-
-            exchange.sendResponseHeaders(200, 0);
-            saveServerState();
-            pingServer.ping(TradePingServer.MT_UPDATE);
-        } catch (Exception e) {
-            e.printStackTrace();
-            exchange.sendResponseHeaders(500, 0);
-        } finally {
-            exchange.close();
-        }
-    }
-
-    public void update(HttpExchange exchange) throws IOException {
-        try {
-            System.out.printf("Request for update\n");
-
-            String response = offers.toString();
-            exchange.sendResponseHeaders(200, response.getBytes("UTF-8").length);
-            exchange.getResponseBody().write(response.getBytes("UTF-8"));
-        } catch (Exception e) {
-            e.printStackTrace();
-            exchange.sendResponseHeaders(500, 0);
-        } finally {
-            exchange.close();
-        }
-    }
-
-    public void updateIdentities(HttpExchange exchange) throws IOException {
-        try {
-            System.out.printf("Request for updated identities\n");
-
-            StringBuilder response = new StringBuilder();
-            for (Map.Entry<Long, String> entry : identities.entrySet()) {
-                response.append(":");
-                response.append(Long.toString(entry.getKey(), 16));
-                response.append(";");
-                response.append(entry.getValue());
-            }
-            exchange.sendResponseHeaders(200, response.toString().getBytes("UTF-8").length);
-            exchange.getResponseBody().write(response.toString().getBytes("UTF-8"));
-        } catch (Exception e) {
-            e.printStackTrace();
-            exchange.sendResponseHeaders(500, 0);
-        } finally {
-            exchange.close();
-        }
-    }
-
-    public void accept(HttpExchange exchange) throws IOException {
-        try {
-            String request = new String(exchange.getRequestBody().readAllBytes(), "UTF-8");
-            System.out.printf("Request to accept: %s\n", request);
-
-            long acceptingGame = Long.parseLong(request.split(";")[0], 16);
-            long acceptedGame = Long.parseLong(request.split(";")[1], 16);
-
-            agreements.put(acceptingGame, acceptedGame);
-
-            if (agreements.containsKey(acceptedGame) && agreements.get(acceptedGame) == acceptingGame) {
-                System.out.printf("Notifying %d and %d that they should trade!\n", acceptingGame, acceptedGame);
-                agreements.remove(acceptingGame);
-                agreements.remove(acceptedGame);
-                pingServer.ping(TradePingServer.MT_EXECUTE);
-            }
-
-            pingServer.ping(TradePingServer.MT_UPDATEAGREEMENTS);
-            exchange.sendResponseHeaders(200, 0);
-        } catch (Exception e) {
-            e.printStackTrace();
-            exchange.sendResponseHeaders(500, 0);
-        } finally {
-            exchange.close();
-        }
-    }
-
-    public void unaccept(HttpExchange exchange) throws IOException {
-        try {
-            String request = new String(exchange.getRequestBody().readAllBytes(), "UTF-8");
-            System.out.printf("Request to unaccept: %s\n", request);
-
-            agreements.remove(Long.parseLong(request, 16));
-
-            exchange.sendResponseHeaders(200, 0);
-            pingServer.ping(TradePingServer.MT_UPDATEAGREEMENTS);
-        } catch (Exception e) {
-            e.printStackTrace();
-            exchange.sendResponseHeaders(500, 0);
-        } finally {
-            exchange.close();
-        }
-    }
-
-
-    public void agreements(HttpExchange exchange) throws IOException {
-        try {
-            System.out.printf("Request for agreements\n");
-
-            StringBuilder response = new StringBuilder();
-            for (Map.Entry<Long, Long> entry : agreements.entrySet()) {
-                response.append(":");
-                response.append(Long.toString(entry.getKey(), 16));
-                response.append(";");
-                response.append(Long.toString(entry.getValue(), 16));
-            }
-            exchange.sendResponseHeaders(200, response.toString().getBytes("UTF-8").length);
-            exchange.getResponseBody().write(response.toString().getBytes("UTF-8"));
-        } catch (Exception e) {
-            e.printStackTrace();
-            exchange.sendResponseHeaders(500, 0);
-        } finally {
-            exchange.close();
-        }
-    }
-
-    public void identify(HttpExchange exchange) throws IOException {
-        try {
-            String request = new String(exchange.getRequestBody().readAllBytes(), "UTF-8");
-            System.out.printf("Request to identify: %s\n", request);
-
-            long gameId = Long.parseLong(request.split(";")[0], 16);
-            String tribeName = request.split(";")[1];
-
-            identities.put(gameId, tribeName);
-            exchange.sendResponseHeaders(200, 0);
-        } catch (Exception e) {
-            e.printStackTrace();
-            exchange.sendResponseHeaders(500, 0);
-        } finally {
-            exchange.close();
-        }
-    }
-}
-
-class TradePingServer {
-    public final static byte MT_IGNORE = 0;
-    public final static byte MT_UPDATE = 'u';
-    public final static byte MT_UPDATEAGREEMENTS = 'a';
-    public final static byte MT_EXECUTE = 'e';
-    public final static byte MT_IDENTIFY = 'i';
-
-    public final static int PORT = 10242;
-
-    public ServerSocket server = new ServerSocket(PORT);
-    public List<Socket> connections = Collections.synchronizedList(new ArrayList<>());
-    public byte messageCode = MT_IGNORE;
-
-    public TradePingServer() throws IOException { }
 
     public void listen() throws IOException {
         while (true) {
             Socket connection = server.accept();
-            connections.add(connection);
 
-            System.out.printf("New pings connection from %s\n", connection.getInetAddress());
+            DataInputStream in = new DataInputStream(connection.getInputStream());
+            Long gameId = in.readLong();
 
-            Thread holder = new Thread(() -> {
-                try {
-                    while (true) {
-                        synchronized (server) {
-                            System.out.println("Pings waiting");
-                            server.wait();
+            System.out.printf("New connection from %s, gameId %x\n", connection.getInetAddress(), gameId);
 
-                            System.out.printf("Echoing %c\n", messageCode);
-                            connection.getOutputStream().write(messageCode);
-                            connection.getOutputStream().flush();
-                        }
-                    }
-                } catch (InterruptedException | IOException e) {
-                } finally {
-                    try {
-                        connections.remove(connection);
-                        connection.close();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
-            holder.start();
+            TradeWorker worker = new TradeWorker(this, connection, gameId);
+            workers.put(gameId, worker);
+            worker.start();
         }
     }
 
-    public void ping(byte message) {
-        synchronized (server) {
-            messageCode = message;
-            server.notifyAll();
-        }
+    public DataOutputStream send(long gameId) {
+        return workers.get(gameId).out;
+    }
+
+    public DataOutputStream sendAllOthers(long gameId) {
+        return new DataOutputStream(new OutputStream() {
+            public void write(int b) throws IOException {
+                for (Map.Entry<Long, TradeWorker> entry : workers.entrySet()) {
+                    if (entry.getKey() != gameId) {
+                        DataOutputStream out = entry.getValue().out;
+                        synchronized (out) { // LOXXE CITY
+                            out.write(b);
+                        }
+                    }
+                }
+            }
+        });
     }
 }
