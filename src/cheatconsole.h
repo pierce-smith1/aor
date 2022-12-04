@@ -135,31 +135,26 @@ const static std::vector<CheatCommand> COMMANDS = {
             qDebug("done");
         }
     },
-    /*
     {
         "save",
-        "Save the current state of the game to the file ($0)",
-        1,
-        [](LKGameWindow *game, const QStringList &args) {
-            StateSerialize::save_state(game->game().inventory().state, args[0]);
+        "Save the current state of the game to the file \"save.lk\"",
+        0,
+        [](LKGameWindow *game, const QStringList &) {
+            game->save();
 
             qDebug("done");
         }
     },
     {
         "load",
-        "Load a saved character state from the file ($0)",
-        1,
-        [](LKGameWindow *game, const QStringList &args) {
-            State *state = StateSerialize::load_state(args[0]);
-
-            game->game().inventory().state = *state;
-            delete state;
+        "Load a saved character state from the file \"save.lk\"",
+        0,
+        [](LKGameWindow *game, const QStringList &) {
+            game->load();
 
             qDebug("done");
         }
     },
-    */
     {
         "name",
         "Change the current character's name to ($0); if $0 is '?', show the current name instead",

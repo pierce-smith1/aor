@@ -104,3 +104,21 @@ bool Inventory::are_yx_coords_oob(int y, int x) {
 size_t Inventory::inventory_index(int y, int x) {
     return y * INVENTORY_COLS + x;
 }
+
+void Inventory::serialize(QIODevice *dev) {
+    IO::write_short(dev, m_items.size());
+    for (size_t i = 0; i < m_items.size(); i++) {
+        IO::write_item(dev, m_items[i]);
+    }
+}
+
+Inventory Inventory::deserialize(QIODevice *dev) {
+    Inventory v;
+
+    quint16 size = IO::read_short(dev);
+    for (size_t i = 0; i < size; i++) {
+        v.m_items[i] = IO::read_item(dev);
+    }
+
+    return v;
+}

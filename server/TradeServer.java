@@ -13,11 +13,13 @@ class TradeWorker extends Thread {
     public DataInputStream in;
     public DataOutputStream out;
     public long gameId;
+    public String tribeName;
 
-    public TradeWorker(TradeServer server, Socket connection, long gameId) throws IOException {
+    public TradeWorker(TradeServer server, Socket connection, long gameId, String tribeName) throws IOException {
         this.server = server;
         this.connection = connection;
         this.gameId = gameId;
+        this.tribeName = tribeName;
 
         in = new DataInputStream(connection.getInputStream());
         out = new DataOutputStream(connection.getOutputStream());
@@ -37,13 +39,17 @@ class TradeWorker extends Thread {
         } finally {
             try {
                 connection.close();
+                server.workers.remove(gameId);
                 System.out.printf("Lost connection from %s, gameId %x\n", connection.getInetAddress(), gameId);
 
                 DataOutputStream others = server.sendAllOthers(gameId);
 
                 others.writeByte(TradeServer.MT_TRIBEAVAILABILITYCHANGED);
                 others.writeLong(gameId);
+                TradeServer.writeString(others, tribeName);
                 others.writeBoolean(false);
+
+                others.flush();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -72,6 +78,16 @@ class TradeWorker extends Thread {
                 wantGameState();
                 break;
             }
+            case TradeServer.MT_MYINFO: {
+                System.out.printf("[%x] got game info\n", gameId);
+                myInfo();
+                break;
+            }
+            case TradeServer.MT_EXECUTETRADE: {
+                System.out.printf("[%x] executing trade\n", gameId);
+                executeTrade();
+                break;
+            }
             default: {
                 System.out.printf("[%x] ! Got unknown messageCode %x (%c)\n", gameId, messageCode, messageCode);
             }
@@ -90,10 +106,12 @@ class TradeWorker extends Thread {
         others.writeShort(itemCode);
         others.writeByte(itemUses);
         others.writeShort(index);
+
+        others.flush();
     }
 
     public void agreementChanged() throws IOException {
-        long partnerId = in.readLong();
+        long partnerId    = in.readLong();
         boolean accepted  = in.readBoolean();
 
         DataOutputStream partner = server.send(partnerId);
@@ -102,6 +120,8 @@ class TradeWorker extends Thread {
             partner.writeByte(TradeServer.MT_AGREEMENTCHANGED);
             partner.writeLong(gameId);
             partner.writeBoolean(accepted);
+
+            partner.flush();
         }
     }
 
@@ -112,24 +132,31 @@ class TradeWorker extends Thread {
 
         others.writeByte(TradeServer.MT_TRIBEAVAILABILITYCHANGED);
         others.writeLong(gameId);
+        TradeServer.writeString(others, tribeName);
         others.writeBoolean(nowAvailable);
+
+        others.flush();
     }
 
     public void wantGameState() throws IOException {
+        System.out.printf("[%x] asking others to notify %s about their game state...\n", gameId, tribeName);
         DataOutputStream others = server.sendAllOthers(gameId);
 
         others.writeByte(TradeServer.MT_WANTGAMESTATE);
-        others.writeLong(gameId); // please address your game state to this id
+        others.writeLong(gameId);
+
+        others.flush();
     }
 
     public void myInfo() throws IOException {
-        long reportTo = in.readLong();
-        short itemCode1 = in.readShort();
-        byte itemUses1 = in.readByte();
-        short itemCode2 = in.readShort();
-        byte itemUses2 = in.readByte();
-        short itemCode3 = in.readShort();
-        byte itemUses3 = in.readByte();
+        long reportTo          = in.readLong();
+        String tribeName       = TradeServer.readString(in);
+        short itemCode1        = in.readShort();
+        byte itemUses1         = in.readByte();
+        short itemCode2        = in.readShort();
+        byte itemUses2         = in.readByte();
+        short itemCode3        = in.readShort();
+        byte itemUses3         = in.readByte();
         boolean acceptingTrade = in.readBoolean();
 
         DataOutputStream client = server.send(reportTo);
@@ -137,6 +164,7 @@ class TradeWorker extends Thread {
         synchronized (client) {
             client.writeByte(TradeServer.MT_MYINFO);
             client.writeLong(gameId);
+            TradeServer.writeString(client, tribeName);
             client.writeShort(itemCode1);
             client.writeByte(itemUses1);
             client.writeShort(itemCode2);
@@ -144,6 +172,20 @@ class TradeWorker extends Thread {
             client.writeShort(itemCode3);
             client.writeByte(itemCode3);
             client.writeBoolean(acceptingTrade);
+
+            client.flush();
+        }
+    }
+
+    public void executeTrade() throws IOException {
+        long tribeId = in.readLong();
+
+        DataOutputStream client = server.send(tribeId);
+
+        synchronized (client) {
+            client.writeByte(TradeServer.MT_EXECUTETRADE);
+
+            client.flush();
         }
     }
 }
@@ -160,6 +202,7 @@ public class TradeServer {
     public final static byte MT_TRIBEAVAILABILITYCHANGED = 't';
     public final static byte MT_WANTGAMESTATE = 'w';
     public final static byte MT_MYINFO = 'i';
+    public final static byte MT_EXECUTETRADE = 'e';
 
     public TradeServer() throws IOException { }
 
@@ -170,35 +213,64 @@ public class TradeServer {
 
     public void listen() throws IOException {
         while (true) {
-            Socket connection = server.accept();
+            try {
+                Socket connection = server.accept();
 
-            DataInputStream in = new DataInputStream(connection.getInputStream());
-            Long gameId = in.readLong();
+                DataInputStream in = new DataInputStream(connection.getInputStream());
+                Long gameId = in.readLong();
+                String tribeName = readString(in);
 
-            System.out.printf("New connection from %s, gameId %x\n", connection.getInetAddress(), gameId);
+                System.out.printf("New connection from %s, gameId %x (%s)\n", connection.getInetAddress(), gameId, tribeName);
 
-            TradeWorker worker = new TradeWorker(this, connection, gameId);
-            workers.put(gameId, worker);
-            worker.start();
+                TradeWorker worker = new TradeWorker(this, connection, gameId, tribeName);
+                workers.put(gameId, worker);
+                worker.start();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
     public DataOutputStream send(long gameId) {
+        System.out.printf("Sending message to %x\n", gameId);
         return workers.get(gameId).out;
     }
 
     public DataOutputStream sendAllOthers(long gameId) {
         return new DataOutputStream(new OutputStream() {
+            public void flush() throws IOException {
+                for (Map.Entry<Long, TradeWorker> entry : workers.entrySet()) {
+                    if (entry.getKey() != gameId) {
+                        DataOutputStream out = entry.getValue().out;
+                        synchronized (out) {
+                            out.flush();
+                        }
+                    }
+                }
+            }
+
             public void write(int b) throws IOException {
                 for (Map.Entry<Long, TradeWorker> entry : workers.entrySet()) {
                     if (entry.getKey() != gameId) {
                         DataOutputStream out = entry.getValue().out;
-                        synchronized (out) { // LOXXE CITY
+                        synchronized (out) {
                             out.write(b);
                         }
                     }
                 }
             }
         });
+    }
+
+    public static void writeString(DataOutputStream out, String s) throws IOException {
+        out.writeByte((byte) s.length());
+        out.writeBytes(s);
+    }
+
+    public static String readString(DataInputStream in) throws IOException {
+        byte size = in.readByte();
+        byte[] bytes = new byte[size];
+        in.read(bytes);
+        return new String(bytes, "UTF-8");
     }
 }

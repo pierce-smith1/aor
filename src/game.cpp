@@ -130,3 +130,28 @@ void Game::refresh_ui_bars(QProgressBar *activity, QProgressBar *morale, QProgre
     energy->setMaximum(character.max_energy());
     energy->setValue(character.energy() + energy_gain);
 }
+
+void Game::serialize(QIODevice *dev) {
+    IO::write_short(dev, m_explorers.size());
+    for (size_t i = 0; i < m_explorers.size(); i++) {
+        m_explorers.at(i).serialize(dev);
+    }
+
+    m_inventory.serialize(dev);
+
+    // Do not serialize m_tribes, since that is populated by the network
+
+    IO::write_long(dev, m_game_id);
+    IO::write_string(dev, m_tribe_name);
+}
+
+Game *Game::deserialize(QIODevice *dev) {
+    Game *g = new Game;
+
+    quint16 size = IO::read_short(dev);
+    for (size_t i = 0; i < size; i++) {
+        g->m_explorers.emplace(std::make_pair(i, Character::deserialize(dev, g)));
+    }
+
+    return g;
+}

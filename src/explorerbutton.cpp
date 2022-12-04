@@ -22,7 +22,7 @@ ExplorerButton::ExplorerButton(QWidget *parent, LKGameWindow *game_window, Chara
     m_portrait->setText("");
     m_portrait->setMaximumSize(QSize(48, 48));
     m_portrait->setPixmap(QPixmap(":/assets/img/icons/yok.png"));
-    m_portrait_effect->setColor(m_game_window->game().characters().at(id).color());
+    m_portrait_effect->setColor(COLORS.at(m_game_window->game().characters().at(id).color()));
     m_portrait->setGraphicsEffect(m_portrait_effect);
     layout->addWidget(m_portrait, 1, 0);
 
@@ -90,13 +90,13 @@ void ExplorerButton::mousePressEvent(QMouseEvent *) {
 
     for (int i = 0; i < TRADE_SLOTS; i++) {
         Inventory &inventory = m_game_window->game().inventory();
-        m_game_window->connection().set_offering(i,inventory.get_item(character.external_items().at(Offering)[i]));
+        m_game_window->connection().offer_changed(inventory.get_item(character.external_items().at(Offering)[i]), i);
     }
 
     if (character.accepting_trade()) {
-        m_game_window->connection().accept();
+        m_game_window->connection().agreement_changed(m_game_window->selected_tribe_id(), true);
     } else {
-        m_game_window->connection().unaccept();
+        m_game_window->connection().agreement_changed(m_game_window->selected_tribe_id(), false);
     }
 
     m_game_window->refresh_ui();

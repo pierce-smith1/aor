@@ -1,6 +1,7 @@
 #pragma once
 
 #include "items.h"
+#include "io.h"
 
 const static int INVENTORY_ROWS = 16;
 const static int INVENTORY_COLS = 7;
@@ -21,6 +22,9 @@ public:
 
     static bool are_yx_coords_oob(int y, int x);
     static size_t inventory_index(int y, int x);
+
+    void serialize(QIODevice *dev);
+    static Inventory deserialize(QIODevice *dev);
 
 private:
     std::array<Item, INVENTORY_SIZE> m_items;

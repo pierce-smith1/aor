@@ -9,6 +9,7 @@
 #include <QRandomGenerator>
 
 #include "items.h"
+#include "colors.h"
 
 namespace Generators {
     using Cluster = std::pair<QString, double>;
@@ -41,6 +42,6 @@ namespace Generators {
     QString tribe_name();
     std::vector<Item> base_items(const std::vector<Item> &inputs, const Item &tool, ItemDomain domain);
     ItemId item_id();
-    QColor color();
+    Color color();
     GameId game_id();
 }

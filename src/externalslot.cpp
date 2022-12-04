@@ -24,7 +24,7 @@ void ExternalSlot::set_item(const Item &item) {
     m_game_window->selected_char().external_items()[type()][n] = item.id;
 
     if (type() == Offering) {
-        m_game_window->connection().set_offering(n, item);
+        m_game_window->connection().offer_changed(item, n);
     }
 }
 

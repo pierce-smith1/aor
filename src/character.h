@@ -23,10 +23,11 @@ using Effects = std::array<Item, EFFECT_SLOTS>;
 using ToolIds = std::map<ItemDomain, ItemId>;
 
 struct Character {
-    Character(CharacterId id, const QString &name, Game *game);
+    explicit Character(Game *game);
+    explicit Character(CharacterId id, const QString &name, Game *game);
 
     QString &name();
-    QColor &color();
+    Color &color();
     CharacterActivity &activity();
     CharacterId id();
     bool &accepting_trade();
@@ -56,9 +57,12 @@ struct Character {
     ExternalItemIds &external_items();
     Effects &effects();
 
+    void serialize(QIODevice *dev);
+    static Character deserialize(QIODevice *dev, Game *game);
+
 private:
     QString m_name;
-    QColor m_color;
+    Color m_color;
     CharacterActivity m_activity {};
     ExternalItemIds m_external_item_ids {
         { Material, {} },

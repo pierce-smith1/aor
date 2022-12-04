@@ -4,6 +4,7 @@
 
 #include <QObject>
 #include <QRecursiveMutex>
+#include <QIODevice>
 
 class LKGameWindow;
 
@@ -17,6 +18,8 @@ class LKGameWindow;
 #include "trade.h"
 
 using ActivityTimers = std::map<CharacterId, int>;
+
+static const QString SAVE_FILE_NAME = "save.rho";
 
 class LKGameWindow : public QMainWindow {
     Q_OBJECT
@@ -53,6 +56,9 @@ public:
     const std::map<ItemDomain, QPushButton *> get_activity_buttons();
     const std::vector<QString> &item_slot_names();
 
+    void save();
+    void load();
+
 protected:
     void timerEvent(QTimerEvent *event) override;
 
@@ -65,4 +71,5 @@ private:
     ActivityTimers m_timers;
     std::vector<QString> m_slot_names;
     DoughbyteConnection m_connection;
+    QFile m_save_file;
 };

@@ -5,7 +5,7 @@
 #include "effectslot.h"
 
 LKGameWindow::LKGameWindow()
-    : m_connection(this)
+    : m_connection(this), m_save_file(SAVE_FILE_NAME)
 {
     m_window.setupUi(this);
 
@@ -17,13 +17,18 @@ LKGameWindow::LKGameWindow()
     }
 
     connect(m_window.trade_accept_button, &QPushButton::clicked, [=]() {
-        m_connection.accept();
+        m_connection.agreement_changed(m_selected_tribe_id, true);
         selected_char().accepting_trade() = true;
         refresh_ui_buttons();
+
+        if (m_game.tribes().at(selected_tribe_id()).remote_accepted) {
+            m_connection.execute_trade();
+            m_connection.notify_trade(selected_tribe_id());
+        }
     });
 
     connect(m_window.trade_unaccept_button, &QPushButton::clicked, [=]() {
-        m_connection.unaccept();
+        m_connection.agreement_changed(m_selected_tribe_id, false);
         selected_char().accepting_trade() = false;
         refresh_ui_buttons();
     });
@@ -57,7 +62,7 @@ LKGameWindow::LKGameWindow()
     energy_palette.setColor(QPalette::Highlight, QColor(255, 51, 0));
     m_window.energy_bar->setPalette(energy_palette);
 
-    m_connection.connect_to_ping_server();
+    m_save_file.open(QIODevice::ReadWrite);
 }
 
 Game &LKGameWindow::game() {
@@ -134,6 +139,7 @@ void LKGameWindow::refresh_ui() {
     refresh_slots();
     refresh_ui_buttons();
     refresh_ui_bars();
+    refresh_trade_ui();
 }
 
 void LKGameWindow::refresh_slots() {
@@ -160,7 +166,10 @@ void LKGameWindow::refresh_ui_buttons() {
         }
     }
 
-    if (!m_connection.is_connected() || selected_char().activity_ongoing()) {
+    if (!m_connection.is_connected()
+        || selected_char().activity_ongoing()
+        || m_window.trade_partner_combobox->count() == 0
+    ) {
         m_window.trade_accept_button->setEnabled(false);
         m_window.trade_unaccept_button->setEnabled(false);
     } else if (selected_char().accepting_trade()) {
@@ -285,6 +294,34 @@ const std::map<ItemDomain, QPushButton *> LKGameWindow::get_activity_buttons() {
 
 const std::vector<QString> &LKGameWindow::item_slot_names() {
     return m_slot_names;
+}
+
+void LKGameWindow::save() {
+    m_save_file.reset();
+
+    IO::write_byte(&m_save_file, 'l');
+    IO::write_byte(&m_save_file, 'k');
+    IO::write_byte(&m_save_file, 'i');
+
+    m_game.serialize(&m_save_file);
+
+    m_save_file.flush();
+}
+
+void LKGameWindow::load() {
+    m_save_file.reset();
+
+    char l = IO::read_byte(&m_save_file);
+    char k = IO::read_byte(&m_save_file);
+    char i = IO::read_byte(&m_save_file);
+
+    if (l != 'l' || k != 'k' || i != 'i') {
+        qFatal("save file is corrupt");
+    }
+
+    Game *game = Game::deserialize(&m_save_file);
+    m_game = *game;
+    delete game;
 }
 
 void LKGameWindow::timerEvent(QTimerEvent *event) {

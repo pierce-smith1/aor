@@ -1,6 +1,9 @@
 #include "character.h"
 #include "game.h"
 
+Character::Character(Game *game)
+    : m_game(game) { }
+
 Character::Character(CharacterId id, const QString &name, Game *game)
     : m_name(name), m_color(Generators::color()), m_id(id), m_game(game) { }
 
@@ -8,7 +11,7 @@ QString &Character::name() {
     return m_name;
 }
 
-QColor &Character::color() {
+Color &Character::color() {
     return m_color;
 }
 
@@ -236,3 +239,83 @@ Effects &Character::effects() {
     return m_effects;
 }
 
+void Character::serialize(QIODevice *dev) {
+    IO::write_string(dev, m_name);
+
+    IO::write_short(dev, m_color);
+
+    IO::write_long(dev, m_activity.ms_left);
+    IO::write_long(dev, m_activity.ms_total);
+    IO::write_short(dev, m_activity.action);
+
+    for (ItemDomain domain : { Material, Offering, Artifact }) {
+        IO::write_short(dev, domain);
+        const auto &ids = m_external_item_ids[domain];
+        IO::write_short(dev, ids.size());
+        for (size_t i = 0; i < ids.size(); i++) {
+            IO::write_long(dev, ids[i]);
+        }
+    }
+
+    IO::write_short(dev, m_effects.size());
+    for (size_t i = 0; i < m_effects.size(); i++) {
+        IO::write_item(dev, m_effects[i]);
+    }
+
+    for (ItemDomain domain : { SmithingTool, ForagingTool, MiningTool }) {
+        IO::write_short(dev, domain);
+        IO::write_long(dev, m_tool_ids[domain]);
+    }
+
+    IO::write_short(dev, m_energy);
+
+    IO::write_short(dev, m_morale);
+
+    IO::write_short(dev, m_id);
+
+    IO::write_bool(dev, m_accepting_trade);
+
+    // Do not serialize m_game (since there's no point)
+}
+
+Character Character::deserialize(QIODevice *dev, Game *game) {
+    Character c(game);
+
+    c.m_name = IO::read_string(dev);
+
+    c.m_color = (Color) IO::read_short(dev);
+
+    c.m_activity.ms_left = IO::read_long(dev);
+    c.m_activity.ms_total = IO::read_long(dev);
+    c.m_activity.action = (ItemDomain) IO::read_short(dev);
+
+    for (int i = 0; i < 3; i++) {
+        ItemDomain domain = (ItemDomain) IO::read_short(dev);
+        quint16 size = IO::read_short(dev);
+        for (size_t i = 0; i < size; i++) {
+            c.m_external_item_ids[domain][i] = IO::read_long(dev);
+        }
+    }
+
+    quint16 size = IO::read_short(dev);
+    for (size_t i = 0; i < size; i++) {
+        c.m_effects[i] = IO::read_item(dev);
+    }
+
+    for (int i = 0; i < 3; i++) {
+        ItemDomain domain = (ItemDomain) IO::read_short(dev);
+        c.m_tool_ids[domain] = IO::read_long(dev);
+    }
+
+    c.m_energy = IO::read_short(dev);
+
+    c.m_morale = IO::read_short(dev);
+
+    c.m_id = IO::read_short(dev);
+
+    c.m_accepting_trade = IO::read_bool(dev);
+
+    c.m_game = game;
+
+    return c;
+}
