@@ -5,7 +5,7 @@ QRandomGenerator *Generators::rng() {
     return rng;
 }
 
-QString Generators::yokin_name(size_t length) {
+QString Generators::yokin_name(int length) {
     const static std::vector<Cluster> consonant_clusters = {
         {"N", 1.0},
         {"M", 1.4},
@@ -39,7 +39,7 @@ QString Generators::yokin_name(size_t length) {
         {"II", 0.2},
     };
 
-    bool consonant {rng()->generate() % 2 == 0};
+    bool consonant = rng()->generate() % 2 == 0;
     QString name;
 
     while (name.length() < length) {
@@ -103,7 +103,7 @@ QString Generators::tribe_name() {
 
 std::vector<Item> Generators::base_items(const std::vector<Item> &inputs, const Item &tool, ItemDomain action) {
     std::vector<Item> outputs;
-    const ItemProperties &tool_properties {tool.def()->properties};
+    const ItemProperties &tool_properties = tool.def()->properties;
 
     switch (action) {
         case Smithing: {
@@ -155,7 +155,7 @@ std::vector<Item> Generators::base_items(const std::vector<Item> &inputs, const 
             }
 
             std::vector<std::pair<Item, double>> possible_discoveries;
-            for (int i {(int) ToolCanDiscover1}; i <= (int) ToolCanDiscover9; i++) {
+            for (int i = (int) ToolCanDiscover1; i <= (int) ToolCanDiscover9; i++) {
                 if (tool_properties[(ItemProperty) i] != 0) {
                     possible_discoveries.emplace_back(
                         tool_properties[(ItemProperty) i],
@@ -168,6 +168,10 @@ std::vector<Item> Generators::base_items(const std::vector<Item> &inputs, const 
 
             break;
         }
+        case Trading: {
+            // Trading generates no base items; must be handled elsewhere
+            return {};
+        }
         default: {
             qWarning("Tried to generate items with unknown action domain (%d)", action);
         }
@@ -177,8 +181,8 @@ std::vector<Item> Generators::base_items(const std::vector<Item> &inputs, const 
 }
 
 ItemId Generators::item_id() {
-    auto time {std::chrono::system_clock::now().time_since_epoch()};
-    auto milliseconds {std::chrono::duration_cast<std::chrono::milliseconds>(time).count()};
+    auto time = std::chrono::system_clock::now().time_since_epoch();
+    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(time).count();
 
     return ((milliseconds & 0xffffffff) + ((std::uint64_t) Generators::rng()->generate() << 32)) & 0x7fffffffffffffff;
 }

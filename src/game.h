@@ -16,6 +16,8 @@ struct TradeState {
 
 using Characters = std::map<CharacterId, Character>;
 using ForeignTribes = std::map<GameId, TradeState>;
+using Offer = std::array<ItemId, TRADE_SLOTS>;
+using TradePurchases = std::array<Item, TRADE_SLOTS>;
 
 class Game {
 public:
@@ -24,6 +26,9 @@ public:
     Characters &characters();
     Inventory &inventory();
     ForeignTribes &tribes();
+    Offer &trade_offer();
+    bool &accepting_trade();
+    GameId &trade_partner();
     GameId game_id();
     QString &tribe_name();
 
@@ -42,6 +47,9 @@ private:
     Characters m_explorers;
     Inventory m_inventory;
     ForeignTribes m_tribes;
+    Offer m_trade_offer {};
+    bool m_accepting_trade = false;
+    GameId m_trade_partner = NOBODY;
     GameId m_game_id;
     QString m_tribe_name;
 };

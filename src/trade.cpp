@@ -4,7 +4,7 @@
 DoughbyteConnection::DoughbyteConnection(LKGameWindow *game_window)
     : m_game_window(game_window)
 {
-    m_socket.connectToHost("localhost", 10241);
+    m_socket.connectToHost("doughbyte.com", 10241);
 
     QObject::connect(&m_socket, &QTcpSocket::connected, [=]() {
         IO::write_long(&m_socket, m_game_window->game().game_id());
@@ -21,7 +21,6 @@ DoughbyteConnection::DoughbyteConnection(LKGameWindow *game_window)
     });
 
     QObject::connect(&m_socket, &QTcpSocket::readyRead, [=]() {
-        qDebug("read ready for %lld bytes", m_socket.bytesAvailable());
         try {
             while (true) {
                 m_socket.startTransaction();
@@ -71,16 +70,15 @@ void DoughbyteConnection::availability_changed(bool available) {
 void DoughbyteConnection::send_info() {
     GameId to = IO::read_long(&m_socket);
 
-    Character &character = m_game_window->selected_char();
     Inventory &inventory = m_game_window->game().inventory();
     send_info(
         to,
         {
-            inventory.get_item(character.external_items().at(Offering)[0]),
-            inventory.get_item(character.external_items().at(Offering)[1]),
-            inventory.get_item(character.external_items().at(Offering)[2]),
+            inventory.get_item(m_game_window->game().trade_offer()[0]),
+            inventory.get_item(m_game_window->game().trade_offer()[1]),
+            inventory.get_item(m_game_window->game().trade_offer()[2]),
         },
-        m_game_window->selected_char().accepting_trade()
+        m_game_window->game().accepting_trade()
     );
 }
 
@@ -104,17 +102,18 @@ void DoughbyteConnection::want_game_state() {
 
 void DoughbyteConnection::execute_trade() {
     m_game_window->start_activity(m_game_window->selected_char_id(), Trading);
+
+    m_game_window->window().trade_partner_combobox->setEnabled(false);
+    m_game_window->game().trade_partner() = m_game_window->selected_tribe_id();
+
+    m_game_window->refresh_ui();
 }
 
 void DoughbyteConnection::update_offers() {
-    qDebug("reading offers...");
-
     quint64 tribe_id = IO::read_long(&m_socket);
     quint16 item_code = IO::read_short(&m_socket);
     char item_uses = IO::read_byte(&m_socket);
     quint16 index = IO::read_short(&m_socket);
-
-    qDebug("read offer from %llx, item %x with %x uses at index %d", tribe_id, item_code, item_uses, index);
 
     update_offers(tribe_id, item_code, item_uses, index);
 }

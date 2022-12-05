@@ -18,6 +18,8 @@ Game::Game()
     add_item(Item("byteberry"));
     add_item(Item("byteberry"));
     add_item(Item("byteberry"));
+
+    m_tribes[NOBODY];
 }
 
 Characters &Game::characters() {
@@ -38,6 +40,18 @@ GameId Game::game_id() {
 
 QString &Game::tribe_name() {
     return m_tribe_name;
+}
+
+Offer &Game::trade_offer() {
+    return m_trade_offer;
+}
+
+bool &Game::accepting_trade() {
+    return m_accepting_trade;
+}
+
+GameId &Game::trade_partner() {
+    return m_trade_partner;
 }
 
 void Game::add_character(const QString &name) {
@@ -95,7 +109,7 @@ TooltipText Game::tooltip_text_for(const Item &item) {
             break;
         }
         case Offering: {
-            text.subtext += QString(" <b><font color=green>(Queued for trading by %1)</font></b>").arg(character_name);
+            text.subtext += QString(" <b><font color=green>(Queued for trading)</font></b>");
             break;
         }
         case SmithingTool:
@@ -141,7 +155,17 @@ void Game::serialize(QIODevice *dev) {
 
     // Do not serialize m_tribes, since that is populated by the network
 
+    IO::write_short(dev, m_trade_offer.size());
+    for (size_t i = 0; i < m_trade_offer.size(); i++) {
+        IO::write_long(dev, m_trade_offer[i]);
+    }
+
+    IO::write_bool(dev, m_accepting_trade);
+
+    IO::write_long(dev, m_trade_partner);
+
     IO::write_long(dev, m_game_id);
+
     IO::write_string(dev, m_tribe_name);
 }
 
@@ -152,6 +176,21 @@ Game *Game::deserialize(QIODevice *dev) {
     for (size_t i = 0; i < size; i++) {
         g->m_explorers.emplace(std::make_pair(i, Character::deserialize(dev, g)));
     }
+
+    g->m_inventory = Inventory::deserialize(dev);
+
+    size = IO::read_short(dev);
+    for (size_t i = 0; i < size; i++) {
+        g->m_trade_offer[i] = IO::read_long(dev);
+    }
+
+    g->m_accepting_trade = IO::read_bool(dev);
+
+    g->m_trade_partner = IO::read_long(dev);
+
+    g->m_game_id = IO::read_long(dev);
+
+    g->m_tribe_name = IO::read_string(dev);
 
     return g;
 }

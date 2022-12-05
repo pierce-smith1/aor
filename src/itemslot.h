@@ -26,7 +26,6 @@ public:
     virtual void set_item(const Item &item);
     virtual ItemDomain type();
     virtual void refresh_pixmap();
-    std::vector<ItemSlot *> get_slots_of_same_type();
     void drop_external_item();
 
     static void insert_inventory_slots(LKGameWindow &window);

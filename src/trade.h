@@ -42,6 +42,7 @@ public:
     void update_availability(GameId tribe_id, const QString &tribe_name, bool available);
     void update_all();
     void notify_trade(GameId tribe_id);
+
 private:
     QTcpSocket m_socket;
     LKGameWindow *m_game_window;

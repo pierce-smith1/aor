@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
 
     game_window.refresh_ui();
 
-    CheatConsole console(&game_window);
+    //CheatConsole console(&game_window);
 
     return app.exec();
 }

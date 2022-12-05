@@ -287,7 +287,10 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_7">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <layout class="QHBoxLayout" name="foreign_trade_slot_layout"/>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
           <item>
            <widget class="QLabel" name="trade_remote_accept_icon">
             <property name="sizePolicy">
@@ -313,13 +316,6 @@
             </property>
            </widget>
           </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="foreign_trade_slot_layout"/>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_6">
           <item>
            <widget class="QComboBox" name="trade_partner_combobox"/>
           </item>
@@ -331,7 +327,20 @@
            <string/>
           </property>
           <property name="pixmap">
-           <pixmap resource="../../images.qrc">:/assets/img/icons/arrows.png</pixmap>
+           <pixmap resource="../../images.qrc">:/assets/img/icons/arrows_disabled.png</pixmap>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="trade_notification_label">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="textFormat">
+           <enum>Qt::RichText</enum>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>

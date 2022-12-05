@@ -9,7 +9,7 @@ ExternalSlot::ExternalSlot(LKGameWindow *game, ItemDomain type, int n)
     m_item_layout->setObjectName(make_internal_name("external_layout", type, n));
     m_item_label->setObjectName(make_internal_name("external_label", type, n));
 
-    game->register_slot_name(objectName());
+    game->register_slot(this);
 }
 
 Item ExternalSlot::get_item() {
@@ -25,6 +25,7 @@ void ExternalSlot::set_item(const Item &item) {
 
     if (type() == Offering) {
         m_game_window->connection().offer_changed(item, n);
+        m_game_window->game().trade_offer()[n] = item.id;
     }
 }
 
@@ -37,11 +38,15 @@ void ExternalSlot::refresh_pixmap() {
 }
 
 ItemId ExternalSlot::held_item_id() {
-    return m_game_window->selected_char().external_items().at(type())[n];
+    if (type() == Offering) {
+        return m_game_window->game().trade_offer()[n];
+    } else {
+        return m_game_window->selected_char().external_items().at(type())[n];
+    }
 }
 
 void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
-    const QMimeData *data {event->mimeData()};
+    const QMimeData *data = event->mimeData();
     if (!data->hasFormat("text/plain")) {
         return;
     }
@@ -50,20 +55,29 @@ void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
         return;
     }
 
-    QString source_slot_name {event->mimeData()->text()};
-    ItemSlot *source_slot {m_game_window->findChild<ItemSlot *>(source_slot_name)};
-    Item dropped_item {source_slot->get_item()};
-    ItemType dropped_type {dropped_item.def()->type};
+    QString source_slot_name = event->mimeData()->text();
+    ItemSlot *source_slot = m_game_window->findChild<ItemSlot *>(source_slot_name);
+    Item dropped_item = source_slot->get_item();
+    ItemType dropped_type = dropped_item.def()->type;
 
     switch (type()) {
         case Offering: {
-            if (!(dropped_type & Rune)) { event->acceptProposedAction(); } break;
+            if (m_game_window->game().trade_partner() == NOBODY) {
+                event->acceptProposedAction();
+            }
+            break;
         }
         case Portrait: {
-            if (dropped_type & Consumable) { event->acceptProposedAction(); } break;
+            if (dropped_type & Consumable) {
+                event->acceptProposedAction();
+            }
+            break;
         }
         default: {
-            if (dropped_type & item_slot_type) { event->acceptProposedAction(); } break;
+            if (dropped_type & item_slot_type) {
+                event->acceptProposedAction();
+            }
+            break;
         }
     }
 }
@@ -87,13 +101,8 @@ void ExternalSlot::dropEvent(QDropEvent *event) {
 }
 
 void ExternalSlot::insert_external_slots(LKGameWindow &window) {
-    QGridLayout *smith_layout = window.window().smith_layout;
-    QHBoxLayout *trade_layout = window.window().trade_slot_layout;
-    QHBoxLayout *foreign_trade_layout = window.window().foreign_trade_slot_layout;
-    QLayout *aritfact_layout = window.window().artifact_box->layout();
-
     for (int i = 0; i < SMITHING_SLOTS; i++) {
-        smith_layout->addWidget(
+        window.window().smith_layout->addWidget(
             new ExternalSlot(&window, Material, i),
             i / SMITHING_SLOTS_PER_ROW + 1,
             i % SMITHING_SLOTS_PER_ROW
@@ -101,12 +110,12 @@ void ExternalSlot::insert_external_slots(LKGameWindow &window) {
     }
 
     for (int i = 0; i < TRADE_SLOTS; i++) {
-        trade_layout->addWidget(new ExternalSlot(&window, Offering, i));
-        foreign_trade_layout->addWidget(new ForeignTradeSlot(&window, i));
+        window.window().trade_slot_layout->addWidget(new ExternalSlot(&window, Offering, i));
+        window.window().foreign_trade_slot_layout->addWidget(new ForeignTradeSlot(&window, i));
     }
 
     for (int i = 0; i < ARTIFACT_SLOTS; i++) {
-        aritfact_layout->addWidget(new ExternalSlot(&window, Artifact, i));
+        window.window().artifact_layout->addWidget(new ExternalSlot(&window, Artifact, i));
     }
 }
 

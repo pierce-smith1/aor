@@ -18,7 +18,7 @@ LKGameWindow::LKGameWindow()
 
     connect(m_window.trade_accept_button, &QPushButton::clicked, [=]() {
         m_connection.agreement_changed(m_selected_tribe_id, true);
-        selected_char().accepting_trade() = true;
+        m_game.accepting_trade() = true;
         refresh_ui_buttons();
 
         if (m_game.tribes().at(selected_tribe_id()).remote_accepted) {
@@ -29,7 +29,8 @@ LKGameWindow::LKGameWindow()
 
     connect(m_window.trade_unaccept_button, &QPushButton::clicked, [=]() {
         m_connection.agreement_changed(m_selected_tribe_id, false);
-        selected_char().accepting_trade() = false;
+        m_game.accepting_trade() = false;
+        m_game.trade_partner() = NOBODY;
         refresh_ui_buttons();
     });
 
@@ -93,8 +94,8 @@ GameId &LKGameWindow::selected_tribe_id() {
     return m_selected_tribe_id;
 }
 
-void LKGameWindow::register_slot_name(const QString &slot_name) {
-    m_slot_names.push_back(slot_name);
+void LKGameWindow::register_slot(ItemSlot *slot) {
+    m_slots.push_back(slot);
 }
 
 void LKGameWindow::notify(NotificationType, const QString &message) {
@@ -143,8 +144,7 @@ void LKGameWindow::refresh_ui() {
 }
 
 void LKGameWindow::refresh_slots() {
-    for (const QString &slot_name : m_slot_names) {
-        ItemSlot *slot = findChild<ItemSlot *>(slot_name);
+    for (ItemSlot *slot : m_slots) {
         slot->refresh_pixmap();
     }
 }
@@ -168,11 +168,12 @@ void LKGameWindow::refresh_ui_buttons() {
 
     if (!m_connection.is_connected()
         || selected_char().activity_ongoing()
+        || trade_ongoing(m_selected_tribe_id)
         || m_window.trade_partner_combobox->count() == 0
     ) {
         m_window.trade_accept_button->setEnabled(false);
         m_window.trade_unaccept_button->setEnabled(false);
-    } else if (selected_char().accepting_trade()) {
+    } else if (m_game.accepting_trade()) {
         m_window.trade_accept_button->setEnabled(false);
         m_window.trade_unaccept_button->setEnabled(true);
     } else {
@@ -187,6 +188,16 @@ void LKGameWindow::refresh_trade_ui() {
     } else {
         m_window.trade_remote_accept_icon->setPixmap(QPixmap(":/assets/img/icons/warning.png"));
     }
+
+    window().trade_arrow_label->setPixmap(QPixmap(":/assets/img/icons/arrows_disabled.png"));
+    window().trade_notification_label->setText("");
+
+    for (auto &pair : game().characters()) {
+        if (pair.second.activity().action == Trading) {
+            window().trade_arrow_label->setPixmap(QPixmap(":/assets/img/icons/arrows.png"));
+            window().trade_notification_label->setText(QString("%1 is carrying out this trade...").arg(selected_char().name()));
+        }
+    }
 }
 
 void LKGameWindow::complete_activity(CharacterId char_id) {
@@ -194,8 +205,15 @@ void LKGameWindow::complete_activity(CharacterId char_id) {
     ItemDomain domain = character.activity().action;
 
     auto destroy_items_in_slots = [=](ItemDomain type) {
-        for (ItemId &item_id : m_game.characters().at(char_id).external_items().at(type)) {
-            item_id = EMPTY_ID;
+        if (type == Offering) {
+            for (size_t i = 0; i < m_game.trade_offer().size(); i++) {
+                m_game.trade_offer()[i] = EMPTY_ID;
+                m_connection.offer_changed(Item(), i);
+            }
+        } else {
+            for (ItemId &item_id : m_game.characters().at(char_id).external_items().at(type)) {
+                item_id = EMPTY_ID;
+            }
         }
     };
 
@@ -212,8 +230,15 @@ void LKGameWindow::complete_activity(CharacterId char_id) {
     }
 
     // Generate the items
-    Item tool = m_game.inventory().get_item(character.tools()[domain]);
-    std::vector<Item> new_items = Generators::base_items(character.input_items(), tool, domain);
+    std::vector<Item> new_items;
+    if (domain == Trading) {
+        auto &offer = m_game.tribes().at(m_selected_tribe_id).offer;
+        new_items = std::vector<Item>(begin(offer), end(offer));
+    } else {
+        Item tool = m_game.inventory().get_item(character.tools()[domain]);
+        new_items = Generators::base_items(character.input_items(), tool, domain);
+    }
+
     for (const Item &item : new_items) {
         bool add_successful = m_game.inventory().add_item(item);
         if (!add_successful) {
@@ -279,9 +304,17 @@ void LKGameWindow::complete_activity(CharacterId char_id) {
     killTimer(m_timers[char_id]);
     m_timers[char_id] = 0;
 
+    if (character.activity().action == Trading) {
+        m_connection.agreement_changed(m_selected_tribe_id, false);
+    }
+
     character.activity() = CharacterActivity(None, 0);
 
     refresh_ui();
+}
+
+bool LKGameWindow::trade_ongoing(GameId tribe) {
+    return m_game.trade_partner() == tribe;
 }
 
 const std::map<ItemDomain, QPushButton *> LKGameWindow::get_activity_buttons() {
@@ -292,8 +325,20 @@ const std::map<ItemDomain, QPushButton *> LKGameWindow::get_activity_buttons() {
     };
 }
 
-const std::vector<QString> &LKGameWindow::item_slot_names() {
-    return m_slot_names;
+const std::vector<ItemSlot *> &LKGameWindow::item_slots() {
+    return m_slots;
+}
+
+const std::vector<ItemSlot *> LKGameWindow::item_slots(ItemDomain domain) {
+    std::vector<ItemSlot *> slots_of_type;
+
+    for (ItemSlot *slot : item_slots()) {
+        if (slot->type() == domain) {
+            slots_of_type.push_back(slot);
+        }
+    }
+
+    return slots_of_type;
 }
 
 void LKGameWindow::save() {

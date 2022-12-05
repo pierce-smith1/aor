@@ -7,7 +7,7 @@ EffectSlot::EffectSlot(LKGameWindow *game, int n)
     m_item_layout->setObjectName(make_internal_name("effect_slot", n));
     m_item_label->setObjectName(make_internal_name("effect_slot", n));
 
-    game->register_slot_name(objectName());
+    game->register_slot(this);
 }
 
 Item EffectSlot::get_item() {

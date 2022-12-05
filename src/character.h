@@ -30,7 +30,6 @@ struct Character {
     Color &color();
     CharacterActivity &activity();
     CharacterId id();
-    bool &accepting_trade();
 
     bool activity_ongoing();
     double activity_percent_complete();
@@ -66,7 +65,6 @@ private:
     CharacterActivity m_activity {};
     ExternalItemIds m_external_item_ids {
         { Material, {} },
-        { Offering, {} },
         { Artifact, {} },
     };
     Effects m_effects {};
@@ -75,10 +73,9 @@ private:
         { ForagingTool, EMPTY_ID },
         { MiningTool, EMPTY_ID },
     };
-    std::uint16_t m_energy {40};
-    std::uint16_t m_morale {40};
+    std::uint16_t m_energy = 40;
+    std::uint16_t m_morale = 40;
     std::uint16_t m_id;
-    bool m_accepting_trade;
 
     Game *m_game;
 };

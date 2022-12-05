@@ -38,7 +38,7 @@ namespace Generators {
         return weights.back().first;
     }
 
-    QString yokin_name(size_t length = 5);
+    QString yokin_name(int length = 5);
     QString tribe_name();
     std::vector<Item> base_items(const std::vector<Item> &inputs, const Item &tool, ItemDomain domain);
     ItemId item_id();

@@ -4,7 +4,7 @@ ForeignTradeSlot::ForeignTradeSlot(LKGameWindow *game_window, int n)
     : ItemSlot(game_window), n(n)
 {
     setObjectName(QString("foreign_slot:%1").arg(n));
-    game_window->register_slot_name(objectName());
+    game_window->register_slot(this);
 }
 
 Item ForeignTradeSlot::get_item() {

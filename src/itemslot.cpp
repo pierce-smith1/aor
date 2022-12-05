@@ -12,12 +12,12 @@ ItemSlot::ItemSlot(LKGameWindow *game)
     setMouseTracking(true);
     setAcceptDrops(true);
 
-    QLayout *layout {new QHBoxLayout(this)};
+    QLayout *layout = new QHBoxLayout(this);
     layout->setSpacing(0);
     layout->setContentsMargins(0, 0, 0, 0);
     m_item_layout = layout;
 
-    QLabel *label {new QLabel(this)};
+    QLabel *label = new QLabel(this);
     label->setMinimumSize(QSize(48, 48));
     label->setMaximumSize(QSize(48, 48));
     label->setMouseTracking(true);
@@ -36,7 +36,7 @@ ItemSlot::ItemSlot(LKGameWindow *game, int y, int x)
     m_item_layout->setObjectName(make_internal_name("inventory_layout", y, x));
     m_item_label->setObjectName(make_internal_name("inventory_label", y, x));
 
-    game->register_slot_name(objectName());
+    game->register_slot(this);
 
     this->y = y;
     this->x = x;
@@ -64,19 +64,6 @@ void ItemSlot::refresh_pixmap() {
     } else {
         m_opacity_effect.setOpacity(1.0);
     }
-}
-
-std::vector<ItemSlot *> ItemSlot::get_slots_of_same_type() {
-    std::vector<ItemSlot *> item_slots;
-
-    for (const QString &name : m_game_window->item_slot_names()) {
-        ItemSlot *slot = findChild<ItemSlot *>(name);
-        if (slot->type() == type()) {
-            item_slots.push_back(slot);
-        }
-    }
-
-    return item_slots;
 }
 
 void ItemSlot::drop_external_item() {
@@ -144,7 +131,10 @@ void ItemSlot::mousePressEvent(QMouseEvent *event) {
     bool is_inventory_slot = type() == Ordinary;
     bool item_being_used = get_item().intent != None;
 
-    if (event->button() == Qt::RightButton && !is_inventory_slot && !m_game_window->selected_char().activity_ongoing()) {
+    if (event->button() == Qt::RightButton
+        && !is_inventory_slot
+        && !m_game_window->selected_char().activity_ongoing()
+    ) {
         drop_external_item();
         return;
     }

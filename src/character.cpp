@@ -23,10 +23,6 @@ CharacterId Character::id() {
     return m_id;
 }
 
-bool &Character::accepting_trade() {
-    return m_accepting_trade;
-}
-
 bool Character::activity_ongoing() {
     return activity().action != None;
 }
@@ -248,7 +244,7 @@ void Character::serialize(QIODevice *dev) {
     IO::write_long(dev, m_activity.ms_total);
     IO::write_short(dev, m_activity.action);
 
-    for (ItemDomain domain : { Material, Offering, Artifact }) {
+    for (ItemDomain domain : { Material, Artifact }) {
         IO::write_short(dev, domain);
         const auto &ids = m_external_item_ids[domain];
         IO::write_short(dev, ids.size());
@@ -273,8 +269,6 @@ void Character::serialize(QIODevice *dev) {
 
     IO::write_short(dev, m_id);
 
-    IO::write_bool(dev, m_accepting_trade);
-
     // Do not serialize m_game (since there's no point)
 }
 
@@ -289,7 +283,7 @@ Character Character::deserialize(QIODevice *dev, Game *game) {
     c.m_activity.ms_total = IO::read_long(dev);
     c.m_activity.action = (ItemDomain) IO::read_short(dev);
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 2; i++) {
         ItemDomain domain = (ItemDomain) IO::read_short(dev);
         quint16 size = IO::read_short(dev);
         for (size_t i = 0; i < size; i++) {
@@ -312,8 +306,6 @@ Character Character::deserialize(QIODevice *dev, Game *game) {
     c.m_morale = IO::read_short(dev);
 
     c.m_id = IO::read_short(dev);
-
-    c.m_accepting_trade = IO::read_bool(dev);
 
     c.m_game = game;
 

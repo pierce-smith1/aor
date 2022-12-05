@@ -17,6 +17,8 @@ class LKGameWindow;
 #include "explorerbutton.h"
 #include "trade.h"
 
+class ItemSlot;
+
 using ActivityTimers = std::map<CharacterId, int>;
 
 static const QString SAVE_FILE_NAME = "save.rho";
@@ -37,7 +39,7 @@ public:
     Character &selected_char();
     void swap_char(CharacterId char_id);
 
-    void register_slot_name(const QString &slot_name);
+    void register_slot(ItemSlot *slot);
 
     void notify(NotificationType type, const QString &message);
 
@@ -47,6 +49,8 @@ public:
     void progress_activity(CharacterId char_id, std::int64_t by_ms);
     void complete_activity(CharacterId char_id);
 
+    bool trade_ongoing(GameId tribe);
+
     void refresh_ui();
     void refresh_slots();
     void refresh_ui_bars();
@@ -54,7 +58,8 @@ public:
     void refresh_trade_ui();
 
     const std::map<ItemDomain, QPushButton *> get_activity_buttons();
-    const std::vector<QString> &item_slot_names();
+    const std::vector<ItemSlot *> &item_slots();
+    const std::vector<ItemSlot *> item_slots(ItemDomain domain);
 
     void save();
     void load();
@@ -69,7 +74,7 @@ private:
     CharacterId m_selected_char_id = 0;
     GameId m_selected_tribe_id = NOBODY;
     ActivityTimers m_timers;
-    std::vector<QString> m_slot_names;
+    std::vector<ItemSlot *> m_slots;
     DoughbyteConnection m_connection;
     QFile m_save_file;
 };

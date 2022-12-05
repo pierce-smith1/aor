@@ -1,5 +1,6 @@
 #include "explorerbutton.h"
 #include "gamewindow.h"
+#include "itemslot.h"
 
 ExplorerButton::ExplorerButton(QWidget *parent, LKGameWindow *game_window, CharacterId id)
     : QGroupBox(parent),
@@ -85,19 +86,41 @@ void ExplorerButton::refresh() {
 
 void ExplorerButton::mousePressEvent(QMouseEvent *) {
     Character &character = m_game_window->game().characters().at(m_id);
+    QComboBox *partner_box = m_game_window->window().trade_partner_combobox;
 
     m_game_window->selected_char_id() = m_id;
 
-    for (int i = 0; i < TRADE_SLOTS; i++) {
-        Inventory &inventory = m_game_window->game().inventory();
-        m_game_window->connection().offer_changed(inventory.get_item(character.external_items().at(Offering)[i]), i);
-    }
+    /*
+    if (character.trade_partner() != NOBODY) {
+        partner_box->setEnabled(false);
 
-    if (character.accepting_trade()) {
-        m_game_window->connection().agreement_changed(m_game_window->selected_tribe_id(), true);
+        int partner_index = partner_box->findData(QVariant::fromValue(character.trade_partner()));
+        if (partner_index != -1) {
+            partner_box->setCurrentIndex(partner_index);
+        } else {
+            qWarning("tried to set partner box to a tribe that has disappeared...");
+        }
+
+        std::vector<ItemSlot *> foreign_slots = m_game_window->item_slots(ForeignOffering);
+        for (size_t i = 0; i < character.trade_purchases().size(); i++) {
+            foreign_slots[i]->set_item(character.trade_purchases()[i]);
+        }
     } else {
-        m_game_window->connection().agreement_changed(m_game_window->selected_tribe_id(), false);
+        partner_box->setEnabled(true);
+
+        for (int i = 0; i < TRADE_SLOTS; i++) {
+            Inventory &inventory = m_game_window->game().inventory();
+            m_game_window->connection().offer_changed(inventory.get_item(character.external_items().at(Offering)[i]), i);
+        }
+
+        if (character.accepting_trade()) {
+            m_game_window->connection().agreement_changed(m_game_window->selected_tribe_id(), true);
+        } else {
+            m_game_window->connection().agreement_changed(m_game_window->selected_tribe_id(), false);
+        }
     }
+    */
+
 
     m_game_window->refresh_ui();
 }
