@@ -69,7 +69,7 @@ const static std::vector<CheatCommand> COMMANDS = {
 
             Item item = game->game().inventory().get_item(y, x);
 
-            qDebug("print: item yx (%d, %d): code (%d), id (%lx), name (%s), intent (%d)",
+            qDebug("print: item yx (%d, %d): code (%d), id (%llx), name (%s), intent (%d)",
                 y, x,
                 item.code,
                 item.id,
@@ -260,7 +260,7 @@ const static std::vector<CheatCommand> COMMANDS = {
     }
 };
 
-class CheatConsole : QWidget {
+class CheatConsole : public QWidget {
     Q_OBJECT;
 
 public:

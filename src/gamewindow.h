@@ -18,6 +18,8 @@ class LKGameWindow;
 #include "trade.h"
 
 class ItemSlot;
+class RecipieBox;
+class Encyclopedia;
 
 using ActivityTimers = std::map<CharacterId, int>;
 
@@ -46,7 +48,7 @@ public:
     void start_activity(CharacterId char_id, ItemDomain type);
     void start_activity(const CharacterActivity &activity);
     void start_activity(CharacterId char_id, const CharacterActivity &activity);
-    void progress_activity(CharacterId char_id, std::int64_t by_ms);
+    void progress_activity(CharacterId char_id, qint64 by_ms);
     void complete_activity(CharacterId char_id);
 
     bool trade_ongoing(GameId tribe);
@@ -56,6 +58,7 @@ public:
     void refresh_ui_bars();
     void refresh_ui_buttons();
     void refresh_trade_ui();
+    void refresh_recipies_ui();
 
     const std::map<ItemDomain, QPushButton *> get_activity_buttons();
     const std::vector<ItemSlot *> &item_slots();
@@ -77,4 +80,5 @@ private:
     std::vector<ItemSlot *> m_slots;
     DoughbyteConnection m_connection;
     QFile m_save_file;
+    Encyclopedia *m_encyclopedia;
 };

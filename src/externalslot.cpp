@@ -161,7 +161,7 @@ Item PortraitSlot::get_item() {
 }
 
 void PortraitSlot::set_item(const Item &item) {
-    qFatal("Tried to set item of a portrait slot (code %d, id %ld)", item.code, item.id);
+    qFatal("Tried to set item of a portrait slot (code %d, id %lld)", item.code, item.id);
 }
 
 void PortraitSlot::refresh_pixmap() {

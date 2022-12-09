@@ -9,7 +9,7 @@ Item &Inventory::get_item_ref(ItemId id) {
     auto search_result {std::find_if(begin(m_items), end(m_items), match_id)};
 
     if (search_result == end(m_items)) {
-        qFatal("Searching for an item by id turned up nothing (%lx)", id);
+        qFatal("Searching for an item by id turned up nothing (%llx)", id);
     }
 
     return *search_result;
@@ -24,7 +24,7 @@ Item Inventory::get_item(ItemId id) const {
     auto search_result {std::find_if(begin(m_items), end(m_items), match_id)};
 
     if (search_result == end(m_items)) {
-        qFatal("Searching for an item by id turned up nothing (%lx)", id);
+        qFatal("Searching for an item by id turned up nothing (%llx)", id);
     }
 
     return *search_result;
@@ -53,7 +53,7 @@ void Inventory::remove_item(ItemId id) {
         }
     }
 
-    qWarning("Tried to remove item by id, but it didn't exist (%ld)", id);
+    qWarning("Tried to remove item by id, but it didn't exist (%lld)", id);
 }
 
 bool Inventory::add_item(const Item &item) {
@@ -67,7 +67,7 @@ bool Inventory::add_item(const Item &item) {
     }
 
     qWarning(
-        "Tried to add item (code %d, id %ld) to items, but there was no open spot",
+        "Tried to add item (code %d, id %lld) to items, but there was no open spot",
         item.code,
         item.id
     );

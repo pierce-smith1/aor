@@ -12,6 +12,7 @@ RESOURCES += images.qrc
 FORMS += assets/ui/main.ui
 FORMS += assets/ui/cheat.ui
 FORMS += assets/ui/tooltip.ui
+FORMS += assets/ui/encyclopedia.ui
 
 QT += gui
 QT += widgets

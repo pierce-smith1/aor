@@ -17,26 +17,26 @@
 #define USES
 #define LEVEL
 
-const static int SMITHING_SLOTS = 3;
+const static int SMITHING_SLOTS = 6;
 const static int SMITHING_SLOTS_PER_ROW = 3;
 
 const static int TRADE_SLOTS = 3;
 
 const static int ARTIFACT_SLOTS = 4;
 
-const static int EFFECT_SLOTS = 7;
+const static int EFFECT_SLOTS = 3;
 
-using ItemCode = std::uint16_t;
-using ItemId = std::uint64_t;
-using CharacterId = std::uint16_t;
-using GameId = std::uint64_t;
+using ItemCode = quint16;
+using ItemId = quint64;
+using CharacterId = quint16;
+using GameId = quint64;
 
 const static ItemId EMPTY_ID = 0;
 const static ItemId INVALID_ID = 0xffffffffffffffff;
 const static ItemCode INVALID_CODE = 0xff;
 const static CharacterId NOBODY = 0xffff;
 
-using ItemType = std::uint16_t;
+using ItemType = quint16;
 enum ItemDomain : ItemType {
     Ordinary        = 0,      None = 0,
     Consumable      = 1 << 0, Eating   = 1 << 0,
@@ -63,9 +63,8 @@ const static int CT_EFFECT = 1 << 12;
 const static int CT_RUNE = 1 << 13;
 const static int CT_OTHER = 1 << 14;
 
-enum ItemProperty {
+enum ItemProperty : quint16 {
     ToolEnergyCost,
-    SpeedBonus,
     // WARNING: Item generation behavior in actions.cpp requires that there
     // are exactly 9 ToolCanDiscovers, exactly 9 ToolDiscoverWeights, and
     // that the ToolDiscoverWeights comes directly after the ToolCanDiscovers!
@@ -88,10 +87,6 @@ enum ItemProperty {
     ToolDiscoverWeight7,
     ToolDiscoverWeight8,
     ToolDiscoverWeight9,
-    ToolComboIngredient1,
-    ToolComboIngredient2,
-    ToolComboIngredient3,
-    ToolComboResult,
     ConsumableEnergyBoost,
     ConsumableMoraleBoost,
     ConsumableGivesEffect,
@@ -100,6 +95,24 @@ enum ItemProperty {
     ArtifactMaxEnergyBoost,
     ArtifactMaxMoraleBoost,
     ArtifactSpeedBonus,
+    Cost = 0x2000,
+    CostStone = 0x2001,
+    CostMetallic = 0x2002,
+    CostCrystalline = 0x2003,
+    CostRuinc = 0x2004,
+    CostLeafy = 0x2005,
+    ToolMaximum = 0x4000,
+    ToolMaximumStone = 0x4001,
+    ToolMaximumMetallic = 0x4002,
+    ToolMaximumCrystalline = 0x4003,
+    ToolMaximumRunic = 0x4004,
+    ToolMaximumLeafy = 0x4005,
+    Resource = 0x8000,
+    StoneResource = 0x8001,
+    MetallicResource = 0x8002,
+    CrystallineResource = 0x8003,
+    RunicResource = 0x8004,
+    LeafyResource = 0x8005,
 };
 
 // This basically just wraps a std::map<ItemPropety, int>,
@@ -107,10 +120,12 @@ enum ItemProperty {
 // behavior of returning zero-initialized values for non-existant keys.
 class ItemProperties {
 public:
-    ItemProperties(std::initializer_list<std::pair<const ItemProperty, std::uint16_t>> map);
-    std::uint16_t operator[](ItemProperty prop) const;
+    ItemProperties(std::initializer_list<std::pair<const ItemProperty, quint16>> map);
+    quint16 operator[](ItemProperty prop) const;
+    std::map<ItemProperty, quint16>::const_iterator begin() const;
+    std::map<ItemProperty, quint16>::const_iterator end() const;
 
-    std::map<ItemProperty, std::uint16_t> map;
+    std::map<ItemProperty, quint16> map;
 };
 
 struct ItemDefinition {
@@ -129,10 +144,10 @@ using ItemDefinitionPtr = std::vector<ItemDefinition>::const_iterator;
 const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_EMPTY,
-        "empty", "Empty",
-        "Nothing here.",
+        "empty", "???",
+        "You haven't discovered this item yet.",
         0 USES, Ordinary, LEVEL 0,
-        {}
+        { }
     },
     {
         CT_CONSUMABLE | 0,
@@ -141,6 +156,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         1 USES, Consumable, LEVEL 1,
         {
             { ConsumableEnergyBoost, 20 },
+            { LeafyResource, 5 },
         }
     },
     {
@@ -150,7 +166,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         1 USES, Consumable, LEVEL 1,
         {
             { ConsumableEnergyBoost, 10 },
-            { ConsumableMoraleBoost, 10 }
+            { ConsumableMoraleBoost, 10 },
+            { LeafyResource, 5 },
         }
     },
     {
@@ -160,7 +177,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "that birthed our wafer-thing planes of reality.</i>",
         1 USES, Material, LEVEL 1,
         {
-            { MaterialForges, CT_TOOL | 0 }
+            { CrystallineResource, 15 },
+            { StoneResource, 15 },
         }
     },
     {
@@ -170,7 +188,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "have been the first rock ever constructed by the earth.</i>",
         1 USES, Material, LEVEL 1,
         {
-            { MaterialForges, CT_TOOL | 1 }
+            { StoneResource, 15 }
         }
     },
     {
@@ -181,10 +199,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         3 USES, SmithingTool, LEVEL 1,
         {
             { ToolEnergyCost, 20 },
-            { ToolComboIngredient1, CT_MATERIAL | 0 },
-            { ToolComboIngredient2, CT_MATERIAL | 1 },
-            { ToolComboIngredient3, CT_MATERIAL | 1 },
-            { ToolComboResult, CT_TOOL | 2 }
+            { ToolMaximumStone, 50 },
+            { ToolMaximumCrystalline, 50 },
         }
     },
     {
@@ -283,16 +299,12 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         4 USES, SmithingTool, LEVEL 3,
         {
             { ToolEnergyCost, 30 },
-            { ToolComboIngredient1, CT_MATERIAL | 2 },
-            { ToolComboIngredient1, CT_MATERIAL | 4 },
-            { ToolComboIngredient1, CT_MATERIAL | 5 },
-            { ToolComboResult, CT_TOOL | 6 }
         }
     },
     {
         CT_TOOL | 4,
         "disk_fragmenter", "Disk Fragmenter",
-        "Yeah, this is how it happens.",
+        "This is how it happens.",
         1 USES, MiningTool, LEVEL 3,
         {
             { ToolEnergyCost, 15 },
@@ -323,11 +335,11 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
 };
 
 struct Item {
-    ItemCode code {0};
-    ItemId id {EMPTY_ID};
-    unsigned char uses_left {0};
-    ItemDomain intent {Ordinary};
-    CharacterId intent_holder {NOBODY};
+    ItemCode code = 0;
+    ItemId id = EMPTY_ID;
+    unsigned char uses_left = 0;
+    ItemDomain intent = Ordinary;
+    CharacterId intent_holder = NOBODY;
 
     Item() = default;
     explicit Item(const ItemDefinition &def);
@@ -344,6 +356,7 @@ struct Item {
     static QPixmap pixmap_of(const QString &name);
     static QPixmap pixmap_of(const ItemDefinition &def);
     static QPixmap pixmap_of(const Item &item);
+    static QPixmap sil_pixmap_of(ItemCode id);
     static Item invalid_item();
 
     static QString type_to_string(ItemType type);

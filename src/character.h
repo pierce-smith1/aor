@@ -46,6 +46,8 @@ struct Character {
     int energy_to_gain();
     int morale_to_gain();
     std::vector<Item> input_items();
+    std::vector<Item> generate_output_items();
+    std::vector<std::pair<ItemCode, bool>> smithable_items();
 
     bool clear_last_effect();
     bool push_effect(const Item &effect);

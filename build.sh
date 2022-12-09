@@ -23,8 +23,16 @@ compile() {
 generate_qrc() {
     cd $WHEREAMI
 
+    for item in assets/img/items/*.png; do
+        convert $item -fill "#000000" -colorize 100 assets/img/items/sil/$(basename $item)
+    done
+
     echo "<!DOCTYPE RCC><RCC version=\"1.0\"><qresource>" > .images.qrc
     for item in assets/img/items/*.png; do
+        echo "<file>$item</file>" >> .images.qrc
+    done
+
+    for item in assets/img/items/sil/*.png; do
         echo "<file>$item</file>" >> .images.qrc
     done
 

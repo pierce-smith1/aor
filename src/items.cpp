@@ -3,10 +3,10 @@
 
 Item Item::empty_item {Item(0)};
 
-ItemProperties::ItemProperties(std::initializer_list<std::pair<const ItemProperty, std::uint16_t>> map)
+ItemProperties::ItemProperties(std::initializer_list<std::pair<const ItemProperty, quint16>> map)
     : map(map) { }
 
-std::uint16_t ItemProperties::operator[](ItemProperty prop) const {
+quint16 ItemProperties::operator[](ItemProperty prop) const {
     try {
         return map.at(prop);
     } catch (std::out_of_range &e) {
@@ -14,11 +14,19 @@ std::uint16_t ItemProperties::operator[](ItemProperty prop) const {
     }
 }
 
+std::map<ItemProperty, quint16>::const_iterator ItemProperties::begin() const {
+    return map.begin();
+}
+
+std::map<ItemProperty, quint16>::const_iterator ItemProperties::end() const {
+    return map.end();
+}
+
 ItemDefinitionPtr Item::def_of(ItemCode code) {
     auto match_code {[code](const ItemDefinition def) -> bool {
         return def.code == code;
     }};
-    auto result {std::find_if(begin(ITEM_DEFINITIONS), end(ITEM_DEFINITIONS), match_code)};
+    auto result = std::find_if(begin(ITEM_DEFINITIONS), end(ITEM_DEFINITIONS), match_code);
 
     if (result == ITEM_DEFINITIONS.end()) {
         qFatal("Tried to get definition for invalid item code (%d)", code);
@@ -28,8 +36,8 @@ ItemDefinitionPtr Item::def_of(ItemCode code) {
 }
 
 ItemDefinitionPtr Item::def_of(const QString &name) {
-    auto match_name {[&name](const ItemDefinition def) -> bool { return def.internal_name == name; }};
-    auto result {std::find_if(begin(ITEM_DEFINITIONS), end(ITEM_DEFINITIONS), match_name)};
+    auto match_name = [&name](const ItemDefinition def) -> bool { return def.internal_name == name; };
+    auto result = std::find_if(begin(ITEM_DEFINITIONS), end(ITEM_DEFINITIONS), match_name);
 
     if (result == ITEM_DEFINITIONS.end()) {
         qFatal("Tried to get definition for invalid item name (%s)", name.toStdString().c_str());
@@ -76,7 +84,7 @@ QPixmap Item::pixmap_of(const QString &name) {
 }
 
 QPixmap Item::pixmap_of(const ItemDefinition &def) {
-    QString pixmap_name {QString(":/assets/img/items/%1.png").arg(def.internal_name)};
+    QString pixmap_name = QString(":/assets/img/items/%1.png").arg(def.internal_name);
 
     if (!QFile(pixmap_name).exists()) {
         qDebug("Missing item pixmap (%s)", def.internal_name.toStdString().c_str());
@@ -88,6 +96,18 @@ QPixmap Item::pixmap_of(const ItemDefinition &def) {
 
 QPixmap Item::pixmap_of(const Item &item) {
     return pixmap_of(*def_of(item));
+}
+
+QPixmap Item::sil_pixmap_of(ItemCode code) {
+    ItemDefinitionPtr def = def_of(code);
+    QString pixmap_name = QString(":/assets/img/items/sil/%1.png").arg(def->internal_name);
+
+    if (!QFile(pixmap_name).exists()) {
+        qDebug("Missing item sil pixmap (%s)", def->internal_name.toStdString().c_str());
+        pixmap_name = ":/assets/img/items/missing_sil.png";
+    }
+
+    return QPixmap(pixmap_name);
 }
 
 Item Item::invalid_item() {

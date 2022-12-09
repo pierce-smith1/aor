@@ -18,6 +18,10 @@ Game::Game()
     add_item(Item("byteberry"));
     add_item(Item("byteberry"));
     add_item(Item("byteberry"));
+    add_item(Item("oolite"));
+    add_item(Item("obsilicon"));
+    add_item(Item("maven_mallet"));
+    add_item(Item("basalt_destructor"));
 
     m_tribes[NOBODY];
 }
@@ -40,6 +44,10 @@ GameId Game::game_id() {
 
 QString &Game::tribe_name() {
     return m_tribe_name;
+}
+
+ItemHistory &Game::history() {
+    return m_history;
 }
 
 Offer &Game::trade_offer() {
@@ -71,6 +79,7 @@ void Game::add_character(const QString &name) {
 
 void Game::add_item(const Item &item) {
     m_inventory.add_item(item);
+    m_history.insert(item.code);
 }
 
 TooltipText Game::tooltip_text_for(const Item &item) {

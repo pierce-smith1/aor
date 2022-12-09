@@ -3,9 +3,10 @@
 #include "itemslot.h"
 #include "externalslot.h"
 #include "effectslot.h"
+#include "encyclopedia.h"
 
 LKGameWindow::LKGameWindow()
-    : m_connection(this), m_save_file(SAVE_FILE_NAME)
+    : m_connection(this), m_save_file(SAVE_FILE_NAME), m_encyclopedia(new Encyclopedia(this))
 {
     m_window.setupUi(this);
 
@@ -37,6 +38,10 @@ LKGameWindow::LKGameWindow()
     connect(m_window.trade_partner_combobox, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index) {
         m_selected_tribe_id = m_window.trade_partner_combobox->itemData(index).toLongLong(nullptr);
         refresh_ui();
+    });
+
+    connect(m_window.encyclopedia_action, &QAction::triggered, [=]() {
+        m_encyclopedia->show();
     });
 
     ItemSlot::insert_inventory_slots(*this);
@@ -121,7 +126,7 @@ void LKGameWindow::start_activity(CharacterId char_id, const CharacterActivity &
     refresh_ui();
 }
 
-void LKGameWindow::progress_activity(CharacterId char_id, std::int64_t by_ms) {
+void LKGameWindow::progress_activity(CharacterId char_id, qint64 by_ms) {
     Character &character = m_game.characters().at(char_id);
 
     character.activity().ms_left -= by_ms;
@@ -200,6 +205,9 @@ void LKGameWindow::refresh_trade_ui() {
     }
 }
 
+void LKGameWindow::refresh_recipies_ui() {
+}
+
 void LKGameWindow::complete_activity(CharacterId char_id) {
     Character &character = m_game.characters().at(char_id);
     ItemDomain domain = character.activity().action;
@@ -235,8 +243,7 @@ void LKGameWindow::complete_activity(CharacterId char_id) {
         auto &offer = m_game.tribes().at(m_selected_tribe_id).offer;
         new_items = std::vector<Item>(begin(offer), end(offer));
     } else {
-        Item tool = m_game.inventory().get_item(character.tools()[domain]);
-        new_items = Generators::base_items(character.input_items(), tool, domain);
+        new_items = character.generate_output_items();
     }
 
     for (const Item &item : new_items) {

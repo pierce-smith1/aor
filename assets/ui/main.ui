@@ -49,7 +49,7 @@
     </size>
    </property>
    <layout class="QGridLayout" name="gridLayout_2">
-    <item row="1" column="1">
+    <item row="1" column="2">
      <widget class="QWidget" name="widget" native="true">
       <property name="minimumSize">
        <size>
@@ -120,281 +120,22 @@
       </layout>
      </widget>
     </item>
-    <item row="0" column="0">
-     <widget class="QGroupBox" name="recipies_box">
-      <property name="title">
-       <string>Recipies</string>
+    <item row="0" column="3" rowspan="3">
+     <widget class="QGroupBox" name="explorers_box">
+      <property name="maximumSize">
+       <size>
+        <width>120</width>
+        <height>16777215</height>
+       </size>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_8">
+      <property name="title">
+       <string>Explorers</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QScrollArea" name="recipies_area">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="widgetResizable">
-          <bool>true</bool>
-         </property>
-         <widget class="QWidget" name="recipies_contents">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>486</width>
-            <height>241</height>
-           </rect>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_2"/>
-         </widget>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QTabWidget" name="action_tabs">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="tabPosition">
-       <enum>QTabWidget::North</enum>
-      </property>
-      <property name="tabShape">
-       <enum>QTabWidget::Rounded</enum>
-      </property>
-      <property name="currentIndex">
-       <number>2</number>
-      </property>
-      <property name="elideMode">
-       <enum>Qt::ElideNone</enum>
-      </property>
-      <property name="usesScrollButtons">
-       <bool>false</bool>
-      </property>
-      <property name="documentMode">
-       <bool>false</bool>
-      </property>
-      <property name="tabsClosable">
-       <bool>false</bool>
-      </property>
-      <widget class="QWidget" name="smithing_tab">
-       <property name="toolTip">
-        <string>Spend materials to forge tools.</string>
-       </property>
-       <attribute name="title">
-        <string>Smith</string>
-       </attribute>
-       <attribute name="toolTip">
-        <string>Spend materials to forge tools, which make you more a more effective colonist.</string>
-       </attribute>
-       <layout class="QGridLayout" name="gridLayout_3">
-        <item row="3" column="0" colspan="2">
-         <widget class="QPushButton" name="smith_button">
-          <property name="minimumSize">
-           <size>
-            <width>56</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Forge!</string>
-          </property>
-          <property name="icon">
-           <iconset resource="../../images.qrc">
-            <normaloff>:/assets/img/icons/hammer.png</normaloff>:/assets/img/icons/hammer.png</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0" colspan="2">
-         <layout class="QGridLayout" name="smith_layout"/>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="exploring_tab">
-       <attribute name="title">
-        <string>Explore</string>
-       </attribute>
-       <attribute name="toolTip">
-        <string>Search the environment for useful things.</string>
-       </attribute>
-       <layout class="QGridLayout" name="gridLayout_4">
-        <item row="0" column="0">
-         <layout class="QGridLayout" name="exploring_layout">
-          <item row="1" column="0">
-           <widget class="QPushButton" name="forage_button">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="toolTip">
-             <string>Find foods and medicines, which you can use to keep your energy levels up.</string>
-            </property>
-            <property name="text">
-             <string>Forage</string>
-            </property>
-            <property name="icon">
-             <iconset resource="../../images.qrc">
-              <normaloff>:/assets/img/icons/leaf.png</normaloff>:/assets/img/icons/leaf.png</iconset>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QWidget" name="ghost_1" native="true"/>
-          </item>
-          <item row="3" column="0">
-           <widget class="QPushButton" name="mine_button">
-            <property name="toolTip">
-             <string>Find earthly materials, which you can use to smith better tools.</string>
-            </property>
-            <property name="text">
-             <string>Mine</string>
-            </property>
-            <property name="icon">
-             <iconset resource="../../images.qrc">
-              <normaloff>:/assets/img/icons/crystals.png</normaloff>:/assets/img/icons/crystals.png</iconset>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QWidget" name="ghost_2" native="true"/>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="trading_tab">
-       <attribute name="title">
-        <string>Trade</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_7">
-        <item>
-         <layout class="QHBoxLayout" name="foreign_trade_slot_layout"/>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_6">
-          <item>
-           <widget class="QLabel" name="trade_remote_accept_icon">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="pixmap">
-             <pixmap resource="../../images.qrc">:/assets/img/icons/warning.png</pixmap>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="trade_partner_combobox"/>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="QLabel" name="trade_arrow_label">
-          <property name="text">
-           <string/>
-          </property>
-          <property name="pixmap">
-           <pixmap resource="../../images.qrc">:/assets/img/icons/arrows_disabled.png</pixmap>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="trade_notification_label">
-          <property name="text">
-           <string/>
-          </property>
-          <property name="textFormat">
-           <enum>Qt::RichText</enum>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="trade_slot_layout"/>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QPushButton" name="trade_accept_button">
-            <property name="text">
-             <string>Accept</string>
-            </property>
-            <property name="icon">
-             <iconset resource="../../images.qrc">
-              <normaloff>:/assets/img/icons/focussigil2.png</normaloff>:/assets/img/icons/focussigil2.png</iconset>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="trade_unaccept_button">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string>Nevermind</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QGroupBox" name="inventory_group">
-      <property name="title">
-       <string>Inventory</string>
-      </property>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
-        <widget class="QScrollArea" name="inventory_area">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="autoFillBackground">
-          <bool>false</bool>
+        <widget class="QScrollArea" name="explorer_scroll">
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
          </property>
          <property name="horizontalScrollBarPolicy">
           <enum>Qt::ScrollBarAlwaysOff</enum>
@@ -402,23 +143,23 @@
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
-         <widget class="QWidget" name="inventory_slots">
+         <widget class="QWidget" name="explorer_slots">
           <property name="geometry">
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>486</width>
-            <height>240</height>
+            <width>100</width>
+            <height>639</height>
            </rect>
           </property>
-          <layout class="QGridLayout" name="gridLayout_7"/>
+          <layout class="QVBoxLayout" name="verticalLayout"/>
          </widget>
         </widget>
        </item>
       </layout>
      </widget>
     </item>
-    <item row="2" column="0">
+    <item row="2" column="1">
      <widget class="QGroupBox" name="effect_group">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
@@ -444,7 +185,7 @@
       <layout class="QHBoxLayout" name="horizontalLayout_3"/>
      </widget>
     </item>
-    <item row="2" column="1">
+    <item row="2" column="2">
      <layout class="QGridLayout" name="gridLayout_5">
       <item row="2" column="0">
        <widget class="QLabel" name="morale_icon">
@@ -571,22 +312,22 @@
       </item>
      </layout>
     </item>
-    <item row="0" column="2" rowspan="3">
-     <widget class="QGroupBox" name="explorers_box">
-      <property name="maximumSize">
-       <size>
-        <width>120</width>
-        <height>16777215</height>
-       </size>
-      </property>
+    <item row="1" column="0" colspan="2">
+     <widget class="QGroupBox" name="inventory_group">
       <property name="title">
-       <string>Explorers</string>
+       <string>Inventory</string>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QScrollArea" name="explorer_scroll">
-         <property name="verticalScrollBarPolicy">
-          <enum>Qt::ScrollBarAlwaysOff</enum>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QScrollArea" name="inventory_area">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="autoFillBackground">
+          <bool>false</bool>
          </property>
          <property name="horizontalScrollBarPolicy">
           <enum>Qt::ScrollBarAlwaysOff</enum>
@@ -594,17 +335,223 @@
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
-         <widget class="QWidget" name="explorer_slots">
+         <widget class="QWidget" name="inventory_slots">
           <property name="geometry">
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>100</width>
-            <height>639</height>
+            <width>486</width>
+            <height>240</height>
            </rect>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout"/>
+          <layout class="QGridLayout" name="gridLayout_7"/>
          </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="0" colspan="3">
+     <layout class="QHBoxLayout" name="activity_layout">
+      <item>
+       <widget class="QGroupBox" name="smith_box">
+        <property name="title">
+         <string>Smith</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_8">
+         <item row="0" column="0">
+          <layout class="QGridLayout" name="smith_layout"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QPushButton" name="smith_button">
+           <property name="minimumSize">
+            <size>
+             <width>56</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Forge!</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../../images.qrc">
+             <normaloff>:/assets/img/icons/hammer.png</normaloff>:/assets/img/icons/hammer.png</iconset>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="explore_box">
+        <property name="title">
+         <string>Explore</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_3">
+         <item row="0" column="0">
+          <layout class="QGridLayout" name="exploring_layout">
+           <item row="3" column="0">
+            <widget class="QWidget" name="ghost" native="true"/>
+           </item>
+           <item row="2" column="0">
+            <widget class="QPushButton" name="forage_button">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="toolTip">
+              <string>Find foods and medicines, which you can use to keep your energy levels up.</string>
+             </property>
+             <property name="text">
+              <string>Forage</string>
+             </property>
+             <property name="icon">
+              <iconset resource="../../images.qrc">
+               <normaloff>:/assets/img/icons/leaf.png</normaloff>:/assets/img/icons/leaf.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QPushButton" name="mine_button">
+             <property name="toolTip">
+              <string>Find earthly materials, which you can use to smith better tools.</string>
+             </property>
+             <property name="text">
+              <string>Mine</string>
+             </property>
+             <property name="icon">
+              <iconset resource="../../images.qrc">
+               <normaloff>:/assets/img/icons/crystals.png</normaloff>:/assets/img/icons/crystals.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QWidget" name="ghost_2" native="true"/>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="trade_box">
+        <property name="title">
+         <string>Trade</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_4">
+         <item row="5" column="0">
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QPushButton" name="trade_accept_button">
+             <property name="text">
+              <string>Accept</string>
+             </property>
+             <property name="icon">
+              <iconset resource="../../images.qrc">
+               <normaloff>:/assets/img/icons/focussigil2.png</normaloff>:/assets/img/icons/focussigil2.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="trade_unaccept_button">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Nevermind</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item row="0" column="0">
+          <layout class="QHBoxLayout" name="foreign_trade_slot_layout"/>
+         </item>
+         <item row="1" column="0">
+          <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <item>
+            <widget class="QLabel" name="trade_remote_accept_icon">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="pixmap">
+              <pixmap resource="../../images.qrc">:/assets/img/icons/warning.png</pixmap>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="trade_partner_combobox"/>
+           </item>
+          </layout>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="trade_arrow_label">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="pixmap">
+            <pixmap resource="../../images.qrc">:/assets/img/icons/arrows_disabled.png</pixmap>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <layout class="QHBoxLayout" name="trade_slot_layout"/>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="trade_notification_label">
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="2" column="0">
+     <widget class="QGroupBox" name="weather_box">
+      <property name="title">
+       <string>Weather</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QLabel" name="weather_label">
+         <property name="text">
+          <string>TextLabel</string>
+         </property>
         </widget>
        </item>
       </layout>
@@ -621,6 +568,13 @@
      <height>30</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuEncyclopedia">
+    <property name="title">
+     <string>Encyclopedia</string>
+    </property>
+    <addaction name="encyclopedia_action"/>
+   </widget>
+   <addaction name="menuEncyclopedia"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="minimumSize">
@@ -630,8 +584,14 @@
     </size>
    </property>
   </widget>
+  <action name="encyclopedia_action">
+   <property name="text">
+    <string>Open Encyclopedia</string>
+   </property>
+  </action>
  </widget>
  <resources>
+  <include location="../../images.qrc"/>
   <include location="../../images.qrc"/>
   <include location="../../../../images.qrc"/>
  </resources>

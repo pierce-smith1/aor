@@ -3,7 +3,11 @@
 #include "qnamespace.h"
 
 ItemSlot::ItemSlot(LKGameWindow *game)
-    : QFrame(game->window().inventory_group), y(INVALID_COORD), x(INVALID_COORD), m_game_window(game)
+    : QFrame(game->window().inventory_group),
+      y(INVALID_COORD),
+      x(INVALID_COORD),
+      m_game_window(game),
+      m_opacity_effect(new QGraphicsOpacityEffect(this))
 {
     setMinimumSize(QSize(56, 56));
     setMaximumSize(QSize(56, 56));
@@ -25,8 +29,8 @@ ItemSlot::ItemSlot(LKGameWindow *game)
 
     layout->addWidget(label);
 
-    m_opacity_effect.setOpacity(1.0);
-    m_item_label->setGraphicsEffect(&m_opacity_effect);
+    m_opacity_effect->setOpacity(1.0);
+    m_item_label->setGraphicsEffect(m_opacity_effect);
 }
 
 ItemSlot::ItemSlot(LKGameWindow *game, int y, int x)
@@ -56,13 +60,12 @@ ItemDomain ItemSlot::type() {
 
 void ItemSlot::refresh_pixmap() {
     Item item = get_item();
-
     m_item_label->setPixmap(Item::pixmap_of(item));
 
     if (item.intent != None && type() == Ordinary) {
-        m_opacity_effect.setOpacity(0.5);
+        m_opacity_effect->setOpacity(0.5);
     } else {
-        m_opacity_effect.setOpacity(1.0);
+        m_opacity_effect->setOpacity(1.0);
     }
 }
 
@@ -107,7 +110,9 @@ void ItemSlot::enterEvent(QEvent *event) {
     QEnterEvent *enter_event = (QEnterEvent *) event;
     m_game_window->tooltip().move(enter_event->globalPos());
     m_game_window->tooltip().set_text(m_game_window->game().tooltip_text_for(item));
+    m_game_window->tooltip().set_resources(item);
     m_game_window->tooltip().widget.item_image->setPixmap(Item::pixmap_of(item));
+    m_game_window->tooltip().adjustSize();
     m_game_window->tooltip().show();
 }
 

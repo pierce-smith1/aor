@@ -3,6 +3,7 @@
 #include <QProgressBar>
 
 #include <algorithm>
+#include <set>
 
 #include "character.h"
 #include "inventory.h"
@@ -18,6 +19,7 @@ using Characters = std::map<CharacterId, Character>;
 using ForeignTribes = std::map<GameId, TradeState>;
 using Offer = std::array<ItemId, TRADE_SLOTS>;
 using TradePurchases = std::array<Item, TRADE_SLOTS>;
+using ItemHistory = std::set<ItemCode>;
 
 class Game {
 public:
@@ -31,6 +33,7 @@ public:
     GameId &trade_partner();
     GameId game_id();
     QString &tribe_name();
+    ItemHistory &history();
 
     void add_character(const QString &name);
     void add_item(const Item &item);
@@ -52,4 +55,5 @@ private:
     GameId m_trade_partner = NOBODY;
     GameId m_game_id;
     QString m_tribe_name;
+    ItemHistory m_history;
 };

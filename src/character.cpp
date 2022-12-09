@@ -189,6 +189,115 @@ std::vector<Item> Character::input_items() {
     }
 }
 
+std::vector<Item> Character::generate_output_items() {
+    std::vector<Item> outputs;
+
+    Item tool = m_game->inventory().get_item(tool_id(activity().action));
+    const ItemProperties &tool_properties = tool.def()->properties;
+
+    switch (activity().action) {
+        case Smithing: {
+            break;
+        }
+        case Foraging:
+        case Mining: {
+            if (tool.id == EMPTY_ID) {
+                if (activity().action == Foraging) {
+                    return {
+                        Generators::sample_with_weights<Item>({
+                            { Item("globfruit"), 1 },
+                            { Item("byteberry"), 1 }
+                        })
+                    };
+                } else {
+                    return {
+                        Generators::sample_with_weights<Item>({
+                            { Item("obsilicon"), 1 },
+                            { Item("oolite"), 1 }
+                        })
+                    };
+                }
+            }
+
+            std::vector<std::pair<Item, double>> possible_discoveries;
+            for (int i = (int) ToolCanDiscover1; i <= (int) ToolCanDiscover9; i++) {
+                if (tool_properties[(ItemProperty) i] != 0) {
+                    possible_discoveries.emplace_back(
+                        tool_properties[(ItemProperty) i],
+                        tool_properties[(ItemProperty) (i + 9)]
+                    );
+                }
+            }
+
+            outputs.emplace_back(Generators::sample_with_weights(possible_discoveries));
+
+            break;
+        }
+        case Trading: {
+            // Trading generates no base items; must be handled elsewhere
+            return {};
+        }
+        default: {
+            qWarning("Tried to generate items with unknown action domain (%d)", activity().action);
+        }
+    }
+
+    return outputs;
+}
+
+std::vector<std::pair<ItemCode, bool>> Character::smithable_items() {
+    ItemDefinitionPtr smithing_def = m_game->inventory().get_item(tool_id(SmithingTool)).def();
+
+    std::vector<std::pair<ItemCode, bool>> smithable_codes;
+
+    for (const ItemDefinition &def : ITEM_DEFINITIONS) {
+        bool tool_is_sufficient = true;
+        bool is_smithable = false;
+
+        for (quint16 i = 1; i <= 5; i++) {
+            ItemProperty resource_cost = (ItemProperty) (Cost + i);
+            ItemProperty resource_max = (ItemProperty) (ToolMaximum + i);
+
+            // If at least one cost is non-zero, the item is smithable
+            if (def.properties[resource_cost] > 0) {
+                is_smithable = true;
+            }
+
+            if (smithing_def->properties[resource_max] < def.properties[resource_cost]) {
+                tool_is_sufficient = false;
+                break;
+            }
+        }
+
+        if (tool_is_sufficient && is_smithable) {
+            bool can_smith = true;
+
+            for (quint16 i = 1; i <= 5; i++) {
+                ItemProperty resource_cost = (ItemProperty) (Cost + i);
+                ItemProperty resource = (ItemProperty) (Resource + i);
+
+                int resource_budget = std::accumulate(
+                    begin(external_items().at(Material)),
+                    end(external_items().at(Material)),
+                    0,
+                    [=](ItemId a, int b) {
+                        return m_game->inventory().get_item(a).def()->properties[resource] + b;
+                    }
+                );
+
+                if (resource_budget < def.properties[resource_cost]) {
+                    can_smith = false;
+                    break;
+                }
+            }
+
+            smithable_codes.push_back(std::make_pair(def.code, can_smith));
+        }
+    }
+
+    return smithable_codes;
+}
+
 bool Character::push_effect(const Item &effect) {
     if (effect.id == EMPTY_ID) {
         return false;

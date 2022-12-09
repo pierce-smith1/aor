@@ -48,5 +48,5 @@ protected:
     LKGameWindow *m_game_window;
 
 private:
-    QGraphicsOpacityEffect m_opacity_effect;
+    QGraphicsOpacityEffect *m_opacity_effect;
 };
