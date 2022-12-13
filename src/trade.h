@@ -22,7 +22,7 @@ const static char MT_EXECUTETRADE = 'e';
 
 class DoughbyteConnection {
 public:
-    DoughbyteConnection(LKGameWindow *game_window);
+    DoughbyteConnection();
 
     bool is_connected();
 
@@ -45,6 +45,5 @@ public:
 
 private:
     QTcpSocket m_socket;
-    LKGameWindow *m_game_window;
     bool m_is_connected = false;
 };

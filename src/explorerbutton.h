@@ -9,12 +9,13 @@ class LKGameWindow;
 
 #include "items.h"
 #include "icons.h"
+#include "tooltip.h"
 
-class ExplorerButton : public QGroupBox {
+class ExplorerButton : public Hoverable<QGroupBox> {
     Q_OBJECT
 
 public:
-    ExplorerButton(QWidget *parent, LKGameWindow *game_window, CharacterId id);
+    ExplorerButton(QWidget *parent, CharacterId id);
 
     CharacterId id();
     void refresh();
@@ -22,13 +23,13 @@ public:
 protected:
     void mousePressEvent(QMouseEvent *) override;
 
+    bool do_hovering() override;
+    std::optional<TooltipInfo> tooltip_info() override;
+
 private:
-    LKGameWindow *m_game_window;
     CharacterId m_id;
     QLabel *m_name;
     QLabel *m_portrait;
     QLabel *m_activity_icon;
-    std::map<ItemDomain, QLabel*> m_tool_status_labels;
-    std::array<QLabel*, ARTIFACT_SLOTS> m_artifact_status_labels {};
     QGraphicsColorizeEffect *m_portrait_effect;
 };

@@ -1,22 +1,22 @@
 #include "effectslot.h"
 
-EffectSlot::EffectSlot(LKGameWindow *game, int n)
-    : ItemSlot(game), n(n), m_effect_code(0)
+EffectSlot::EffectSlot(int n)
+    : ItemSlot(), n(n), m_effect_code(0)
 {
     setObjectName(make_internal_name("effect_slot", n));
     m_item_layout->setObjectName(make_internal_name("effect_slot", n));
     m_item_label->setObjectName(make_internal_name("effect_slot", n));
 
-    game->register_slot(this);
+    gw()->register_slot(this);
 }
 
 Item EffectSlot::get_item() {
-    return m_game_window->selected_char().effects()[n];
+    return gw()->selected_char().effects()[n];
 }
 
 void EffectSlot::set_item(const Item &item) {
     if (item.def()->type & Effect) {
-        m_game_window->selected_char().effects()[n] = item;
+        gw()->selected_char().effects()[n] = item;
         return;
     }
 
@@ -31,9 +31,9 @@ void EffectSlot::refresh_pixmap() {
     ItemSlot::refresh_pixmap();
 }
 
-void EffectSlot::insert_effect_slots(LKGameWindow &window) {
-    for (int i {0}; i < EFFECT_SLOTS; i++) {
-        window.window().effect_group->layout()->addWidget(new EffectSlot(&window, i));
+void EffectSlot::insert_effect_slots() {
+    for (int i = 0; i < EFFECT_SLOTS; i++) {
+        gw()->window().effect_group->layout()->addWidget(new EffectSlot(i));
     }
 }
 

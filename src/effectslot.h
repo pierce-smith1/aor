@@ -6,14 +6,14 @@ class EffectSlot : public ItemSlot {
     Q_OBJECT
 
 public:
-    EffectSlot(LKGameWindow *game, int n);
+    EffectSlot(int n);
 
     Item get_item() override;
     void set_item(const Item &item) override;
     ItemDomain type() override;
     void refresh_pixmap() override;
 
-    static void insert_effect_slots(LKGameWindow &window);
+    static void insert_effect_slots();
     static QString make_internal_name(const QString &base, int n);
 
     int n;

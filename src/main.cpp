@@ -4,10 +4,9 @@
 int main(int argc, char **argv) {
     QApplication app(argc, argv);
 
-    LKGameWindow game_window;
-    game_window.show();
-
-    game_window.refresh_ui();
+    LKGameWindow::instantiate_singleton();
+    gw()->show();
+    gw()->refresh_ui();
 
     //CheatConsole console(&game_window);
 

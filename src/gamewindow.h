@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <memory>
 
 #include <QObject>
 #include <QRecursiveMutex>
@@ -11,15 +12,14 @@ class LKGameWindow;
 #include "items.h"
 #include "../ui_main.h"
 #include "gamenotification.h"
-#include "tooltip.h"
 #include "character.h"
 #include "game.h"
-#include "explorerbutton.h"
 #include "trade.h"
 
 class ItemSlot;
 class RecipieBox;
 class Encyclopedia;
+class Tooltip;
 
 using ActivityTimers = std::map<CharacterId, int>;
 
@@ -29,11 +29,13 @@ class LKGameWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    LKGameWindow();
+    static void instantiate_singleton();
+    LKGameWindow(); // Although this class is a singleton, we leave its
+                    // constructor public for use with std::allocator.
 
     Game &game();
     Ui::LKMainWindow &window();
-    Tooltip &tooltip();
+    Tooltip *&tooltip();
     CharacterId &selected_char_id();
     GameId &selected_tribe_id();
     DoughbyteConnection &connection();
@@ -45,9 +47,6 @@ public:
 
     void notify(NotificationType type, const QString &message);
 
-    void start_activity(CharacterId char_id, ItemDomain type);
-    void start_activity(const CharacterActivity &activity);
-    void start_activity(CharacterId char_id, const CharacterActivity &activity);
     void progress_activity(CharacterId char_id, qint64 by_ms);
     void complete_activity(CharacterId char_id);
 
@@ -58,7 +57,6 @@ public:
     void refresh_ui_bars();
     void refresh_ui_buttons();
     void refresh_trade_ui();
-    void refresh_recipies_ui();
 
     const std::map<ItemDomain, QPushButton *> get_activity_buttons();
     const std::vector<ItemSlot *> &item_slots();
@@ -71,14 +69,19 @@ protected:
     void timerEvent(QTimerEvent *event) override;
 
 private:
-    Ui::LKMainWindow m_window;
-    Tooltip m_item_tooltip;
-    Game m_game;
+    static LKGameWindow *the_game_window;
+
     CharacterId m_selected_char_id = 0;
+    Ui::LKMainWindow m_window;
+    Tooltip *m_item_tooltip;
+    Game m_game;
     GameId m_selected_tribe_id = NOBODY;
-    ActivityTimers m_timers;
     std::vector<ItemSlot *> m_slots;
     DoughbyteConnection m_connection;
     QFile m_save_file;
     Encyclopedia *m_encyclopedia;
+
+    friend LKGameWindow *gw();
 };
+
+LKGameWindow *gw();

@@ -1,6 +1,8 @@
 #include "tooltip.h"
 #include "qnamespace.h"
 #include "items.h"
+#include "game.h"
+#include "gamewindow.h"
 
 Tooltip::Tooltip()
     : widget()
@@ -14,14 +16,75 @@ Tooltip::Tooltip()
     hide_resources();
 }
 
-void Tooltip::set_text(const TooltipText &text) {
-    widget.item_name->setText(text.title);
-    widget.item_subtext->setText(text.subtext);
-    widget.item_description->setText(text.description);
+void Tooltip::set(const TooltipInfo &info) {
+    hide_resources();
+
+    widget.item_name->setText(info.title);
+    widget.item_subtext->setText(info.subtext);
+    widget.item_description->setText(info.description);
+    widget.item_image->setPixmap(info.icon);
 }
 
-void Tooltip::set_resources(const Item &item) {
+void Tooltip::set(const Item &item, Game &game) {
     hide_resources();
+
+    widget.item_image->setPixmap(Item::pixmap_of(item));
+
+    ItemDefinitionPtr this_def = item.def();
+    QString character_name = item.intent_holder == NOBODY ? "" : game.characters().at(item.intent_holder).name();
+
+    widget.item_name->setText(QString("<b>%1</b>").arg(this_def->display_name));
+    QString description = this_def->description;
+    QString subtext;
+
+    switch (this_def->item_level) {
+        case 1: { subtext = "Unremarkable "; break; }
+        case 2: { subtext = "Common "; break; }
+        case 3: { subtext = "Notable "; break; }
+        case 4: { subtext = "Rare "; break; }
+        case 5: { subtext = "Enchanted "; break; }
+        case 6: { subtext = "Truly Extraordinary "; break; }
+        case 7: { subtext = "Anomalous "; break; }
+        case 8: { subtext = "Incomprehensible "; break; }
+        default: { break; }
+    }
+
+    subtext += Item::type_to_string(this_def->type);
+
+    switch (item.intent) {
+        default:
+        case None: {
+            break;
+        }
+        case Consumable: {
+            subtext += QString(" <b><font color=green>(Being eaten by %1)</font></b>").arg(character_name);
+            break;
+        }
+        case Material: {
+            subtext += QString(" <b><font color=green>(Queued for smithing by %1)</font></b>").arg(character_name);
+            break;
+        }
+        case Offering: {
+            subtext += QString(" <b><font color=green>(Queued for trading)</font></b>");
+            break;
+        }
+        case SmithingTool:
+        case ForagingTool:
+        case MiningTool:
+        case Artifact: {
+            subtext += QString(" <b><font color=green>(Equipped by %1)</font></b>").arg(character_name);
+            break;
+        }
+    }
+
+    description += "<br>" + Item::properties_to_string(this_def->properties);
+
+    if (item.uses_left != 0) {
+        subtext += QString(" <font color=gray>(%1 uses left)</font>").arg(item.uses_left);
+    }
+
+    widget.item_subtext->setText(subtext);
+    widget.item_description->setText(description);
 
     const ItemProperties &properties = item.def()->properties;
 

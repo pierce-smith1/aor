@@ -118,6 +118,15 @@ Item Item::invalid_item() {
     return item;
 }
 
+void Item::for_each_resource_type(const std::function<void(ItemProperty, ItemProperty, ItemProperty)> &fn) {
+    for (quint16 i = 1; i <= 5; i++) {
+        ItemProperty cost_prop = (ItemProperty) (Cost + i);
+        ItemProperty max_prop = (ItemProperty) (ToolMaximum + i);
+        ItemProperty resource_prop = (ItemProperty) (Resource + i);
+        fn(cost_prop, max_prop, resource_prop);
+    }
+}
+
 QString Item::type_to_string(ItemType type) {
     QString string;
 

@@ -2,11 +2,10 @@
 #include "items.h"
 #include "qnamespace.h"
 
-ItemSlot::ItemSlot(LKGameWindow *game)
-    : QFrame(game->window().inventory_group),
+ItemSlot::ItemSlot()
+    : Hoverable<QFrame>(gw()->tooltip(), gw()),
       y(INVALID_COORD),
       x(INVALID_COORD),
-      m_game_window(game),
       m_opacity_effect(new QGraphicsOpacityEffect(this))
 {
     setMinimumSize(QSize(56, 56));
@@ -33,25 +32,25 @@ ItemSlot::ItemSlot(LKGameWindow *game)
     m_item_label->setGraphicsEffect(m_opacity_effect);
 }
 
-ItemSlot::ItemSlot(LKGameWindow *game, int y, int x)
-    : ItemSlot(game)
+ItemSlot::ItemSlot(int y, int x)
+    : ItemSlot()
 {
     setObjectName(make_internal_name("inventory_slot", y, x));
     m_item_layout->setObjectName(make_internal_name("inventory_layout", y, x));
     m_item_label->setObjectName(make_internal_name("inventory_label", y, x));
 
-    game->register_slot(this);
+    gw()->register_slot(this);
 
     this->y = y;
     this->x = x;
 }
 
 Item ItemSlot::get_item() {
-    return m_game_window->game().inventory().get_item(y, x);
+    return gw()->game().inventory().get_item(y, x);
 }
 
 void ItemSlot::set_item(const Item &item) {
-    m_game_window->game().inventory().put_item(item, y, x);
+    gw()->game().inventory().put_item(item, y, x);
 }
 
 ItemDomain ItemSlot::type() {
@@ -76,54 +75,36 @@ void ItemSlot::drop_external_item() {
     }
 
     ItemId external_item_id = get_item().id;
-    m_game_window->game().inventory().get_item_ref(external_item_id).intent = None;
+    gw()->game().inventory().get_item_ref(external_item_id).intent = None;
     set_item(Item());
 
     refresh_pixmap();
-    m_game_window->refresh_ui();
+    gw()->refresh_ui();
 }
 
-void ItemSlot::insert_inventory_slots(LKGameWindow &window) {
+void ItemSlot::insert_inventory_slots() {
     for (unsigned x = 0; x < INVENTORY_COLS; x++) {
         for (unsigned y = 0; y < INVENTORY_ROWS; y++) {
-            insert_inventory_slot(window, y, x);
+            insert_inventory_slot(y, x);
         }
     }
 }
 
-void ItemSlot::insert_inventory_slot(LKGameWindow &window, unsigned y, unsigned x) {
-    QGridLayout *inventory_grid = dynamic_cast<QGridLayout*>(window.window().inventory_slots->layout());
-    inventory_grid->addWidget(new ItemSlot(&window, y, x), y, x);
+void ItemSlot::insert_inventory_slot(unsigned y, unsigned x) {
+    QGridLayout *inventory_grid = dynamic_cast<QGridLayout*>(gw()->window().inventory_slots->layout());
+    inventory_grid->addWidget(new ItemSlot(y, x), y, x);
 }
 
 QString ItemSlot::make_internal_name(const QString &base, int y, int x) {
     return QString("%1;%2:%3").arg(base).arg(y).arg(x);
 }
 
-void ItemSlot::enterEvent(QEvent *event) {
-    Item item = get_item();
-
-    if (item.id == EMPTY_ID) {
-        return;
-    }
-
-    QEnterEvent *enter_event = (QEnterEvent *) event;
-    m_game_window->tooltip().move(enter_event->globalPos());
-    m_game_window->tooltip().set_text(m_game_window->game().tooltip_text_for(item));
-    m_game_window->tooltip().set_resources(item);
-    m_game_window->tooltip().widget.item_image->setPixmap(Item::pixmap_of(item));
-    m_game_window->tooltip().adjustSize();
-    m_game_window->tooltip().show();
+bool ItemSlot::do_hovering() {
+    return get_item().id != EMPTY_ID;
 }
 
-void ItemSlot::mouseMoveEvent(QMouseEvent *event) {
-    if (get_item().id != EMPTY_ID) {
-        m_game_window->tooltip().move(event->globalPos());
-    }
-}
-
-void ItemSlot::leaveEvent(QEvent *) {
-    m_game_window->tooltip().hide();
+std::optional<Item> ItemSlot::tooltip_item() {
+    return std::optional<Item>(get_item());
 }
 
 void ItemSlot::mousePressEvent(QMouseEvent *event) {
@@ -138,14 +119,14 @@ void ItemSlot::mousePressEvent(QMouseEvent *event) {
 
     if (event->button() == Qt::RightButton
         && !is_inventory_slot
-        && !m_game_window->selected_char().activity_ongoing()
+        && !gw()->selected_char().activity().ongoing()
     ) {
         drop_external_item();
         return;
     }
 
     if (event->button() == Qt::LeftButton
-        && (!item_being_used || (!is_inventory_slot && !m_game_window->selected_char().activity_ongoing()))
+        && (!item_being_used || (!is_inventory_slot && !gw()->selected_char().activity().ongoing()))
     ) {
         QDrag *drag = new QDrag(this);
         QMimeData *data = new QMimeData;
@@ -169,15 +150,15 @@ void ItemSlot::dragEnterEvent(QDragEnterEvent *event) {
 
 void ItemSlot::dropEvent(QDropEvent *event) {
     QString source_slot_name = event->mimeData()->text();
-    ItemSlot *source_slot = m_game_window->findChild<ItemSlot *>(source_slot_name);
+    ItemSlot *source_slot = gw()->findChild<ItemSlot *>(source_slot_name);
 
     if (source_slot->type() == Ordinary) {
         // Dragging between inventory slots swaps the items in each slot.
         Item source_item = source_slot->get_item();
         Item dest_item = get_item();
 
-        m_game_window->game().inventory().put_item(source_item, y, x);
-        m_game_window->game().inventory().put_item(dest_item, source_slot->y, source_slot->x);
+        gw()->game().inventory().put_item(source_item, y, x);
+        gw()->game().inventory().put_item(dest_item, source_slot->y, source_slot->x);
 
         source_slot->refresh_pixmap();
     } else {
@@ -186,5 +167,5 @@ void ItemSlot::dropEvent(QDropEvent *event) {
         source_slot->drop_external_item();
     }
 
-    m_game_window->refresh_ui();
+    gw()->refresh_ui();
 }

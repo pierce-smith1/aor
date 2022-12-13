@@ -4,7 +4,7 @@
 
 class ForeignTradeSlot : public ItemSlot {
 public:
-    ForeignTradeSlot(LKGameWindow *game_window, int n);
+    ForeignTradeSlot(int n);
 
     Item get_item() override;
     void set_item(const Item &item) override;

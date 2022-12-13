@@ -12,8 +12,6 @@
 #include <QFile>
 #include <QPixmap>
 
-#include "tooltip.h"
-
 #define USES
 #define LEVEL
 
@@ -101,18 +99,21 @@ enum ItemProperty : quint16 {
     CostCrystalline = 0x2003,
     CostRuinc = 0x2004,
     CostLeafy = 0x2005,
+    _END_COST = 0x2006,
     ToolMaximum = 0x4000,
     ToolMaximumStone = 0x4001,
     ToolMaximumMetallic = 0x4002,
     ToolMaximumCrystalline = 0x4003,
     ToolMaximumRunic = 0x4004,
     ToolMaximumLeafy = 0x4005,
+    _END_TOOL_MAX = 0x4006,
     Resource = 0x8000,
     StoneResource = 0x8001,
     MetallicResource = 0x8002,
     CrystallineResource = 0x8003,
     RunicResource = 0x8004,
     LeafyResource = 0x8005,
+    _END_RESOURCE = 0x0006,
 };
 
 // This basically just wraps a std::map<ItemPropety, int>,
@@ -120,6 +121,7 @@ enum ItemProperty : quint16 {
 // behavior of returning zero-initialized values for non-existant keys.
 class ItemProperties {
 public:
+    ItemProperties() = default;
     ItemProperties(std::initializer_list<std::pair<const ItemProperty, quint16>> map);
     quint16 operator[](ItemProperty prop) const;
     std::map<ItemProperty, quint16>::const_iterator begin() const;
@@ -358,6 +360,7 @@ struct Item {
     static QPixmap pixmap_of(const Item &item);
     static QPixmap sil_pixmap_of(ItemCode id);
     static Item invalid_item();
+    static void for_each_resource_type(const std::function<void(ItemProperty, ItemProperty, ItemProperty)> &fn);
 
     static QString type_to_string(ItemType type);
     static QString properties_to_string(const ItemProperties &props);

@@ -1,7 +1,7 @@
 #include "encyclopedia.h"
 
-Encyclopedia::Encyclopedia(LKGameWindow *game_window)
-    : m_game_window(game_window), m_widget()
+Encyclopedia::Encyclopedia()
+    : m_widget()
 {
     m_widget.setupUi(this);
 
@@ -20,22 +20,22 @@ Encyclopedia::Encyclopedia(LKGameWindow *game_window)
 
         for (int y = 0; y < ENCYCLOPEDIA_GROUP_ROWS; y++) {
             for (int x = 0; x < ENCYCLOPEDIA_GROUP_COLS; x++) {
-                box_layout->addWidget(new EncyclopediaSlot(game_window, y, x, group), y, x);
+                box_layout->addWidget(new EncyclopediaSlot(y, x, group), y, x);
             }
         }
     }
 }
 
-EncyclopediaSlot::EncyclopediaSlot(LKGameWindow *game_window, int y, int x, ItemCode group)
-    : ItemSlot(game_window), m_y(y), m_x(x), m_item_group(group)
+EncyclopediaSlot::EncyclopediaSlot(int y, int x, ItemCode group)
+    : ItemSlot(), m_y(y), m_x(x), m_item_group(group)
 {
-    game_window->register_slot(this);
+    gw()->register_slot(this);
 }
 
 bool EncyclopediaSlot::undiscovered() {
     Item item = get_item();
 
-    ItemHistory &history = m_game_window->game().history();
+    ItemHistory &history = gw()->game().history();
     return history.find(item.code) == end(history);
 }
 
@@ -63,28 +63,25 @@ void EncyclopediaSlot::refresh_pixmap() {
     }
 }
 
-void EncyclopediaSlot::enterEvent(QEvent *event) {
-    Item item = get_item();
-
-    if (item.id == EMPTY_ID) {
-        return;
-    }
-
-    QEnterEvent *enter_event = (QEnterEvent *) event;
-    m_game_window->tooltip().move(enter_event->globalPos());
-
+std::optional<Item> EncyclopediaSlot::tooltip_item() {
     if (undiscovered()) {
-        m_game_window->tooltip().set_text(m_game_window->game().tooltip_text_for(Item()));
-        m_game_window->tooltip().set_resources(Item());
-        m_game_window->tooltip().widget.item_image->setPixmap(QPixmap("assets/img/items/sil/missing.png"));
+        return std::optional<Item>();
     } else {
-        m_game_window->tooltip().set_text(m_game_window->game().tooltip_text_for(item));
-        m_game_window->tooltip().set_resources(item);
-        m_game_window->tooltip().widget.item_image->setPixmap(Item::pixmap_of(item));
+        return std::optional<Item>(get_item());
     }
+}
 
-    m_game_window->tooltip().adjustSize();
-    m_game_window->tooltip().show();
+std::optional<TooltipInfo> EncyclopediaSlot::tooltip_info() {
+    if (undiscovered()) {
+        return std::optional<TooltipInfo>({
+            "???",
+            "Undiscovered",
+            "You havn't discovered this item yet.",
+            QPixmap(":assets/img/items/sil/missing.png")
+        });
+    } else {
+        return std::optional<TooltipInfo>();
+    }
 }
 
 void EncyclopediaSlot::mousePressEvent(QMouseEvent *) { }

@@ -1,11 +1,15 @@
 #include "character.h"
 #include "game.h"
+#include "gamewindow.h"
 
-Character::Character(Game *game)
-    : m_game(game) { }
+Character::Character()
+    : m_activity(NOBODY, None) { }
 
-Character::Character(CharacterId id, const QString &name, Game *game)
-    : m_name(name), m_color(Generators::color()), m_id(id), m_game(game) { }
+Character::Character(CharacterId id, const QString &name)
+    : m_id(id),
+      m_name(name),
+      m_color(Generators::color()),
+      m_activity(m_id, None) { }
 
 QString &Character::name() {
     return m_name;
@@ -23,23 +27,22 @@ CharacterId Character::id() {
     return m_id;
 }
 
-bool Character::activity_ongoing() {
-    return activity().action != None;
-}
-
-double Character::activity_percent_complete() {
-    if (activity().action == None) {
-        return 0.0;
+void Character::start_activity(ItemDomain domain) {
+    if (domain == None) {
+        m_activity = CharacterActivity(m_id, None);
+        return;
     }
 
-    return ((double) (activity().ms_total - activity().ms_left) / activity().ms_total);
+    qint64 activity_ms = 1000 * 120;
+    if (m_tool_ids.find(domain) != end(m_tool_ids) && m_tool_ids.at(domain) != EMPTY_ID) {
+        activity_ms *= gw()->game().inventory().get_item(m_tool_ids.at(domain)).def()->item_level;
+    }
+
+    m_activity = CharacterActivity(m_id, domain, activity_ms, activity_ms);
+    gw()->refresh_ui_buttons();
 }
 
-std::uint64_t Character::activity_time() {
-    return 50000 * (1.2 * m_game->inventory().get_item(tools().at(activity().action)).def()->item_level);
-}
-
-std::uint16_t &Character::energy() {
+quint16 &Character::energy() {
     if (m_energy > max_energy()) {
         m_energy = max_energy();
     }
@@ -47,7 +50,7 @@ std::uint16_t &Character::energy() {
     return m_energy;
 }
 
-std::uint16_t &Character::morale() {
+quint16 &Character::morale() {
     if (m_morale > max_morale()) {
         m_morale = max_morale();
     }
@@ -59,7 +62,7 @@ int Character::max_energy() {
     const auto &artifacts = external_items().at(Artifact);
 
     return BASE_MAX_ENERGY + std::accumulate(begin(artifacts), end(artifacts), 0, [this](int a, ItemId b) {
-        return a + m_game->inventory().get_item(b).def()->properties[ArtifactMaxEnergyBoost];
+        return a + gw()->game().inventory().get_item(b).def()->properties[ArtifactMaxEnergyBoost];
     });
 }
 
@@ -67,7 +70,7 @@ int Character::max_morale() {
     const auto &artifacts = external_items().at(Artifact);
 
     return BASE_MAX_ENERGY + std::accumulate(begin(artifacts), end(artifacts), 0, [this](int a, ItemId b) {
-        return a + m_game->inventory().get_item(b).def()->properties[ArtifactMaxMoraleBoost];
+        return a + gw()->game().inventory().get_item(b).def()->properties[ArtifactMaxMoraleBoost];
     });
 }
 
@@ -98,20 +101,20 @@ void Character::add_morale(int add) {
 bool Character::can_perform_action(ItemDomain domain) {
     switch (domain) {
         case Eating: {
-            return !activity_ongoing();
+            return !m_activity.ongoing();
         }
         case Smithing: {
             const auto &materials = external_items()[Material];
-            bool enough_materials = std::all_of(begin(materials), begin(materials) + SMITHING_SLOTS, [&](ItemId a) {
+            bool enough_materials = std::any_of(begin(materials), begin(materials) + SMITHING_SLOTS, [&](ItemId a) {
                 return a != EMPTY_ID;
             });
 
-            return enough_materials && !activity_ongoing();
+            return enough_materials && !m_activity.ongoing();
         }
         case Foraging:
         case Mining: {
-            Item tool = m_game->inventory().get_item(tool_id(domain));
-            return energy() >= tool.def()->properties[ToolEnergyCost] && !activity_ongoing();
+            Item tool = gw()->game().inventory().get_item(tool_id(domain));
+            return energy() >= tool.def()->properties[ToolEnergyCost] && !m_activity.ongoing();
         }
         default: {
             qFatal("Tried to assess whether character (%s) can do invalid action domain (%d)", m_name.toStdString().c_str(), domain);
@@ -122,9 +125,9 @@ bool Character::can_perform_action(ItemDomain domain) {
 int Character::energy_to_gain() {
     int gain;
 
-    switch (activity().action) {
+    switch (m_activity.action()) {
         case Eating: {
-            std::vector<Item> inputs = m_game->inventory().items_of_intent(m_id, Eating);
+            std::vector<Item> inputs = gw()->game().inventory().items_of_intent(m_id, Eating);
             gain = std::accumulate(begin(inputs), end(inputs), 0, [](int a, const Item &b) {
                 return a + b.def()->properties[ConsumableEnergyBoost];
             });
@@ -133,7 +136,7 @@ int Character::energy_to_gain() {
         case Smithing:
         case Foraging:
         case Mining: {
-            Item tool = m_game->inventory().get_item(tool_id());
+            Item tool = gw()->game().inventory().get_item(tool_id());
             gain = tool.def()->properties[ToolEnergyCost];
             break;
         }
@@ -155,9 +158,9 @@ int Character::energy_to_gain() {
 int Character::morale_to_gain() {
     int gain;
 
-    switch (activity().action) {
+    switch (m_activity.action()) {
         case Eating: {
-            std::vector<Item> inputs = m_game->inventory().items_of_intent(m_id, Eating);
+            std::vector<Item> inputs = gw()->game().inventory().items_of_intent(m_id, Eating);
             gain = std::accumulate(begin(inputs), end(inputs), 0, [](int a, const Item &b) {
                 return a + b.def()->properties[ConsumableMoraleBoost];
             });
@@ -173,15 +176,15 @@ int Character::morale_to_gain() {
 }
 
 std::vector<Item> Character::input_items() {
-    switch (activity().action) {
+    switch (m_activity.action()) {
         case Eating: {
-            return m_game->inventory().items_of_intent(m_id, Eating);
+            return gw()->game().inventory().items_of_intent(m_id, Eating);
         }
         case Smithing: {
-            return m_game->inventory().items_of_intent(m_id, Material);
+            return gw()->game().inventory().items_of_intent(m_id, Material);
         }
         case Trading: {
-            return m_game->inventory().items_of_intent(m_id, Offering);
+            return gw()->game().inventory().items_of_intent(m_id, Offering);
         }
         default: {
             return {};
@@ -192,17 +195,17 @@ std::vector<Item> Character::input_items() {
 std::vector<Item> Character::generate_output_items() {
     std::vector<Item> outputs;
 
-    Item tool = m_game->inventory().get_item(tool_id(activity().action));
+    Item tool = gw()->game().inventory().get_item(tool_id(m_activity.action()));
     const ItemProperties &tool_properties = tool.def()->properties;
 
-    switch (activity().action) {
+    switch (m_activity.action()) {
         case Smithing: {
             break;
         }
         case Foraging:
         case Mining: {
             if (tool.id == EMPTY_ID) {
-                if (activity().action == Foraging) {
+                if (m_activity.action() == Foraging) {
                     return {
                         Generators::sample_with_weights<Item>({
                             { Item("globfruit"), 1 },
@@ -238,7 +241,7 @@ std::vector<Item> Character::generate_output_items() {
             return {};
         }
         default: {
-            qWarning("Tried to generate items with unknown action domain (%d)", activity().action);
+            qWarning("Tried to generate items with unknown action domain (%d)", m_activity.action());
         }
     }
 
@@ -246,7 +249,7 @@ std::vector<Item> Character::generate_output_items() {
 }
 
 std::vector<std::pair<ItemCode, bool>> Character::smithable_items() {
-    ItemDefinitionPtr smithing_def = m_game->inventory().get_item(tool_id(SmithingTool)).def();
+    ItemDefinitionPtr smithing_def = gw()->game().inventory().get_item(tool_id(SmithingTool)).def();
 
     std::vector<std::pair<ItemCode, bool>> smithable_codes;
 
@@ -281,7 +284,7 @@ std::vector<std::pair<ItemCode, bool>> Character::smithable_items() {
                     end(external_items().at(Material)),
                     0,
                     [=](ItemId a, int b) {
-                        return m_game->inventory().get_item(a).def()->properties[resource] + b;
+                        return gw()->game().inventory().get_item(a).def()->properties[resource] + b;
                     }
                 );
 
@@ -325,7 +328,7 @@ bool Character::clear_last_effect() {
 }
 
 ItemId Character::tool_id() {
-    return m_tool_ids[m_activity.action];
+    return m_tool_ids[m_activity.action()];
 }
 
 ItemId Character::tool_id(ItemDomain domain) {
@@ -344,18 +347,20 @@ Effects &Character::effects() {
     return m_effects;
 }
 
-void Character::serialize(QIODevice *dev) {
+void Character::serialize(QIODevice *dev) const {
+    IO::write_short(dev, m_id);
+
     IO::write_string(dev, m_name);
 
     IO::write_short(dev, m_color);
 
-    IO::write_long(dev, m_activity.ms_left);
-    IO::write_long(dev, m_activity.ms_total);
-    IO::write_short(dev, m_activity.action);
+    IO::write_long(dev, m_activity.m_ms_left);
+    IO::write_long(dev, m_activity.m_ms_total);
+    IO::write_short(dev, m_activity.m_action);
 
     for (ItemDomain domain : { Material, Artifact }) {
         IO::write_short(dev, domain);
-        const auto &ids = m_external_item_ids[domain];
+        const auto &ids = m_external_item_ids.at(domain);
         IO::write_short(dev, ids.size());
         for (size_t i = 0; i < ids.size(); i++) {
             IO::write_long(dev, ids[i]);
@@ -369,54 +374,50 @@ void Character::serialize(QIODevice *dev) {
 
     for (ItemDomain domain : { SmithingTool, ForagingTool, MiningTool }) {
         IO::write_short(dev, domain);
-        IO::write_long(dev, m_tool_ids[domain]);
+        IO::write_long(dev, m_tool_ids.at(domain));
     }
 
     IO::write_short(dev, m_energy);
 
     IO::write_short(dev, m_morale);
-
-    IO::write_short(dev, m_id);
-
-    // Do not serialize m_game (since there's no point)
 }
 
-Character Character::deserialize(QIODevice *dev, Game *game) {
-    Character c(game);
+// Transfers ownership
+Character *Character::deserialize(QIODevice *dev) {
+    Character *c = new Character;
 
-    c.m_name = IO::read_string(dev);
+    c->m_id = IO::read_short(dev);
 
-    c.m_color = (Color) IO::read_short(dev);
+    c->m_name = IO::read_string(dev);
 
-    c.m_activity.ms_left = IO::read_long(dev);
-    c.m_activity.ms_total = IO::read_long(dev);
-    c.m_activity.action = (ItemDomain) IO::read_short(dev);
+    c->m_color = (Color) IO::read_short(dev);
+
+    qint64 ms_left = IO::read_long(dev);
+    qint64 ms_total = IO::read_long(dev);
+    ItemDomain action = (ItemDomain) IO::read_short(dev);
+    c->m_activity = CharacterActivity(c->m_id, action, ms_total, ms_left);
 
     for (int i = 0; i < 2; i++) {
         ItemDomain domain = (ItemDomain) IO::read_short(dev);
         quint16 size = IO::read_short(dev);
         for (size_t i = 0; i < size; i++) {
-            c.m_external_item_ids[domain][i] = IO::read_long(dev);
+            c->m_external_item_ids[domain][i] = IO::read_long(dev);
         }
     }
 
     quint16 size = IO::read_short(dev);
     for (size_t i = 0; i < size; i++) {
-        c.m_effects[i] = IO::read_item(dev);
+        c->m_effects[i] = IO::read_item(dev);
     }
 
     for (int i = 0; i < 3; i++) {
         ItemDomain domain = (ItemDomain) IO::read_short(dev);
-        c.m_tool_ids[domain] = IO::read_long(dev);
+        c->m_tool_ids[domain] = IO::read_long(dev);
     }
 
-    c.m_energy = IO::read_short(dev);
+    c->m_energy = IO::read_short(dev);
 
-    c.m_morale = IO::read_short(dev);
-
-    c.m_id = IO::read_short(dev);
-
-    c.m_game = game;
+    c->m_morale = IO::read_short(dev);
 
     return c;
 }

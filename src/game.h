@@ -37,7 +37,6 @@ public:
 
     void add_character(const QString &name);
     void add_item(const Item &item);
-    TooltipText tooltip_text_for(const Item &item);
 
     QString id_to_name(CharacterId char_id);
 

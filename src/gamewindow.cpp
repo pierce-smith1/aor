@@ -4,16 +4,28 @@
 #include "externalslot.h"
 #include "effectslot.h"
 #include "encyclopedia.h"
+#include "explorerbutton.h"
+
+LKGameWindow *LKGameWindow::the_game_window;
+
+void LKGameWindow::instantiate_singleton() {
+    std::allocator<LKGameWindow> alloc;
+    the_game_window = alloc.allocate(1);
+    alloc.construct(the_game_window);
+}
 
 LKGameWindow::LKGameWindow()
-    : m_connection(this), m_save_file(SAVE_FILE_NAME), m_encyclopedia(new Encyclopedia(this))
+    : m_item_tooltip(new Tooltip()),
+      m_connection(),
+      m_save_file(SAVE_FILE_NAME),
+      m_encyclopedia(new Encyclopedia())
 {
     m_window.setupUi(this);
 
-    const auto activity_buttons {get_activity_buttons()};
+    const auto activity_buttons = get_activity_buttons();
     for (const auto &pair : activity_buttons) {
         connect(activity_buttons.at(pair.first), &QPushButton::clicked, [=]() {
-            start_activity(m_selected_char_id, pair.first);
+            selected_char().start_activity(pair.first);
         });
     }
 
@@ -44,28 +56,28 @@ LKGameWindow::LKGameWindow()
         m_encyclopedia->show();
     });
 
-    ItemSlot::insert_inventory_slots(*this);
-    ExternalSlot::insert_external_slots(*this);
-    ToolSlot::insert_tool_slots(*this);
-    EffectSlot::insert_effect_slots(*this);
-    PortraitSlot::insert_portrait_slot(*this);
+    ItemSlot::insert_inventory_slots();
+    ExternalSlot::insert_external_slots();
+    ToolSlot::insert_tool_slots();
+    EffectSlot::insert_effect_slots();
+    PortraitSlot::insert_portrait_slot();
 
     for (const auto &pair : m_game.characters()) {
-        m_window.explorer_slots->layout()->addWidget(new ExplorerButton(this, this, pair.first));
+        m_window.explorer_slots->layout()->addWidget(new ExplorerButton(this, pair.first));
     }
 
     notify(Discovery, "The Sun breaks on a new adventure.");
 
     QPalette activity_palette;
-    activity_palette.setColor(QPalette::Highlight, QColor(102, 204, 51));
+    activity_palette.setColor(QPalette::Highlight, Colors::qcolor(Lime));
     m_window.activity_time_bar->setPalette(activity_palette);
 
     QPalette morale_palette;
-    morale_palette.setColor(QPalette::Highlight, QColor(0, 153, 255));
+    morale_palette.setColor(QPalette::Highlight, Colors::qcolor(BlueRaspberry));
     m_window.morale_bar->setPalette(morale_palette);
 
     QPalette energy_palette;
-    energy_palette.setColor(QPalette::Highlight, QColor(255, 51, 0));
+    energy_palette.setColor(QPalette::Highlight, Colors::qcolor(Cherry));
     m_window.energy_bar->setPalette(energy_palette);
 
     m_save_file.open(QIODevice::ReadWrite);
@@ -83,7 +95,7 @@ Ui::LKMainWindow &LKGameWindow::window() {
     return m_window;
 }
 
-Tooltip &LKGameWindow::tooltip() {
+Tooltip *&LKGameWindow::tooltip() {
     return m_item_tooltip;
 }
 
@@ -107,30 +119,11 @@ void LKGameWindow::notify(NotificationType, const QString &message) {
     m_window.statusbar->showMessage(message);
 }
 
-void LKGameWindow::start_activity(CharacterId char_id, ItemDomain type) {
-    start_activity(char_id, CharacterActivity(type, 50000));
-}
-
-void LKGameWindow::start_activity(const CharacterActivity &activity) {
-    start_activity(m_selected_char_id, activity);
-}
-
-void LKGameWindow::start_activity(CharacterId char_id, const CharacterActivity &activity) {
-    Character &character = m_game.characters().at(char_id);
-
-    if (activity.action != None) {
-        m_timers[char_id] = startTimer(ACTIVITY_TICK_RATE_MS);
-    }
-
-    character.activity() = activity;
-    refresh_ui();
-}
-
 void LKGameWindow::progress_activity(CharacterId char_id, qint64 by_ms) {
     Character &character = m_game.characters().at(char_id);
 
-    character.activity().ms_left -= by_ms;
-    if (character.activity().ms_left < 0) {
+    character.activity().ms_left() -= by_ms;
+    if (character.activity().ms_left() < 0) {
         complete_activity(char_id);
         return;
     }
@@ -164,7 +157,7 @@ void LKGameWindow::refresh_ui_bars() {
 
 void LKGameWindow::refresh_ui_buttons() {
     for (ItemDomain domain : { Smithing, Foraging, Mining }) {
-        if (selected_char().can_perform_action(domain)) {
+        if (selected_char().can_perform_action(domain) && !selected_char().activity().ongoing()) {
             get_activity_buttons().at(domain)->setEnabled(true);
         } else {
             get_activity_buttons().at(domain)->setEnabled(false);
@@ -172,7 +165,7 @@ void LKGameWindow::refresh_ui_buttons() {
     }
 
     if (!m_connection.is_connected()
-        || selected_char().activity_ongoing()
+        || selected_char().activity().ongoing()
         || trade_ongoing(m_selected_tribe_id)
         || m_window.trade_partner_combobox->count() == 0
     ) {
@@ -198,19 +191,16 @@ void LKGameWindow::refresh_trade_ui() {
     window().trade_notification_label->setText("");
 
     for (auto &pair : game().characters()) {
-        if (pair.second.activity().action == Trading) {
+        if (pair.second.activity().action() == Trading) {
             window().trade_arrow_label->setPixmap(QPixmap(":/assets/img/icons/arrows.png"));
             window().trade_notification_label->setText(QString("%1 is carrying out this trade...").arg(selected_char().name()));
         }
     }
 }
 
-void LKGameWindow::refresh_recipies_ui() {
-}
-
 void LKGameWindow::complete_activity(CharacterId char_id) {
     Character &character = m_game.characters().at(char_id);
-    ItemDomain domain = character.activity().action;
+    ItemDomain domain = character.activity().action();
 
     auto destroy_items_in_slots = [=](ItemDomain type) {
         if (type == Offering) {
@@ -274,13 +264,13 @@ void LKGameWindow::complete_activity(CharacterId char_id) {
             tool.uses_left -= 1;
             if (tool.uses_left == 0) {
                 notify(Warning, QString("%2's %1 broke.").arg(tool.def()->display_name).arg(character.name()));
-                destroy_items_in_slots(character.activity().action);
+                destroy_items_in_slots(character.activity().action());
                 m_game.inventory().remove_item(tool.id);
             }
         }
     }
 
-    switch (character.activity().action) {
+    switch (character.activity().action()) {
         case Smithing: {
             destroy_items_in_slots(Material);
             notify(ActionComplete, QString("%1 finished smithing.").arg(character.name()));
@@ -308,14 +298,11 @@ void LKGameWindow::complete_activity(CharacterId char_id) {
         }
     }
 
-    killTimer(m_timers[char_id]);
-    m_timers[char_id] = 0;
-
-    if (character.activity().action == Trading) {
+    if (character.activity().action() == Trading) {
         m_connection.agreement_changed(m_selected_tribe_id, false);
     }
 
-    character.activity() = CharacterActivity(None, 0);
+    character.start_activity(None);
 
     refresh_ui();
 }
@@ -377,9 +364,16 @@ void LKGameWindow::load() {
 }
 
 void LKGameWindow::timerEvent(QTimerEvent *event) {
-    for (const auto &pair : m_timers) {
-        if (event->timerId() == pair.second) {
-            progress_activity(pair.first, ACTIVITY_TICK_RATE_MS);
+    for (auto &pair : m_game.characters()) {
+        if (pair.second.activity().timer_id() == event->timerId()) {
+            pair.second.activity().progress(ACTIVITY_TICK_RATE_MS);
         }
     }
+
+    refresh_ui_bars();
 }
+
+LKGameWindow *gw() {
+    return LKGameWindow::the_game_window;
+}
+

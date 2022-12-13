@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QString>
+#include <QObject>
 
 #include <algorithm>
 #include <map>
@@ -13,7 +14,7 @@
 
 class Game;
 
-constexpr static int MAX_ARRAY_SIZE {std::max({ SMITHING_SLOTS, TRADE_SLOTS, ARTIFACT_SLOTS })};
+constexpr static int MAX_ARRAY_SIZE = std::max({ SMITHING_SLOTS, TRADE_SLOTS, ARTIFACT_SLOTS });
 
 const static int BASE_MAX_ENERGY = 50;
 const static int BASE_MAX_MORALE = 50;
@@ -23,20 +24,18 @@ using Effects = std::array<Item, EFFECT_SLOTS>;
 using ToolIds = std::map<ItemDomain, ItemId>;
 
 struct Character {
-    explicit Character(Game *game);
-    explicit Character(CharacterId id, const QString &name, Game *game);
+    explicit Character();
+    explicit Character(CharacterId id, const QString &name);
 
     QString &name();
     Color &color();
     CharacterActivity &activity();
     CharacterId id();
 
-    bool activity_ongoing();
-    double activity_percent_complete();
-    std::uint64_t activity_time();
+    void start_activity(ItemDomain domain);
 
-    std::uint16_t &energy();
-    std::uint16_t &morale();
+    quint16 &energy();
+    quint16 &morale();
     int max_energy();
     int max_morale();
     void add_energy(int add);
@@ -58,13 +57,14 @@ struct Character {
     ExternalItemIds &external_items();
     Effects &effects();
 
-    void serialize(QIODevice *dev);
-    static Character deserialize(QIODevice *dev, Game *game);
+    void serialize(QIODevice *dev) const;
+    static Character *deserialize(QIODevice *dev);
 
 private:
+    quint16 m_id;
     QString m_name;
     Color m_color;
-    CharacterActivity m_activity {};
+    CharacterActivity m_activity;
     ExternalItemIds m_external_item_ids {
         { Material, {} },
         { Artifact, {} },
@@ -75,9 +75,6 @@ private:
         { ForagingTool, EMPTY_ID },
         { MiningTool, EMPTY_ID },
     };
-    std::uint16_t m_energy = 40;
-    std::uint16_t m_morale = 40;
-    std::uint16_t m_id;
-
-    Game *m_game;
+    quint16 m_energy = 40;
+    quint16 m_morale = 40;
 };

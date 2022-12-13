@@ -2,14 +2,14 @@
 #include "items.h"
 #include "foreigntradeslot.h"
 
-ExternalSlot::ExternalSlot(LKGameWindow *game, ItemDomain type, int n)
-    : ItemSlot(game), item_slot_type(type), n(n)
+ExternalSlot::ExternalSlot(ItemDomain type, int n)
+    : ItemSlot(), item_slot_type(type), n(n)
 {
     setObjectName(make_internal_name("external_slot", type, n));
     m_item_layout->setObjectName(make_internal_name("external_layout", type, n));
     m_item_label->setObjectName(make_internal_name("external_label", type, n));
 
-    game->register_slot(this);
+    gw()->register_slot(this);
 }
 
 Item ExternalSlot::get_item() {
@@ -17,15 +17,15 @@ Item ExternalSlot::get_item() {
         return Item();
     }
 
-    return m_game_window->game().inventory().get_item(held_item_id());
+    return gw()->game().inventory().get_item(held_item_id());
 }
 
 void ExternalSlot::set_item(const Item &item) {
-    m_game_window->selected_char().external_items()[type()][n] = item.id;
+    gw()->selected_char().external_items()[type()][n] = item.id;
 
     if (type() == Offering) {
-        m_game_window->connection().offer_changed(item, n);
-        m_game_window->game().trade_offer()[n] = item.id;
+        gw()->connection().offer_changed(item, n);
+        gw()->game().trade_offer()[n] = item.id;
     }
 }
 
@@ -39,9 +39,9 @@ void ExternalSlot::refresh_pixmap() {
 
 ItemId ExternalSlot::held_item_id() {
     if (type() == Offering) {
-        return m_game_window->game().trade_offer()[n];
+        return gw()->game().trade_offer()[n];
     } else {
-        return m_game_window->selected_char().external_items().at(type())[n];
+        return gw()->selected_char().external_items().at(type())[n];
     }
 }
 
@@ -51,18 +51,18 @@ void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
         return;
     }
 
-    if (m_game_window->selected_char().activity_ongoing()) {
+    if (gw()->selected_char().activity().ongoing()) {
         return;
     }
 
     QString source_slot_name = event->mimeData()->text();
-    ItemSlot *source_slot = m_game_window->findChild<ItemSlot *>(source_slot_name);
+    ItemSlot *source_slot = gw()->findChild<ItemSlot *>(source_slot_name);
     Item dropped_item = source_slot->get_item();
     ItemType dropped_type = dropped_item.def()->type;
 
     switch (type()) {
         case Offering: {
-            if (m_game_window->game().trade_partner() == NOBODY) {
+            if (gw()->game().trade_partner() == NOBODY) {
                 event->acceptProposedAction();
             }
             break;
@@ -84,7 +84,7 @@ void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
 
 void ExternalSlot::dropEvent(QDropEvent *event) {
     QString source_slot_name = event->mimeData()->text();
-    ItemSlot *source_slot = m_game_window->findChild<ItemSlot *>(source_slot_name);
+    ItemSlot *source_slot = gw()->findChild<ItemSlot *>(source_slot_name);
 
     Item source_item = source_slot->get_item();
     Item this_item = get_item();
@@ -94,40 +94,40 @@ void ExternalSlot::dropEvent(QDropEvent *event) {
         source_slot->set_item(this_item);
     }
 
-    m_game_window->game().inventory().get_item_ref(source_item.id).intent = type();
-    m_game_window->game().inventory().get_item_ref(source_item.id).intent_holder = m_game_window->selected_char().id();
+    gw()->game().inventory().get_item_ref(source_item.id).intent = type();
+    gw()->game().inventory().get_item_ref(source_item.id).intent_holder = gw()->selected_char().id();
 
-    m_game_window->refresh_ui();
+    gw()->refresh_ui();
 }
 
-void ExternalSlot::insert_external_slots(LKGameWindow &window) {
+void ExternalSlot::insert_external_slots() {
     for (int i = 0; i < SMITHING_SLOTS; i++) {
-        window.window().smith_layout->addWidget(
-            new ExternalSlot(&window, Material, i),
+        gw()->window().smith_layout->addWidget(
+            new ExternalSlot(Material, i),
             i / SMITHING_SLOTS_PER_ROW + 1,
             i % SMITHING_SLOTS_PER_ROW
         );
     }
 
     for (int i = 0; i < TRADE_SLOTS; i++) {
-        window.window().trade_slot_layout->addWidget(new ExternalSlot(&window, Offering, i));
-        window.window().foreign_trade_slot_layout->addWidget(new ForeignTradeSlot(&window, i));
+        gw()->window().trade_slot_layout->addWidget(new ExternalSlot(Offering, i));
+        gw()->window().foreign_trade_slot_layout->addWidget(new ForeignTradeSlot(i));
     }
 
     for (int i = 0; i < ARTIFACT_SLOTS; i++) {
-        window.window().artifact_layout->addWidget(new ExternalSlot(&window, Artifact, i));
+        gw()->window().artifact_layout->addWidget(new ExternalSlot(Artifact, i));
     }
 }
 
-ToolSlot::ToolSlot(LKGameWindow *game, ItemDomain type)
-    : ExternalSlot(game, type, 0), m_tool_slot_type(type)
+ToolSlot::ToolSlot(ItemDomain type)
+    : ExternalSlot(type, 0), m_tool_slot_type(type)
 {
     setMinimumSize(QSize(0, 80));
     setMaximumSize(QSize(10000, 80));
 }
 
 void ToolSlot::set_item(const Item &item) {
-    m_game_window->selected_char().tools()[get_tool_slot_type()] = item.id;
+    gw()->selected_char().tools()[get_tool_slot_type()] = item.id;
 }
 
 void ToolSlot::refresh_pixmap() {
@@ -135,21 +135,21 @@ void ToolSlot::refresh_pixmap() {
 }
 
 ItemId ToolSlot::held_item_id() {
-    return m_game_window->selected_char().tools()[get_tool_slot_type()];
+    return gw()->selected_char().tools()[get_tool_slot_type()];
 }
 
 ItemDomain ToolSlot::get_tool_slot_type() {
     return m_tool_slot_type;
 }
 
-void ToolSlot::insert_tool_slots(LKGameWindow &window) {
-    window.window().smith_layout->addWidget(new ToolSlot(&window, SmithingTool), 0, 0, 1, 3);
-    window.window().exploring_layout->addWidget(new ToolSlot(&window, ForagingTool), 0, 0);
-    window.window().exploring_layout->addWidget(new ToolSlot(&window, MiningTool), 2, 0);
+void ToolSlot::insert_tool_slots() {
+    gw()->window().smith_layout->addWidget(new ToolSlot(SmithingTool), 0, 0, 1, 3);
+    gw()->window().exploring_layout->addWidget(new ToolSlot(ForagingTool), 0, 0);
+    gw()->window().exploring_layout->addWidget(new ToolSlot(MiningTool), 2, 0);
 }
 
-PortraitSlot::PortraitSlot(LKGameWindow *game)
-    : ExternalSlot(game, Portrait, 0)
+PortraitSlot::PortraitSlot()
+    : ExternalSlot(Portrait, 0)
 {
     setMinimumSize(QSize(0, 0));
     setMaximumSize(QSize(10000, 10000));
@@ -167,25 +167,19 @@ void PortraitSlot::set_item(const Item &item) {
 void PortraitSlot::refresh_pixmap() {
 }
 
-void PortraitSlot::insert_portrait_slot(LKGameWindow &window) {
-    window.window().player_layout->addWidget(new PortraitSlot(&window));
+void PortraitSlot::insert_portrait_slot() {
+    gw()->window().player_layout->addWidget(new PortraitSlot());
 }
 
-void PortraitSlot::enterEvent(QEvent *) {
-    return;
-}
+void PortraitSlot::enterEvent(QEvent *) { }
 
-void PortraitSlot::mouseMoveEvent(QMouseEvent *) {
-    return;
-}
+void PortraitSlot::mouseMoveEvent(QMouseEvent *) { }
 
-void PortraitSlot::mousePressEvent(QMouseEvent *) {
-    return;
-}
+void PortraitSlot::mousePressEvent(QMouseEvent *) { }
 
 void PortraitSlot::dropEvent(QDropEvent *event) {
     QString source_slot_name = event->mimeData()->text();
-    ItemSlot *source_slot = m_game_window->findChild<ItemSlot *>(source_slot_name);
+    ItemSlot *source_slot = gw()->findChild<ItemSlot *>(source_slot_name);
     Item item = source_slot->get_item();
 
     if (source_slot->type() != Ordinary) {
@@ -193,9 +187,9 @@ void PortraitSlot::dropEvent(QDropEvent *event) {
     }
 
     if (item.def()->type & Consumable) {
-        m_game_window->game().inventory().get_item_ref(item.id).intent = Consumable;
-        m_game_window->game().inventory().get_item_ref(item.id).intent_holder = m_game_window->selected_char().id();
-        m_game_window->start_activity(CharacterActivity(Eating, 60 * 1000));
+        gw()->game().inventory().get_item_ref(item.id).intent = Consumable;
+        gw()->game().inventory().get_item_ref(item.id).intent_holder = gw()->selected_char().id();
+        gw()->selected_char().start_activity(Eating);
 
         source_slot->refresh_pixmap();
     }

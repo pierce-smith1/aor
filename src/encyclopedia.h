@@ -13,16 +13,15 @@ class Encyclopedia : public QWidget {
     Q_OBJECT
 
 public:
-    Encyclopedia(LKGameWindow *game_window);
+    Encyclopedia();
 
 private:
-    LKGameWindow *m_game_window;
     Ui::Encyclopedia m_widget;
 };
 
 class EncyclopediaSlot : public ItemSlot {
 public:
-    EncyclopediaSlot(LKGameWindow *game_window, int y, int x, ItemCode item_group);
+    EncyclopediaSlot(int y, int x, ItemCode item_group);
 
     bool undiscovered();
 
@@ -31,7 +30,9 @@ public:
     void refresh_pixmap() override;
 
 protected:
-    void enterEvent(QEvent *event) override;
+    std::optional<Item> tooltip_item() override;
+    std::optional<TooltipInfo> tooltip_info() override;
+
     void mousePressEvent(QMouseEvent *event) override;
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;

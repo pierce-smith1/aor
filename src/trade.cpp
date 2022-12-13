@@ -1,14 +1,13 @@
 #include "trade.h"
 #include "gamewindow.h"
 
-DoughbyteConnection::DoughbyteConnection(LKGameWindow *game_window)
-    : m_game_window(game_window)
+DoughbyteConnection::DoughbyteConnection()
 {
     m_socket.connectToHost("doughbyte.com", 10241);
 
     QObject::connect(&m_socket, &QTcpSocket::connected, [=]() {
-        IO::write_long(&m_socket, m_game_window->game().game_id());
-        IO::write_string(&m_socket, m_game_window->game().tribe_name());
+        IO::write_long(&m_socket, gw()->game().game_id());
+        IO::write_string(&m_socket, gw()->game().tribe_name());
         availability_changed(true);
         want_game_state();
         qDebug("trade server connected");
@@ -70,15 +69,15 @@ void DoughbyteConnection::availability_changed(bool available) {
 void DoughbyteConnection::send_info() {
     GameId to = IO::read_long(&m_socket);
 
-    Inventory &inventory = m_game_window->game().inventory();
+    Inventory &inventory = gw()->game().inventory();
     send_info(
         to,
         {
-            inventory.get_item(m_game_window->game().trade_offer()[0]),
-            inventory.get_item(m_game_window->game().trade_offer()[1]),
-            inventory.get_item(m_game_window->game().trade_offer()[2]),
+            inventory.get_item(gw()->game().trade_offer()[0]),
+            inventory.get_item(gw()->game().trade_offer()[1]),
+            inventory.get_item(gw()->game().trade_offer()[2]),
         },
-        m_game_window->game().accepting_trade()
+        gw()->game().accepting_trade()
     );
 }
 
@@ -86,7 +85,7 @@ void DoughbyteConnection::send_info(GameId to, const std::array<Item, TRADE_SLOT
     IO::write_byte(&m_socket, MT_MYINFO);
 
     IO::write_long(&m_socket, to);
-    IO::write_string(&m_socket, m_game_window->game().tribe_name());
+    IO::write_string(&m_socket, gw()->game().tribe_name());
     IO::write_short(&m_socket, items[0].code);
     IO::write_byte(&m_socket, items[0].uses_left);
     IO::write_short(&m_socket, items[1].code);
@@ -101,12 +100,12 @@ void DoughbyteConnection::want_game_state() {
 }
 
 void DoughbyteConnection::execute_trade() {
-    m_game_window->start_activity(m_game_window->selected_char_id(), Trading);
+    gw()->selected_char().start_activity(Trading);
 
-    m_game_window->window().trade_partner_combobox->setEnabled(false);
-    m_game_window->game().trade_partner() = m_game_window->selected_tribe_id();
+    gw()->window().trade_partner_combobox->setEnabled(false);
+    gw()->game().trade_partner() = gw()->selected_tribe_id();
 
-    m_game_window->refresh_ui();
+    gw()->refresh_ui();
 }
 
 void DoughbyteConnection::update_offers() {
@@ -121,8 +120,8 @@ void DoughbyteConnection::update_offers() {
 void DoughbyteConnection::update_offers(GameId tribe_id, ItemCode code, char uses, int n) {
     Item item(code);
     item.uses_left = uses;
-    m_game_window->game().tribes()[tribe_id].offer[n] = item;
-    m_game_window->refresh_slots();
+    gw()->game().tribes()[tribe_id].offer[n] = item;
+    gw()->refresh_slots();
 }
 
 void DoughbyteConnection::update_agreements() {
@@ -133,8 +132,8 @@ void DoughbyteConnection::update_agreements() {
 }
 
 void DoughbyteConnection::update_agreements(GameId tribe_id, bool agrees) {
-    m_game_window->game().tribes()[tribe_id].remote_accepted = agrees;
-    m_game_window->refresh_trade_ui();
+    gw()->game().tribes()[tribe_id].remote_accepted = agrees;
+    gw()->refresh_trade_ui();
 }
 
 void DoughbyteConnection::update_availability() {
@@ -146,7 +145,7 @@ void DoughbyteConnection::update_availability() {
 }
 
 void DoughbyteConnection::update_availability(GameId tribe_id, const QString &tribe_name, bool available) {
-    QComboBox *partner_box = m_game_window->window().trade_partner_combobox;
+    QComboBox *partner_box = gw()->window().trade_partner_combobox;
     int index = partner_box->findData(QVariant::fromValue(tribe_id));
 
     if (available && index == -1) {
@@ -155,7 +154,7 @@ void DoughbyteConnection::update_availability(GameId tribe_id, const QString &tr
         partner_box->removeItem(index);
     }
 
-    m_game_window->refresh_ui_buttons();
+    gw()->refresh_ui_buttons();
 }
 
 void DoughbyteConnection::update_all() {

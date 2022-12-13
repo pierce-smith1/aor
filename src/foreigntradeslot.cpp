@@ -1,22 +1,22 @@
 #include "foreigntradeslot.h"
 
-ForeignTradeSlot::ForeignTradeSlot(LKGameWindow *game_window, int n)
-    : ItemSlot(game_window), n(n)
+ForeignTradeSlot::ForeignTradeSlot(int n)
+    : ItemSlot(), n(n)
 {
     setObjectName(QString("foreign_slot:%1").arg(n));
-    game_window->register_slot(this);
+    gw()->register_slot(this);
 }
 
 Item ForeignTradeSlot::get_item() {
-    if (m_game_window->selected_tribe_id() == NOBODY) {
+    if (gw()->selected_tribe_id() == NOBODY) {
         return Item();
     } else {
-        return m_game_window->game().tribes()[m_game_window->selected_tribe_id()].offer[n];
+        return gw()->game().tribes()[gw()->selected_tribe_id()].offer[n];
     }
 }
 
 void ForeignTradeSlot::set_item(const Item &item) {
-    m_game_window->game().tribes().at(m_game_window->selected_tribe_id()).offer[n] = item;
+    gw()->game().tribes().at(gw()->selected_tribe_id()).offer[n] = item;
     refresh_pixmap();
 }
 
