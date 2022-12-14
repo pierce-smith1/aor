@@ -37,7 +37,6 @@ private:
     std::vector<Item> products();
     void give(const std::vector<Item> &items);
 
-
     ItemDomain m_action;
     qint64 m_ms_left;
     qint64 m_ms_total;

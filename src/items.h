@@ -215,10 +215,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
             { ToolEnergyCost, 20 },
             { ToolCanDiscover1, CT_CONSUMABLE | 2 },
             { ToolCanDiscover2, CT_CONSUMABLE | 3 },
-            { ToolCanDiscover3, CT_MATERIAL | 3 },
             { ToolDiscoverWeight1, 1 },
             { ToolDiscoverWeight2, 1 },
-            { ToolDiscoverWeight3, 1 },
         }
     },
     {

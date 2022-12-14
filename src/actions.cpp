@@ -144,12 +144,16 @@ void CharacterActivity::exhaust_item(ItemId id) {
         }
 
         if (m_action == Smithing) {
-            for (ItemId &id : character.external_items().at(Material)) {
-                id = EMPTY_ID;
+            for (ItemId &mid : character.external_items().at(Material)) {
+                if (id == mid) {
+                    mid = EMPTY_ID;
+                }
             }
         } else if (m_action == Trading) {
-            for (ItemId &id : character.external_items().at(Offering)) {
-                id = EMPTY_ID;
+            for (ItemId &oid : character.external_items().at(Offering)) {
+                if (id == oid) {
+                    oid = EMPTY_ID;
+                }
             }
         }
     }
