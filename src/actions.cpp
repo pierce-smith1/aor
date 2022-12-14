@@ -135,11 +135,15 @@ void CharacterActivity::exhaust_item(ItemId id) {
                         .arg(gw()->game().characters().at(m_char_id).name())
                         .arg(item.def()->display_name)
                     );
+
+                    character.tools().at(m_action) = EMPTY_ID;
                 }
 
                 gw()->game().inventory().remove_item(id);
             } else {
-                item.intent = None;
+                if (!(item.code & CT_TOOL)) {
+                    item.intent = None;
+                }
             }
         }
 
