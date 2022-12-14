@@ -39,6 +39,7 @@ struct Character {
     quint16 &morale();
     int max_energy();
     int max_morale();
+    int base_morale_cost();
     void add_energy(int add);
     void add_morale(int add);
 

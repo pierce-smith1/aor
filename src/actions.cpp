@@ -52,8 +52,9 @@ void CharacterActivity::progress(qint64 ms) {
 void CharacterActivity::complete() {
     gw()->killTimer(m_timer_id);
 
-    std::vector<Item> items = products();
+    exhaust_character();
     give_bonuses();
+    std::vector<Item> items = products();
     exhaust_reagents();
     give(items);
 
@@ -125,6 +126,15 @@ void CharacterActivity::exhaust_reagents() {
     }
 
     exhaust_item(character.tool_id(m_action));
+}
+
+void CharacterActivity::exhaust_character() {
+    Character &character = gw()->game().characters().at(m_char_id);
+
+    Item tool = gw()->game().inventory().get_item(character.tool_id(m_action));
+
+    character.add_energy(-tool.def()->properties[ToolEnergyCost]);
+    character.add_morale(-character.base_morale_cost());
 }
 
 void CharacterActivity::exhaust_item(ItemId id) {
@@ -199,5 +209,7 @@ void CharacterActivity::give_bonuses() {
 
             character.push_effect(Item(props[ConsumableGivesEffect]));
         }
+
+        character.add_morale(character.base_morale_cost());
     }
 }

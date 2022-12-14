@@ -75,6 +75,10 @@ int Character::max_morale() {
     });
 }
 
+int Character::base_morale_cost() {
+    return 5;
+}
+
 void Character::add_energy(int add) {
     if (-add > m_energy) {
         m_energy = 0;

@@ -33,6 +33,7 @@ private:
     void complete();
 
     void exhaust_reagents();
+    void exhaust_character();
     void exhaust_item(ItemId id);
     std::vector<Item> products();
     void give(const std::vector<Item> &items);
