@@ -119,18 +119,6 @@ void LKGameWindow::notify(NotificationType, const QString &message) {
     m_window.statusbar->showMessage(message);
 }
 
-void LKGameWindow::progress_activity(CharacterId char_id, qint64 by_ms) {
-    Character &character = m_game.characters().at(char_id);
-
-    character.activity().ms_left() -= by_ms;
-    if (character.activity().ms_left() < 0) {
-        complete_activity(char_id);
-        return;
-    }
-
-    refresh_ui_bars();
-}
-
 void LKGameWindow::refresh_ui() {
     m_window.player_name_label->setText(QString("Explorer <b>%1</b>").arg(selected_char().name()));
     m_window.tribe_name_label->setText(QString("of <b>%1</b>").arg(m_game.tribe_name()));
@@ -196,115 +184,6 @@ void LKGameWindow::refresh_trade_ui() {
             window().trade_notification_label->setText(QString("%1 is carrying out this trade...").arg(selected_char().name()));
         }
     }
-}
-
-void LKGameWindow::complete_activity(CharacterId char_id) {
-    Character &character = m_game.characters().at(char_id);
-    ItemDomain domain = character.activity().action();
-
-    auto destroy_items_in_slots = [=](ItemDomain type) {
-        if (type == Offering) {
-            for (size_t i = 0; i < m_game.trade_offer().size(); i++) {
-                m_game.trade_offer()[i] = EMPTY_ID;
-                m_connection.offer_changed(Item(), i);
-            }
-        } else {
-            for (ItemId &item_id : m_game.characters().at(char_id).external_items().at(type)) {
-                item_id = EMPTY_ID;
-            }
-        }
-    };
-
-    character.add_energy(character.energy_to_gain());
-    character.add_morale(character.morale_to_gain());
-
-    if (domain == Eating) {
-        for (const Item &consumable : character.input_items()) {
-            character.push_effect(Item(consumable.def()->properties[ConsumableGivesEffect]));
-            for (int i = 0; i < consumable.def()->properties[ConsumableClearsNumEffects]; i++) {
-                character.clear_last_effect();
-            }
-        }
-    }
-
-    // Generate the items
-    std::vector<Item> new_items;
-    if (domain == Trading) {
-        auto &offer = m_game.tribes().at(m_selected_tribe_id).offer;
-        new_items = std::vector<Item>(begin(offer), end(offer));
-    } else {
-        new_items = character.generate_output_items();
-    }
-
-    for (const Item &item : new_items) {
-        bool add_successful = m_game.inventory().add_item(item);
-        if (!add_successful) {
-            notify(Warning, QString("The inventory was too full to recieve all of %1's new items!").arg(character.name()));
-            break;
-        }
-        notify(Discovery, QString("%2 discovered a %1!").arg(item.def()->display_name).arg(character.name()));
-    }
-
-    // Dink all of the items used as inputs
-    for (const Item &input : character.input_items()) {
-        Item &item = m_game.inventory().get_item_ref(input.id);
-
-        if (item.uses_left != 0) {
-            item.uses_left -= 1;
-            if (item.uses_left == 0) {
-                m_game.inventory().remove_item(input.id);
-            }
-        }
-    }
-
-    // Dink the tool
-    if (character.tool_id() != EMPTY_ID) {
-        Item &tool = m_game.inventory().get_item_ref(selected_char().tool_id());
-        if (tool.uses_left != 0) {
-            tool.uses_left -= 1;
-            if (tool.uses_left == 0) {
-                notify(Warning, QString("%2's %1 broke.").arg(tool.def()->display_name).arg(character.name()));
-                destroy_items_in_slots(character.activity().action());
-                m_game.inventory().remove_item(tool.id);
-            }
-        }
-    }
-
-    switch (character.activity().action()) {
-        case Smithing: {
-            destroy_items_in_slots(Material);
-            notify(ActionComplete, QString("%1 finished smithing.").arg(character.name()));
-            break;
-        }
-        case Foraging: {
-            notify(ActionComplete, QString("%1 finished foraging.").arg(character.name()));
-            break;
-        }
-        case Mining: {
-            notify(ActionComplete, QString("%1 finished mining.").arg(character.name()));
-            break;
-        }
-        case Trading: {
-            destroy_items_in_slots(Offering);
-            notify(ActionComplete, QString("%1 finished trading.").arg(character.name()));
-            break;
-        }
-        case Eating: {
-            notify(ActionComplete, QString("%1 finished eating.").arg(character.name()));
-            break;
-        }
-        default: {
-            break;
-        }
-    }
-
-    if (character.activity().action() == Trading) {
-        m_connection.agreement_changed(m_selected_tribe_id, false);
-    }
-
-    character.start_activity(None);
-
-    refresh_ui();
 }
 
 bool LKGameWindow::trade_ongoing(GameId tribe) {

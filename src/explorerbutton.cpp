@@ -63,7 +63,7 @@ std::optional<TooltipInfo> ExplorerButton::tooltip_info() {
     Character &character = gw()->game().characters().at(m_id);
     return std::optional<TooltipInfo>({
         character.name(),
-        QString("%1-flavored llokin").arg(Colors::name(character.color())),
+        QString("%1 Fennahian").arg(Colors::name(character.color())),
         "gnocklin",
         QPixmap(":/assets/img/icons/yok.png")
     });

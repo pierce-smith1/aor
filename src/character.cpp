@@ -33,7 +33,8 @@ void Character::start_activity(ItemDomain domain) {
         return;
     }
 
-    qint64 activity_ms = 1000 * 120;
+    //qint64 activity_ms = 1000 * 120;
+    qint64 activity_ms = 120;
     if (m_tool_ids.find(domain) != end(m_tool_ids) && m_tool_ids.at(domain) != EMPTY_ID) {
         activity_ms *= gw()->game().inventory().get_item(m_tool_ids.at(domain)).def()->item_level;
     }
@@ -175,130 +176,82 @@ int Character::morale_to_gain() {
     return gain;
 }
 
-std::vector<Item> Character::input_items() {
-    switch (m_activity.action()) {
-        case Eating: {
-            return gw()->game().inventory().items_of_intent(m_id, Eating);
-        }
-        case Smithing: {
-            return gw()->game().inventory().items_of_intent(m_id, Material);
-        }
-        case Trading: {
-            return gw()->game().inventory().items_of_intent(m_id, Offering);
-        }
-        default: {
-            return {};
-        }
-    }
-}
-
-std::vector<Item> Character::generate_output_items() {
-    std::vector<Item> outputs;
-
-    Item tool = gw()->game().inventory().get_item(tool_id(m_activity.action()));
-    const ItemProperties &tool_properties = tool.def()->properties;
-
-    switch (m_activity.action()) {
-        case Smithing: {
-            break;
-        }
-        case Foraging:
-        case Mining: {
-            if (tool.id == EMPTY_ID) {
-                if (m_activity.action() == Foraging) {
-                    return {
-                        Generators::sample_with_weights<Item>({
-                            { Item("globfruit"), 1 },
-                            { Item("byteberry"), 1 }
-                        })
-                    };
-                } else {
-                    return {
-                        Generators::sample_with_weights<Item>({
-                            { Item("obsilicon"), 1 },
-                            { Item("oolite"), 1 }
-                        })
-                    };
-                }
-            }
-
-            std::vector<std::pair<Item, double>> possible_discoveries;
-            for (int i = (int) ToolCanDiscover1; i <= (int) ToolCanDiscover9; i++) {
-                if (tool_properties[(ItemProperty) i] != 0) {
-                    possible_discoveries.emplace_back(
-                        tool_properties[(ItemProperty) i],
-                        tool_properties[(ItemProperty) (i + 9)]
-                    );
-                }
-            }
-
-            outputs.emplace_back(Generators::sample_with_weights(possible_discoveries));
-
-            break;
-        }
-        case Trading: {
-            // Trading generates no base items; must be handled elsewhere
-            return {};
-        }
-        default: {
-            qWarning("Tried to generate items with unknown action domain (%d)", m_activity.action());
-        }
-    }
-
-    return outputs;
-}
-
-std::vector<std::pair<ItemCode, bool>> Character::smithable_items() {
+std::vector<ItemCode> Character::smithable_items() {
     ItemDefinitionPtr smithing_def = gw()->game().inventory().get_item(tool_id(SmithingTool)).def();
 
-    std::vector<std::pair<ItemCode, bool>> smithable_codes;
+    std::vector<ItemCode> smithable_codes;
 
     for (const ItemDefinition &def : ITEM_DEFINITIONS) {
         bool tool_is_sufficient = true;
         bool is_smithable = false;
 
-        for (quint16 i = 1; i <= 5; i++) {
-            ItemProperty resource_cost = (ItemProperty) (Cost + i);
-            ItemProperty resource_max = (ItemProperty) (ToolMaximum + i);
-
+        Item::for_each_resource_type([&](ItemProperty cost_prop, ItemProperty max_prop, ItemProperty) {
             // If at least one cost is non-zero, the item is smithable
-            if (def.properties[resource_cost] > 0) {
+            if (def.properties[cost_prop] > 0) {
                 is_smithable = true;
             }
 
-            if (smithing_def->properties[resource_max] < def.properties[resource_cost]) {
+            if (smithing_def->properties[max_prop] < def.properties[cost_prop]
+                && def.properties[cost_prop] > BASE_MAX_RESOURCE
+            ) {
                 tool_is_sufficient = false;
-                break;
             }
+        });
+
+        if (!tool_is_sufficient || !is_smithable) {
+            continue;
         }
 
-        if (tool_is_sufficient && is_smithable) {
-            bool can_smith = true;
+        bool can_smith = true;
 
-            for (quint16 i = 1; i <= 5; i++) {
-                ItemProperty resource_cost = (ItemProperty) (Cost + i);
-                ItemProperty resource = (ItemProperty) (Resource + i);
-
-                int resource_budget = std::accumulate(
-                    begin(external_items().at(Material)),
-                    end(external_items().at(Material)),
-                    0,
-                    [=](ItemId a, int b) {
-                        return gw()->game().inventory().get_item(a).def()->properties[resource] + b;
-                    }
-                );
-
-                if (resource_budget < def.properties[resource_cost]) {
-                    can_smith = false;
-                    break;
+        Item::for_each_resource_type([&](ItemProperty cost_prop, ItemProperty, ItemProperty resource_prop) {
+            int resource_budget = std::accumulate(
+                begin(external_items().at(Material)),
+                end(external_items().at(Material)),
+                0,
+                [=](int a, ItemId b) {
+                    return gw()->game().inventory().get_item(b).def()->properties[resource_prop] + a;
                 }
-            }
+            );
 
-            smithable_codes.push_back(std::make_pair(def.code, can_smith));
+            if (resource_budget < def.properties[cost_prop]) {
+                can_smith = false;
+            }
+        });
+
+        if (can_smith) {
+            smithable_codes.push_back(def.code);
         }
     }
 
     return smithable_codes;
+}
+
+ItemCode Character::smithing_result() {
+    std::vector<ItemCode> possible_smiths = smithable_items();
+
+    // Choose the highest-costing smith.
+    auto result = std::max_element(
+        begin(possible_smiths),
+        end(possible_smiths),
+        [](ItemCode a, ItemCode b) {
+            int total_cost_a = 0;
+            int total_cost_b = 0;
+
+            Item::for_each_resource_type([&](ItemProperty cost_prop, ItemProperty, ItemProperty) {
+                total_cost_a += Item::def_of(a)->properties[cost_prop];
+                total_cost_b += Item::def_of(b)->properties[cost_prop];
+            });
+
+            return total_cost_a < total_cost_b;
+        }
+    );
+
+    if (result == end(possible_smiths)) {
+        return CT_EMPTY;
+    } else {
+        return *result;
+    }
 }
 
 bool Character::push_effect(const Item &effect) {

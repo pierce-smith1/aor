@@ -1,4 +1,5 @@
 #include "actions.h"
+#include "externalslot.h"
 #include "gamewindow.h"
 
 CharacterActivity::CharacterActivity(CharacterId id, ItemDomain action, qint64 ms_total, qint64 ms_left)
@@ -51,96 +52,121 @@ void CharacterActivity::progress(qint64 ms) {
 void CharacterActivity::complete() {
     gw()->killTimer(m_timer_id);
 
+    std::vector<Item> items = products();
+    exhaust_reagents();
+    give(items);
+
     m_action = None;
     m_ms_total = 0;
-
-    switch (m_action) {
-        case Smithing: { give(complete_smithing()); break; }
-        case Foraging: { give(complete_foraging()); break; }
-        case Mining:   { give(complete_mining()); break; }
-        case Eating:   { give(complete_eating()); break; }
-        case Trading:  { give(complete_trading()); break; }
-        default: { qFatal("Tried to complete unknown activity %d", m_action); };
-    }
 
     gw()->refresh_ui();
 }
 
-std::vector<Item> CharacterActivity::complete_smithing() {
+std::vector<Item> CharacterActivity::products() {
     Character &character = gw()->game().characters().at(m_char_id);
-    auto &materials = character.external_items().at(Material);
+    switch (m_action) {
+        case Smithing: {
+            ItemCode smithing_result = character.smithing_result();
 
-    ItemProperties resources;
-    for (ItemId id : materials) {
-        Item material = gw()->game().inventory().get_item(id);
+            if (smithing_result != 0) {
+                return { Item(smithing_result) };
+            } else {
+                return {};
+            }
+        }
+        case Foraging:
+        case Mining: {
+            Item tool = gw()->game().inventory().get_item(character.tool_id(m_action));
+            const ItemProperties &tool_props = tool.def()->properties;
 
-        Item::for_each_resource_type([&](ItemProperty, ItemProperty, ItemProperty resource_prop) {
-            resources.map[resource_prop] += material.def()->properties[resource_prop];
-        });
+            if (tool.id == EMPTY_ID) {
+                if (m_action == Foraging) {
+                    return { Item(Generators::sample_with_weights<ItemCode>({ { CT_CONSUMABLE | 0, 1 }, { CT_CONSUMABLE | 1, 1 } })) };
+                } else if (m_action == Mining) {
+                    return { Item(Generators::sample_with_weights<ItemCode>({ { CT_MATERIAL | 0, 1 }, { CT_MATERIAL | 1, 1 } })) };
+                }
+            }
+
+            std::vector<std::pair<ItemCode, double>> weighted_discoverables;
+            Item::for_each_tool_discover([&](ItemProperty product_prop, ItemProperty weight_prop) {
+                if (product_prop != 0) {
+                    weighted_discoverables.push_back({ tool_props[product_prop], tool_props[weight_prop] });
+                }
+            });
+
+            return { Item(Generators::sample_with_weights<ItemCode>(weighted_discoverables)) };
+        }
+        case Eating: {
+            return {};
+        }
+        default: {
+            qFatal("Tried to get products for unknown domain (%d)", m_action);
+            return {};
+        }
     }
+}
 
-    qDebug("smithed with (stone: %d, metal: %d, crystal: %d, runic: %d, leafy: %d)",
-        resources[StoneResource],
-        resources[MetallicResource],
-        resources[CrystallineResource],
-        resources[RunicResource],
-        resources[LeafyResource]
-    );
+void CharacterActivity::exhaust_reagents() {
+    Character &character = gw()->game().characters().at(m_char_id);
 
-    // Determine which crafts are possible.
-    std::vector<ItemDefinition> possible_crafts;
-    for (const ItemDefinition &def : ITEM_DEFINITIONS) {
-        bool have_enough_resources = true;
-        bool item_is_craftable = false;
-
-        Item::for_each_resource_type([&](ItemProperty cost_prop, ItemProperty, ItemProperty resource_prop) {
-            if (def.properties[cost_prop] > 0) {
-                item_is_craftable = true;
-            }
-
-            if (def.properties[cost_prop] > resources[resource_prop]) {
-                have_enough_resources = false;
-            }
-        });
-
-        if (item_is_craftable && have_enough_resources) {
-            possible_crafts.push_back(def);
+    if (m_action == Smithing) {
+        for (ItemId id : character.external_items().at(Material)) {
+            exhaust_item(id);
+        }
+    } else if (m_action == Trading) {
+        for (ItemId id : character.external_items().at(Offering)) {
+            gw()->game().inventory().remove_item(id);
         }
     }
 
-    // Choose the highest-costing one.
-    auto result = std::max_element(begin(possible_crafts), end(possible_crafts), [](const ItemDefinition &a, const ItemDefinition &b) {
-        int total_cost_a = 0;
-        int total_cost_b = 0;
+    exhaust_item(character.tool_id(m_action));
+}
 
-        Item::for_each_resource_type([&](ItemProperty cost_prop, ItemProperty, ItemProperty) {
-            total_cost_a += a.properties[cost_prop];
-            total_cost_b += b.properties[cost_prop];
-        });
+void CharacterActivity::exhaust_item(ItemId id) {
+    Character &character = gw()->game().characters().at(m_char_id);
 
-        return total_cost_a < total_cost_b;
-    });
+    if (id != EMPTY_ID) {
+        Item &item = gw()->game().inventory().get_item_ref(id);
+        if (item.uses_left > 0) {
+            item.uses_left -= 1;
+            if (item.uses_left == 0) {
+                if (item.code & CT_TOOL) {
+                    gw()->notify(Warning, QString("%1's %2 broke!")
+                        .arg(gw()->game().characters().at(m_char_id).name())
+                        .arg(item.def()->display_name)
+                    );
+                }
 
-    if (result == end(possible_crafts)) {
-        gw()->notify(Warning, QString("%1 whiffed crafting...").arg(gw()->game().characters().at(m_char_id).name()));
-        return {};
-    } else {
-        return { Item(result) };
+                gw()->game().inventory().remove_item(id);
+            } else {
+                item.intent = None;
+            }
+        }
+
+        if (m_action == Smithing) {
+            for (ItemId &id : character.external_items().at(Material)) {
+                id = EMPTY_ID;
+            }
+        } else if (m_action == Trading) {
+            for (ItemId &id : character.external_items().at(Offering)) {
+                id = EMPTY_ID;
+            }
+        }
     }
 }
 
-void CharacterActivity::complete_foraging() {
-    //Character &character = gw()->game().characters().at(m_char_id);
-}
-
-void CharacterActivity::complete_mining() {
-    //Character &character = gw()->game().characters().at(m_char_id);
-}
-
-void CharacterActivity::complete_eating() {
-    //Character &character = gw()->game().characters().at(m_char_id);
-}
-
-void CharacterActivity::complete_trading() {
-    //Character &character = gw()->game().characters().at(m_char_id);
+void CharacterActivity::give(const std::vector<Item> &items) {
+    for (const Item &item : items) {
+        if (!gw()->game().add_item(item)) {
+            gw()->notify(Warning, QString("%1 discovered a(n) %2, but the inventory was too full to accept it!")
+                .arg(gw()->game().characters().at(m_char_id).name())
+                .arg(item.def()->display_name)
+            );
+        } else {
+            gw()->notify(Discovery, QString("%1 discovered a(n) %2!")
+                .arg(gw()->game().characters().at(m_char_id).name())
+                .arg(item.def()->display_name)
+            );
+        }
+    }
 }

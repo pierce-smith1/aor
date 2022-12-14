@@ -12,13 +12,13 @@ CheatConsole::CheatConsole(LKGameWindow *game)
 void CheatConsole::execute(const QString &input) {
     qDebug("$ %s", input.toStdString().c_str());
 
-    QStringList tokens {input.split(" ")};
-    QString command_name {tokens.takeFirst()};
+    QStringList tokens = input.split(" ");
+    QString command_name = tokens.takeFirst();
 
-    auto match_name {[&](CheatCommand command) -> bool {
+    auto match_name = [&](CheatCommand command) -> bool {
         return command_name == command.name;
-    }};
-    auto command {std::find_if(begin(COMMANDS), end(COMMANDS), match_name)};
+    };
+    auto command = std::find_if(begin(COMMANDS), end(COMMANDS), match_name);
 
     if (command == end(COMMANDS)) {
         qWarning("Failed to find command (%s)", command_name.toStdString().c_str());

@@ -217,11 +217,10 @@ const static std::vector<CheatCommand> COMMANDS = {
     },
     {
         "start",
-        "Start doing activity ($0) with ($1) ms left, where $0 is the activity enum",
+        "Start doing activity with domain code ($0)",
         2,
         [](LKGameWindow *game, const QStringList &args) {
             QS_TO_INT(action, args[0]);
-            QS_TO_INT(ms, args[1]);
 
             game->selected_char().start_activity((ItemDomain) action);
 

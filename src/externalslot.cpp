@@ -1,6 +1,7 @@
 #include "externalslot.h"
 #include "items.h"
 #include "foreigntradeslot.h"
+#include "smithingresultslot.h"
 
 ExternalSlot::ExternalSlot(ItemDomain type, int n)
     : ItemSlot(), item_slot_type(type), n(n)
@@ -108,6 +109,7 @@ void ExternalSlot::insert_external_slots() {
             i % SMITHING_SLOTS_PER_ROW
         );
     }
+    gw()->window().smith_button_layout->addWidget(new SmithingResultSlot());
 
     for (int i = 0; i < TRADE_SLOTS; i++) {
         gw()->window().trade_slot_layout->addWidget(new ExternalSlot(Offering, i));
@@ -143,9 +145,9 @@ ItemDomain ToolSlot::get_tool_slot_type() {
 }
 
 void ToolSlot::insert_tool_slots() {
-    gw()->window().smith_layout->addWidget(new ToolSlot(SmithingTool), 0, 0, 1, 3);
+    gw()->window().smith_layout->addWidget(new ToolSlot(SmithingTool), 0, 0, 1, 5);
     gw()->window().exploring_layout->addWidget(new ToolSlot(ForagingTool), 0, 0);
-    gw()->window().exploring_layout->addWidget(new ToolSlot(MiningTool), 2, 0);
+    gw()->window().exploring_layout->addWidget(new ToolSlot(MiningTool), 3, 0);
 }
 
 PortraitSlot::PortraitSlot()

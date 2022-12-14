@@ -15,12 +15,12 @@
 #define USES
 #define LEVEL
 
-const static int SMITHING_SLOTS = 6;
-const static int SMITHING_SLOTS_PER_ROW = 3;
+const static int SMITHING_SLOTS = 5;
+const static int SMITHING_SLOTS_PER_ROW = 5;
 
-const static int TRADE_SLOTS = 3;
+const static int TRADE_SLOTS = 5;
 
-const static int ARTIFACT_SLOTS = 4;
+const static int ARTIFACT_SLOTS = 3;
 
 const static int EFFECT_SLOTS = 3;
 
@@ -99,21 +99,18 @@ enum ItemProperty : quint16 {
     CostCrystalline = 0x2003,
     CostRuinc = 0x2004,
     CostLeafy = 0x2005,
-    _END_COST = 0x2006,
     ToolMaximum = 0x4000,
     ToolMaximumStone = 0x4001,
     ToolMaximumMetallic = 0x4002,
     ToolMaximumCrystalline = 0x4003,
     ToolMaximumRunic = 0x4004,
     ToolMaximumLeafy = 0x4005,
-    _END_TOOL_MAX = 0x4006,
     Resource = 0x8000,
     StoneResource = 0x8001,
     MetallicResource = 0x8002,
     CrystallineResource = 0x8003,
     RunicResource = 0x8004,
     LeafyResource = 0x8005,
-    _END_RESOURCE = 0x0006,
 };
 
 // This basically just wraps a std::map<ItemPropety, int>,
@@ -146,10 +143,10 @@ using ItemDefinitionPtr = std::vector<ItemDefinition>::const_iterator;
 const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_EMPTY,
-        "empty", "???",
-        "You haven't discovered this item yet.",
+        "empty", "Empty",
+        "Empty slot.",
         0 USES, Ordinary, LEVEL 0,
-        { }
+        {}
     },
     {
         CT_CONSUMABLE | 0,
@@ -179,8 +176,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "that birthed our wafer-thing planes of reality.</i>",
         1 USES, Material, LEVEL 1,
         {
-            { CrystallineResource, 15 },
-            { StoneResource, 15 },
+            { CrystallineResource, 10 },
         }
     },
     {
@@ -190,7 +186,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "have been the first rock ever constructed by the earth.</i>",
         1 USES, Material, LEVEL 1,
         {
-            { StoneResource, 15 }
+            { StoneResource, 10 }
         }
     },
     {
@@ -200,9 +196,11 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "little bird you've seen around here that tells you long-winded stories.</i>",
         3 USES, SmithingTool, LEVEL 1,
         {
+            { CostStone, 10 },
+            { CostCrystalline, 10 },
             { ToolEnergyCost, 20 },
-            { ToolMaximumStone, 50 },
-            { ToolMaximumCrystalline, 50 },
+            { ToolMaximumStone, 30 },
+            { ToolMaximumCrystalline, 30 },
         }
     },
     {
@@ -212,6 +210,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "you should be able to brute-force your way through it to find the goodies underneath.</i>",
         4 USES, ForagingTool, LEVEL 1,
         {
+            { CostStone, 30 },
+            { CostCrystalline, 10 },
             { ToolEnergyCost, 20 },
             { ToolCanDiscover1, CT_CONSUMABLE | 2 },
             { ToolCanDiscover2, CT_CONSUMABLE | 3 },
@@ -227,6 +227,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "<i>It's just plain old dirt - this will be good enough.</i>",
         4 USES, MiningTool, LEVEL 2,
         {
+            { CostStone, 10 },
+            { CostCrystalline, 30 },
             { ToolEnergyCost, 20 },
             { ToolCanDiscover1, CT_MATERIAL | 2 },
             { ToolCanDiscover2, CT_MATERIAL | 3 },
@@ -249,7 +251,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_CONSUMABLE | 3,
         "bleeding_krazaheart", "Bleeding Krazaheart",
-        "<iDon't read too far into it, Kraza is fine.</i>",
+        "<i>Don't read too far into it, Kraza is fine.</i>",
         1 USES, Consumable, LEVEL 2,
         {
             { ConsumableEnergyBoost, 30 },
@@ -360,7 +362,9 @@ struct Item {
     static QPixmap pixmap_of(const Item &item);
     static QPixmap sil_pixmap_of(ItemCode id);
     static Item invalid_item();
+
     static void for_each_resource_type(const std::function<void(ItemProperty, ItemProperty, ItemProperty)> &fn);
+    static void for_each_tool_discover(const std::function<void(ItemProperty, ItemProperty)> &fn);
 
     static QString type_to_string(ItemType type);
     static QString properties_to_string(const ItemProperties &props);

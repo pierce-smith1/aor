@@ -2,17 +2,18 @@
 
 #include "itemslot.h"
 
-class ForeignTradeSlot : public ItemSlot {
+class SmithingResultSlot : public ItemSlot {
 public:
-    ForeignTradeSlot(int n);
+    SmithingResultSlot();
 
     Item get_item() override;
     void set_item(const Item &item) override;
-    ItemDomain type() override;
-
-    int n;
+    void refresh_pixmap() override;
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
     void dragEnterEvent(QDragEnterEvent *event) override;
+
+private:
+    ItemCode m_code = 0;
 };

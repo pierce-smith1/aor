@@ -14,10 +14,11 @@
 
 class Game;
 
-constexpr static int MAX_ARRAY_SIZE = std::max({ SMITHING_SLOTS, TRADE_SLOTS, ARTIFACT_SLOTS });
+const static int MAX_ARRAY_SIZE = std::max({ SMITHING_SLOTS, TRADE_SLOTS, ARTIFACT_SLOTS });
 
 const static int BASE_MAX_ENERGY = 50;
 const static int BASE_MAX_MORALE = 50;
+const static int BASE_MAX_RESOURCE = 20;
 
 using ExternalItemIds = std::map<ItemDomain, std::array<ItemId, MAX_ARRAY_SIZE>>;
 using Effects = std::array<Item, EFFECT_SLOTS>;
@@ -44,9 +45,9 @@ struct Character {
     bool can_perform_action(ItemDomain action);
     int energy_to_gain();
     int morale_to_gain();
-    std::vector<Item> input_items();
-    std::vector<Item> generate_output_items();
-    std::vector<std::pair<ItemCode, bool>> smithable_items();
+
+    std::vector<ItemCode> smithable_items();
+    ItemCode smithing_result();
 
     bool clear_last_effect();
     bool push_effect(const Item &effect);

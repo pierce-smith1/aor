@@ -23,10 +23,13 @@ std::map<ItemProperty, quint16>::const_iterator ItemProperties::end() const {
 }
 
 ItemDefinitionPtr Item::def_of(ItemCode code) {
-    auto match_code {[code](const ItemDefinition def) -> bool {
-        return def.code == code;
-    }};
-    auto result = std::find_if(begin(ITEM_DEFINITIONS), end(ITEM_DEFINITIONS), match_code);
+    auto result = std::find_if(
+        begin(ITEM_DEFINITIONS),
+        end(ITEM_DEFINITIONS),
+        [=](const ItemDefinition &def) {
+            return def.code == code;
+        }
+    );
 
     if (result == ITEM_DEFINITIONS.end()) {
         qFatal("Tried to get definition for invalid item code (%d)", code);
@@ -124,6 +127,14 @@ void Item::for_each_resource_type(const std::function<void(ItemProperty, ItemPro
         ItemProperty max_prop = (ItemProperty) (ToolMaximum + i);
         ItemProperty resource_prop = (ItemProperty) (Resource + i);
         fn(cost_prop, max_prop, resource_prop);
+    }
+}
+
+void Item::for_each_tool_discover(const std::function<void(ItemProperty, ItemProperty)> &fn) {
+    for (quint16 i = 0; i < 9; i++) {
+        ItemProperty can_discover_prop = (ItemProperty) (ToolCanDiscover1 + i);
+        ItemProperty weight_prop = (ItemProperty) (ToolDiscoverWeight1 + i);
+        fn(can_discover_prop, weight_prop);
     }
 }
 

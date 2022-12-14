@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QTimerEvent>
+#include <QString>
 
 #include <cstdint>
 #include <vector>
@@ -30,12 +31,12 @@ public:
 
 private:
     void complete();
-    std::vector<Item> complete_smithing();
-    std::vector<Item> complete_foraging();
-    std::vector<Item> complete_mining();
-    std::vector<Item> complete_eating();
-    std::vector<Item> complete_trading();
-    std::vector<Item> give(const std::vector<Item> &items);
+
+    void exhaust_reagents();
+    void exhaust_item(ItemId id);
+    std::vector<Item> products();
+    void give(const std::vector<Item> &items);
+
 
     ItemDomain m_action;
     qint64 m_ms_left;

@@ -14,14 +14,6 @@ Game::Game()
 
     add_item(Item("globfruit"));
     add_item(Item("globfruit"));
-    add_item(Item("globfruit"));
-    add_item(Item("byteberry"));
-    add_item(Item("byteberry"));
-    add_item(Item("byteberry"));
-    add_item(Item("oolite"));
-    add_item(Item("obsilicon"));
-    add_item(Item("maven_mallet"));
-    add_item(Item("basalt_destructor"));
 
     m_tribes[NOBODY];
 }
@@ -77,9 +69,13 @@ void Game::add_character(const QString &name) {
 
 }
 
-void Game::add_item(const Item &item) {
-    m_inventory.add_item(item);
-    m_history.insert(item.code);
+bool Game::add_item(const Item &item) {
+    if (m_inventory.add_item(item)) {
+        m_history.insert(item.code);
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void Game::refresh_ui_bars(QProgressBar *activity, QProgressBar *morale, QProgressBar *energy, CharacterId char_id) {

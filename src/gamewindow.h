@@ -47,9 +47,6 @@ public:
 
     void notify(NotificationType type, const QString &message);
 
-    void progress_activity(CharacterId char_id, qint64 by_ms);
-    void complete_activity(CharacterId char_id);
-
     bool trade_ongoing(GameId tribe);
 
     void refresh_ui();

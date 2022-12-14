@@ -36,7 +36,7 @@ public:
     ItemHistory &history();
 
     void add_character(const QString &name);
-    void add_item(const Item &item);
+    bool add_item(const Item &item);
 
     QString id_to_name(CharacterId char_id);
 
