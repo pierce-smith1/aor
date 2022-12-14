@@ -53,6 +53,7 @@ void CharacterActivity::complete() {
     gw()->killTimer(m_timer_id);
 
     std::vector<Item> items = products();
+    give_bonuses();
     exhaust_reagents();
     give(items);
 
@@ -117,6 +118,10 @@ void CharacterActivity::exhaust_reagents() {
         for (ItemId id : character.external_items().at(Offering)) {
             gw()->game().inventory().remove_item(id);
         }
+    } else if (m_action == Eating) {
+        for (const Item &item : gw()->game().inventory().items_of_intent(m_char_id, Eating)) {
+            exhaust_item(item.id);
+        }
     }
 
     exhaust_item(character.tool_id(m_action));
@@ -175,6 +180,24 @@ void CharacterActivity::give(const std::vector<Item> &items) {
                 .arg(gw()->game().characters().at(m_char_id).name())
                 .arg(item.def()->display_name)
             );
+        }
+    }
+}
+
+void CharacterActivity::give_bonuses() {
+    Character &character = gw()->game().characters().at(m_char_id);
+    if (m_action == Eating) {
+        for (const Item &item : gw()->game().inventory().items_of_intent(m_char_id, Eating)) {
+            const ItemProperties &props = item.def()->properties;
+
+            character.add_energy(props[ConsumableEnergyBoost]);
+            character.add_morale(props[ConsumableMoraleBoost]);
+
+            for (int i = 0; i < props[ConsumableClearsNumEffects]; i++) {
+                character.clear_last_effect();
+            }
+
+            character.push_effect(Item(props[ConsumableGivesEffect]));
         }
     }
 }
