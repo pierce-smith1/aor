@@ -15,6 +15,7 @@ struct TooltipInfo {
     QString subtext;
     QString description;
     QPixmap icon;
+    ItemProperties resource_cost;
 };
 
 class Tooltip : public QWidget {

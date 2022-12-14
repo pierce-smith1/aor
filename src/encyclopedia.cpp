@@ -40,13 +40,11 @@ bool EncyclopediaSlot::undiscovered() {
 }
 
 Item EncyclopediaSlot::get_item() {
-    ItemCode code = (m_y * ENCYCLOPEDIA_GROUP_COLS + m_x) + m_item_group;
-
     bool code_exists = std::find_if(begin(ITEM_DEFINITIONS), end(ITEM_DEFINITIONS), [=](const ItemDefinition &def) {
-        return def.code == code;
+        return def.code == item_code();
     }) != end(ITEM_DEFINITIONS);
 
-    return code_exists ? Item(code) : Item();
+    return code_exists ? Item(item_code()) : Item();
 }
 
 void EncyclopediaSlot::set_item(const Item &) {
@@ -77,7 +75,8 @@ std::optional<TooltipInfo> EncyclopediaSlot::tooltip_info() {
             "???",
             "Undiscovered",
             "You havn't discovered this item yet.",
-            QPixmap(":assets/img/items/sil/missing.png")
+            QPixmap(":assets/img/items/sil/missing.png"),
+            Item::def_of(item_code())->properties
         });
     } else {
         return std::optional<TooltipInfo>();
@@ -89,3 +88,7 @@ void EncyclopediaSlot::mousePressEvent(QMouseEvent *) { }
 void EncyclopediaSlot::dragEnterEvent(QDragEnterEvent *) { }
 
 void EncyclopediaSlot::dropEvent(QDropEvent *) { }
+
+ItemCode EncyclopediaSlot::item_code() {
+    return (m_y * ENCYCLOPEDIA_GROUP_COLS + m_x) + m_item_group;
+}

@@ -65,7 +65,8 @@ std::optional<TooltipInfo> ExplorerButton::tooltip_info() {
         character.name(),
         QString("%1 Fennahian").arg(Colors::name(character.color())),
         "gnocklin",
-        QPixmap(":/assets/img/icons/yok.png")
+        QPixmap(":/assets/img/icons/yok.png"),
+        {}
     });
 }
 

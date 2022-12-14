@@ -38,6 +38,8 @@ protected:
     void dropEvent(QDropEvent *event) override;
 
 private:
+    ItemCode item_code();
+
     int m_y;
     int m_x;
     ItemCode m_item_group;

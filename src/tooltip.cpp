@@ -23,6 +23,15 @@ void Tooltip::set(const TooltipInfo &info) {
     widget.item_subtext->setText(info.subtext);
     widget.item_description->setText(info.description);
     widget.item_image->setPixmap(info.icon);
+
+    for (const auto &pair : info.resource_cost) {
+        if (pair.first & Cost) {
+            cost_icons().at(pair.first)->show();
+            cost_text().at(pair.first)->setText(QString(" %1 ").arg(pair.second));
+            cost_text().at(pair.first)->show();
+            widget.cost_container->show();
+        }
+    }
 }
 
 void Tooltip::set(const Item &item, Game &game) {
