@@ -49,6 +49,7 @@ enum ItemDomain : ItemType {
     Rune            = 1 << 9,
     Portrait        = 1 << 10,
     ForeignOffering = 1 << 11,
+    Defiling        = 1 << 12,
     Tool            = SmithingTool | ForagingTool | MiningTool
 };
 

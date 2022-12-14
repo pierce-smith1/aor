@@ -98,7 +98,8 @@ std::vector<Item> CharacterActivity::products() {
 
             return { Item(Generators::sample_with_weights<ItemCode>(weighted_discoverables)) };
         }
-        case Eating: {
+        case Eating:
+        case Defiling: {
             return {};
         }
         default: {
@@ -119,8 +120,8 @@ void CharacterActivity::exhaust_reagents() {
         for (ItemId id : character.external_items().at(Offering)) {
             gw()->game().inventory().remove_item(id);
         }
-    } else if (m_action == Eating) {
-        for (const Item &item : gw()->game().inventory().items_of_intent(m_char_id, Eating)) {
+    } else if (m_action == Eating || m_action == Defiling) {
+        for (const Item &item : gw()->game().inventory().items_of_intent(m_char_id, m_action)) {
             exhaust_item(item.id);
         }
     }
@@ -133,8 +134,10 @@ void CharacterActivity::exhaust_character() {
 
     Item tool = gw()->game().inventory().get_item(character.tool_id(m_action));
 
-    character.add_energy(-tool.def()->properties[ToolEnergyCost]);
-    character.add_morale(-character.base_morale_cost());
+    if (m_action != Eating && m_action != Defiling) {
+        character.add_energy(-tool.def()->properties[ToolEnergyCost]);
+        character.add_morale(-character.base_morale_cost());
+    }
 }
 
 void CharacterActivity::exhaust_item(ItemId id) {
@@ -156,7 +159,7 @@ void CharacterActivity::exhaust_item(ItemId id) {
 
                 gw()->game().inventory().remove_item(id);
             } else {
-                if (!(item.code & CT_TOOL)) {
+                if (!(item.intent & Tool)) {
                     item.intent = None;
                 }
             }
@@ -206,10 +209,12 @@ void CharacterActivity::give_bonuses() {
             for (int i = 0; i < props[ConsumableClearsNumEffects]; i++) {
                 character.clear_last_effect();
             }
-
-            character.push_effect(Item(props[ConsumableGivesEffect]));
         }
 
         character.add_morale(character.base_morale_cost());
+    } else if (m_action == Defiling) {
+        for (const Item &item : gw()->game().inventory().items_of_intent(m_char_id, Defiling)) {
+            character.add_morale(item.def()->item_level * 25);
+        }
     }
 }

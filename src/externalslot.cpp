@@ -69,9 +69,7 @@ void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
             break;
         }
         case Portrait: {
-            if (dropped_type & Consumable) {
-                event->acceptProposedAction();
-            }
+            event->acceptProposedAction();
             break;
         }
         default: {
@@ -192,6 +190,12 @@ void PortraitSlot::dropEvent(QDropEvent *event) {
         gw()->game().inventory().get_item_ref(item.id).intent = Consumable;
         gw()->game().inventory().get_item_ref(item.id).intent_holder = gw()->selected_char().id();
         gw()->selected_char().start_activity(Eating);
+
+        source_slot->refresh_pixmap();
+    } else {
+        gw()->game().inventory().get_item_ref(item.id).intent = Defiling;
+        gw()->game().inventory().get_item_ref(item.id).intent_holder = gw()->selected_char().id();
+        gw()->selected_char().start_activity(Defiling);
 
         source_slot->refresh_pixmap();
     }

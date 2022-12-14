@@ -69,6 +69,10 @@ void Tooltip::set(const Item &item, Game &game) {
             subtext += QString(" <b><font color=green>(Being eaten by %1)</font></b>").arg(character_name);
             break;
         }
+        case Defiling: {
+            subtext += QString(" <b><font color=green>(Being defiled by %1)</font></b>").arg(character_name);
+            break;
+        }
         case Material: {
             subtext += QString(" <b><font color=green>(Queued for smithing by %1)</font></b>").arg(character_name);
             break;
