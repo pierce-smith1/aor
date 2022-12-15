@@ -46,6 +46,7 @@ void Character::start_activity(ItemDomain domain) {
 
     m_activity = CharacterActivity(m_id, domain, activity_ms, activity_ms);
     gw()->refresh_ui_buttons();
+    gw()->refresh_slots();
 }
 
 quint16 &Character::energy() {

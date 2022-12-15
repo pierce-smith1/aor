@@ -5,7 +5,8 @@
 #include "gamewindow.h"
 
 Tooltip::Tooltip()
-    : widget()
+    : widget(),
+      m_colorize_effect(new QGraphicsColorizeEffect(this))
 {
     widget.setupUi(this);
     setWindowFlags(Qt::ToolTip
@@ -13,6 +14,7 @@ Tooltip::Tooltip()
         | Qt::WindowDoesNotAcceptFocus
     );
 
+    widget.item_image->setGraphicsEffect(m_colorize_effect);
     hide_resources();
 }
 
@@ -31,6 +33,13 @@ void Tooltip::set(const TooltipInfo &info) {
             cost_text().at(pair.first)->show();
             widget.cost_container->show();
         }
+    }
+
+    if (info.colorize.has_value()) {
+        m_colorize_effect->setColor(*info.colorize);
+        m_colorize_effect->setStrength(1.0);
+    } else {
+        m_colorize_effect->setStrength(0.0);
     }
 }
 

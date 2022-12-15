@@ -2,6 +2,8 @@
 
 #include <QEnterEvent>
 #include <QMouseEvent>
+#include <QGraphicsColorizeEffect>
+
 #include <optional>
 
 #include "../ui_tooltip.h"
@@ -16,6 +18,7 @@ struct TooltipInfo {
     QString description;
     QPixmap icon;
     ItemProperties resource_cost;
+    std::optional<QColor> colorize = std::make_optional<QColor>();
 };
 
 class Tooltip : public QWidget {
@@ -35,6 +38,8 @@ private:
     const std::map<quint16, QLabel *> &cost_text();
     const std::map<quint16, QLabel *> &power_icons();
     const std::map<quint16, QLabel *> &power_text();
+
+    QGraphicsColorizeEffect *m_colorize_effect;
 };
 
 template<

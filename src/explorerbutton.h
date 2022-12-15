@@ -2,6 +2,7 @@
 
 #include <QProgressBar>
 #include <QGraphicsColorizeEffect>
+#include <QPaintEngine>
 #include <QGroupBox>
 #include <QLabel>
 
