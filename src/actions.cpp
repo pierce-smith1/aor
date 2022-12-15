@@ -170,6 +170,17 @@ void CharacterActivity::exhaust_character() {
         character.add_energy(-tool.def()->properties[ToolEnergyCost]);
         character.add_morale(-character.base_morale_cost());
     }
+
+    for (Item &effect : character.effects()) {
+        if (effect.id == EMPTY_ID) {
+            continue;
+        }
+
+        effect.uses_left -= 1;
+        if (effect.uses_left == 0) {
+            effect = Item();
+        }
+    }
 }
 
 void CharacterActivity::exhaust_item(ItemId id) {
