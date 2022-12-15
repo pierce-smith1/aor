@@ -237,7 +237,7 @@ void LKGameWindow::load() {
 
 void LKGameWindow::timerEvent(QTimerEvent *event) {
     for (Character &character : m_game.characters()) {
-        if (character.activity().timer_id() == event->timerId()) {
+        if (character.activity().timer_id() == event->timerId() && character.activity().action() != None) {
             character.activity().progress(ACTIVITY_TICK_RATE_MS);
         }
     }
