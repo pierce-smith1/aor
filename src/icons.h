@@ -8,7 +8,5 @@
 
 namespace Icons {
     const std::map<ItemDomain, QPixmap> &activity_icons();
-    const std::map<ItemDomain, QPixmap> &active_status_icons();
-    const std::map<ItemDomain, QPixmap> &inactive_status_icons();
     const std::map<ItemProperty, QPixmap> &resource_icons();
 }

@@ -1,6 +1,7 @@
 #include "actions.h"
 #include "externalslot.h"
 #include "gamewindow.h"
+#include "egg.h"
 
 CharacterActivity::CharacterActivity(CharacterId id, ItemDomain action, qint64 ms_total, qint64 ms_left)
     : m_action(action),
@@ -63,6 +64,8 @@ void CharacterActivity::complete() {
 
     gw()->refresh_ui();
     gw()->game().actions_done()++;
+
+    EggItem::check_hatch();
 }
 
 std::vector<Item> CharacterActivity::products() {
@@ -102,6 +105,23 @@ std::vector<Item> CharacterActivity::products() {
         case Eating:
         case Defiling: {
             return {};
+        }
+        case Coupling: {
+            auto &characters = gw()->game().characters();
+            auto partner = std::find_if(begin(characters), end(characters), [&](Character &other) {
+                return other.partner() == character.id();
+            });
+
+            if (partner == end(characters)) {
+                return {};
+            }
+
+            std::vector<Item> egg = { EggItem(character.id(), partner->id()) };
+
+            partner->partner() = NOBODY;
+            character.partner() = NOBODY;
+
+            return egg;
         }
         default: {
             qFatal("Tried to get products for unknown domain (%d)", m_action);

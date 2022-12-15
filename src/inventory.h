@@ -7,8 +7,12 @@ const static int INVENTORY_ROWS = 6;
 const static int INVENTORY_COLS = 10;
 const static int INVENTORY_SIZE = INVENTORY_COLS * INVENTORY_ROWS;
 
+using Items = std::array<Item, INVENTORY_SIZE>;
+
 class Inventory {
 public:
+    Items &items();
+
     Item &get_item_ref(ItemId id);
     Item &get_item_ref(int y, int x);
     Item get_item(ItemId id) const;
@@ -27,5 +31,5 @@ public:
     static Inventory deserialize(QIODevice *dev);
 
 private:
-    std::array<Item, INVENTORY_SIZE> m_items;
+    Items m_items;
 };

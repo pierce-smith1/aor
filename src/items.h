@@ -50,7 +50,7 @@ enum ItemDomain : ItemType {
     Portrait        = 1 << 10,
     ForeignOffering = 1 << 11,
     Defiling        = 1 << 12,
-    Coupling        = 1 << 13,
+    Coupling        = 1 << 13, Explorer = 1 << 13, Egg = 1 << 13,
     Tool            = SmithingTool | ForagingTool | MiningTool
 };
 
@@ -102,6 +102,9 @@ enum ItemProperty : quint16 {
     HeritageInjuryResilience,
     HeritageMaterialValueBonus,
     HeritageActivitySpeedBonus,
+    InstanceEggParent1,
+    InstanceEggParent2,
+    InstanceEggFoundActionstamp,
     Cost = 0x2000,
     CostStone = 0x2001,
     CostMetallic = 0x2002,
@@ -359,6 +362,16 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         {
             { ArtifactMaxEnergyBoost, 20 }
         }
+    },
+    {
+        CT_OTHER | 0,
+        "fennahian_egg", "Fennahian Egg",
+        "<i>You could make an omelette out of it, but maybe it's<br>"
+        "best to just wait for it to hatch...</i>",
+        1 USES, Consumable, LEVEL 1,
+        {
+            { ConsumableEnergyBoost, 50 }
+        }
     }
 };
 
@@ -368,6 +381,7 @@ struct Item {
     unsigned char uses_left = 0;
     ItemDomain intent = Ordinary;
     CharacterId intent_holder = NOBODY;
+    ItemProperties instance_properties = {};
 
     Item() = default;
     explicit Item(const ItemDefinition &def);
@@ -380,6 +394,7 @@ struct Item {
     static ItemDefinitionPtr def_of(ItemCode id);
     static ItemDefinitionPtr def_of(const QString &name);
     static ItemDefinitionPtr def_of(const Item &item);
+    static ItemCode code_of(const QString &name);
     static QPixmap pixmap_of(ItemCode id);
     static QPixmap pixmap_of(const QString &name);
     static QPixmap pixmap_of(const ItemDefinition &def);

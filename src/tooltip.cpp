@@ -45,6 +45,7 @@ void Tooltip::set(const TooltipInfo &info) {
 
 void Tooltip::set(const Item &item, Game &game) {
     hide_resources();
+    m_colorize_effect->setStrength(0.0);
 
     widget.item_image->setPixmap(Item::pixmap_of(item));
 

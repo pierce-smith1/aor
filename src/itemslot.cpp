@@ -145,6 +145,13 @@ void ItemSlot::dragEnterEvent(QDragEnterEvent *event) {
         return;
     }
 
+    QString source_slot_name = event->mimeData()->text();
+    ItemSlot *source_slot = gw()->findChild<ItemSlot *>(source_slot_name);
+
+    if (source_slot->type() == Explorer) {
+        return;
+    }
+
     event->acceptProposedAction();
 }
 

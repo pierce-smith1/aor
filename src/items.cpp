@@ -53,6 +53,18 @@ ItemDefinitionPtr Item::def_of(const Item &item) {
     return def_of(item.code);
 }
 
+ItemCode Item::code_of(const QString &name) {
+    auto result = std::find_if(begin(ITEM_DEFINITIONS), end(ITEM_DEFINITIONS), [=](const ItemDefinition &def) {
+        return name == def.internal_name;
+    });
+
+    if (result == end(ITEM_DEFINITIONS)) {
+        qFatal("Tried to look up code for invalid item name (%s)", name.toStdString().c_str());
+    }
+
+    return result->code;
+}
+
 Item::Item(const ItemDefinition &def)
     : code(def.code),
       id(Generators::item_id()),

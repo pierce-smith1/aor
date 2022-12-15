@@ -32,6 +32,10 @@ CharacterId Character::id() {
     return m_id;
 }
 
+CharacterId &Character::partner() {
+    return m_partner;
+}
+
 void Character::start_activity(ItemDomain domain) {
     if (domain == None) {
         m_activity = CharacterActivity(m_id, None);

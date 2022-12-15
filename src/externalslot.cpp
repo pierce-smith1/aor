@@ -61,6 +61,10 @@ void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
     Item dropped_item = source_slot->get_item();
     ItemType dropped_type = dropped_item.def()->type;
 
+    if (source_slot->type() == Explorer) {
+        return;
+    }
+
     switch (type()) {
         case Offering: {
             if (gw()->game().trade_partner() == NOBODY) {

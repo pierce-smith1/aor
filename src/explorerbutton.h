@@ -19,15 +19,20 @@ class ExplorerButton : public ItemSlot {
 
 public:
     ExplorerButton(CharacterId id);
+    CharacterId id();
 
     Item get_item() override;
     void set_item(const Item &item) override;
     void refresh_pixmap() override;
+    ItemDomain type() override;
 
     static void insert_explorer_buttons();
 
 protected:
+    void mousePressEvent(QMouseEvent *) override;
     void mouseReleaseEvent(QMouseEvent *) override;
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
 
     bool do_hovering() override;
     std::optional<TooltipInfo> tooltip_info() override;

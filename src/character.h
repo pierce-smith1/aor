@@ -33,6 +33,7 @@ struct Character {
     Heritage &heritage();
     CharacterActivity &activity();
     CharacterId id();
+    CharacterId &partner();
 
     void start_activity(ItemDomain domain);
 
@@ -78,6 +79,7 @@ private:
         { ForagingTool, EMPTY_ID },
         { MiningTool, EMPTY_ID },
     };
+    CharacterId m_partner = NOBODY;
     quint16 m_energy = 40;
     quint16 m_morale = 40;
 };

@@ -17,6 +17,10 @@ ExplorerButton::ExplorerButton(CharacterId id)
     gw()->register_slot(this);
 }
 
+CharacterId ExplorerButton::id() {
+    return m_id;
+}
+
 Item ExplorerButton::get_item() {
     return Item();
 }
@@ -43,15 +47,67 @@ void ExplorerButton::refresh_pixmap() {
     }
 }
 
+ItemDomain ExplorerButton::type() {
+    return Explorer;
+}
+
 void ExplorerButton::insert_explorer_buttons() {
     for (int i = 0; i < MAX_EXPLORERS; i++) {
         gw()->window().explorer_slots->layout()->addWidget(new ExplorerButton(i));
     }
 }
 
+void ExplorerButton::mousePressEvent(QMouseEvent *event) {
+    if (m_id == NOBODY) {
+        return;
+    }
+
+    if (event->button() == Qt::LeftButton) {
+        QDrag *drag = new QDrag(this);
+        QMimeData *data = new QMimeData;
+
+        data->setText(objectName());
+        drag->setMimeData(data);
+        drag->setPixmap(QPixmap(":/assets/img/icons/yok.png"));
+
+        drag->exec();
+    }
+}
+
 void ExplorerButton::mouseReleaseEvent(QMouseEvent *) {
+    if (m_id == NOBODY) {
+        return;
+    }
+
     gw()->selected_char_id() = m_id;
     gw()->refresh_ui();
+}
+
+void ExplorerButton::dragEnterEvent(QDragEnterEvent *event) {
+    const QMimeData *data = event->mimeData();
+    if (!data->hasFormat("text/plain")) {
+        return;
+    }
+
+    QString source_slot_name = event->mimeData()->text();
+    ItemSlot *source_slot = gw()->findChild<ItemSlot *>(source_slot_name);
+
+    if (source_slot->type() == Explorer) {
+        event->acceptProposedAction();
+    }
+}
+
+void ExplorerButton::dropEvent(QDropEvent *event) {
+    QString source_slot_name = event->mimeData()->text();
+    ExplorerButton *source_button = gw()->findChild<ExplorerButton *>(source_slot_name);
+
+    Character &character = gw()->game().characters().at(m_id);
+    Character &partner = gw()->game().characters().at(source_button->id());
+
+    character.start_activity(Coupling);
+    character.partner() = source_button->id();
+    partner.start_activity(Coupling);
+    partner.partner() = m_id;
 }
 
 bool ExplorerButton::do_hovering() {
@@ -98,6 +154,11 @@ QString ExplorerButton::character_description() {
         case Eating: { string += "<i>Currently eating</i><br>"; break; }
         case Defiling: { string += "<i>Currently defiling</i><br>"; break; }
         case Trading: { string += "<i>Currently trading</i><br>"; break; }
+        case Coupling: {
+            string += QString("<i>Having a child with %1</i><br>")
+                .arg(gw()->game().characters().at(character.partner()).name());
+            break;
+        }
         default: { break; }
     }
 

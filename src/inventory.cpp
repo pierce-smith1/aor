@@ -1,5 +1,9 @@
 #include "inventory.h"
 
+Items &Inventory::items() {
+    return m_items;
+}
+
 Item &Inventory::get_item_ref(ItemId id) {
     if (id == EMPTY_ID) {
         qFatal("Tried to get reference for the empty id");
