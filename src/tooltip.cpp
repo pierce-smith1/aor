@@ -54,19 +54,7 @@ void Tooltip::set(const Item &item, Game &game) {
 
     widget.item_name->setText(QString("<b>%1</b>").arg(this_def->display_name));
     QString description = this_def->description;
-    QString subtext;
-
-    switch (this_def->item_level) {
-        case 1: { subtext = "Unremarkable "; break; }
-        case 2: { subtext = "Common "; break; }
-        case 3: { subtext = "Notable "; break; }
-        case 4: { subtext = "Rare "; break; }
-        case 5: { subtext = "Enchanted "; break; }
-        case 6: { subtext = "Truly Extraordinary "; break; }
-        case 7: { subtext = "Anomalous "; break; }
-        case 8: { subtext = "Incomprehensible "; break; }
-        default: { break; }
-    }
+    QString subtext = QString("Level %1 ").arg(this_def->item_level);
 
     subtext += Item::type_to_string(this_def->type);
 
@@ -112,9 +100,10 @@ void Tooltip::set(const Item &item, Game &game) {
     const ItemProperties &properties = item.def()->properties;
 
     for (const auto &pair : properties) {
+        double heritage_resource_boost = gw()->selected_char().heritage_properties()[HeritageMaterialValueBonus] / 100.0;
         if (pair.first & Resource) {
             icons().at(pair.first)->show();
-            text().at(pair.first)->setText(QString(" %1 ").arg(pair.second));
+            text().at(pair.first)->setText(QString(" %1 ").arg((int) (pair.second + (pair.second * heritage_resource_boost))));
             text().at(pair.first)->show();
             widget.resource_container->show();
         }

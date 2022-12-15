@@ -45,10 +45,17 @@ void Character::start_activity(ItemDomain domain) {
         return;
     }
 
-    //qint64 activity_ms = 1000 * 120;
-    qint64 activity_ms = 120;
-    if (m_tool_ids.find(domain) != end(m_tool_ids) && m_tool_ids.at(domain) != EMPTY_ID) {
-        activity_ms *= gw()->game().inventory().get_item(m_tool_ids.at(domain)).def()->item_level;
+    qint64 activity_ms = 1000 * 120;
+
+    if (domain != Coupling) {
+        double heritage_boost = heritage_properties()[HeritageActivitySpeedBonus] / 100.0;
+        double injury_penalty = std::accumulate(begin(m_effects), end(m_effects), 0, [](int a, const Item &effect) {
+            return a + effect.def()->properties[PersistentSpeedPenalty];
+        }) / 100.0;
+
+        activity_ms *= gw()->game().inventory().get_item(m_tool_ids[domain]).def()->item_level;
+        activity_ms -= activity_ms * heritage_boost;
+        activity_ms += activity_ms * injury_penalty;
     }
 
     m_activity = CharacterActivity(m_id, domain, activity_ms, activity_ms);
@@ -210,9 +217,9 @@ int Character::morale_to_gain() {
 
 std::vector<ItemCode> Character::smithable_items() {
     ItemDefinitionPtr smithing_def = gw()->game().inventory().get_item(tool_id(SmithingTool)).def();
+    double heritage_resource_boost = heritage_properties()[HeritageMaterialValueBonus] / 100.0;
 
     std::vector<ItemCode> smithable_codes;
-
     for (const ItemDefinition &def : ITEM_DEFINITIONS) {
         bool tool_is_sufficient = true;
         bool is_smithable = false;
@@ -242,7 +249,9 @@ std::vector<ItemCode> Character::smithable_items() {
                 end(external_items().at(Material)),
                 0,
                 [=](int a, ItemId b) {
-                    return gw()->game().inventory().get_item(b).def()->properties[resource_prop] + a;
+                    int item_resource = gw()->game().inventory().get_item(b).def()->properties[resource_prop];
+                    item_resource += (item_resource * heritage_resource_boost);
+                    return item_resource + a;
                 }
             );
 

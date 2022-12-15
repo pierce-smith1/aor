@@ -287,6 +287,7 @@ void CharacterActivity::give_injuries() {
             case Eating: { if (!def.properties[InjuryEating]) { continue; } break; }
             case Defiling: { if (!def.properties[InjuryDefiling]) { continue; } break; }
             case Trading: { if (!def.properties[InjuryTrading]) { continue; } break; }
+            case Coupling: { break; } // COCK INJURED
             default: { qFatal("Tried to give injuries for unknown action domain (%d)", m_action); }
         }
 
