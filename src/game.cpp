@@ -54,19 +54,26 @@ GameId &Game::trade_partner() {
     return m_trade_partner;
 }
 
-void Game::add_character(const QString &name) {
-    CharacterId max_id;
-    auto max_id_search = std::max_element(begin(m_explorers), end(m_explorers), [&](const auto &a, const auto &b) {
-        return a.first < b.first;
-    });
+quint64 &Game::actions_done() {
+    return m_actions_done;
+}
 
-    if (max_id_search == end(m_explorers)) {
-        m_explorers.emplace(0, Character(0, name));
-    } else {
-        max_id = max_id_search->first;
-        m_explorers.emplace(max_id + 1, Character(max_id + 1, name));
+bool &Game::dead() {
+    return m_dead;
+}
+
+bool Game::add_character(const QString &name) {
+    CharacterId max_id = 0;
+    while (m_explorers[max_id].id() != NOBODY && max_id < MAX_EXPLORERS) {
+        max_id++;
     }
 
+    if (max_id == MAX_EXPLORERS) {
+        return false;
+    }
+
+    m_explorers[max_id] = Character(max_id, name);
+    return true;
 }
 
 bool Game::add_item(const Item &item) {
@@ -93,55 +100,9 @@ void Game::refresh_ui_bars(QProgressBar *activity, QProgressBar *morale, QProgre
     energy->setValue(character.energy() + energy_gain);
 }
 
-void Game::serialize(QIODevice *dev) {
-    IO::write_short(dev, m_explorers.size());
-    for (const auto &pair : m_explorers) {
-        IO::write_short(dev, pair.first);
-        pair.second.serialize(dev);
-    }
-
-    m_inventory.serialize(dev);
-
-    // Do not serialize m_tribes, since that is populated by the network
-
-    IO::write_short(dev, m_trade_offer.size());
-    for (size_t i = 0; i < m_trade_offer.size(); i++) {
-        IO::write_long(dev, m_trade_offer[i]);
-    }
-
-    IO::write_bool(dev, m_accepting_trade);
-
-    IO::write_long(dev, m_trade_partner);
-
-    IO::write_long(dev, m_game_id);
-
-    IO::write_string(dev, m_tribe_name);
+void Game::serialize(QIODevice *) {
 }
 
-Game *Game::deserialize(QIODevice *dev) {
-    Game *g = new Game;
-
-    quint16 size = IO::read_short(dev);
-    for (size_t i = 0; i < size; i++) {
-        Character *c = Character::deserialize(dev);
-        g->m_explorers[i] = std::forward<Character>(*c);
-        delete c;
-    }
-
-    g->m_inventory = Inventory::deserialize(dev);
-
-    size = IO::read_short(dev);
-    for (size_t i = 0; i < size; i++) {
-        g->m_trade_offer[i] = IO::read_long(dev);
-    }
-
-    g->m_accepting_trade = IO::read_bool(dev);
-
-    g->m_trade_partner = IO::read_long(dev);
-
-    g->m_game_id = IO::read_long(dev);
-
-    g->m_tribe_name = IO::read_string(dev);
-
-    return g;
+Game *Game::deserialize(QIODevice *) {
+    return nullptr;
 }

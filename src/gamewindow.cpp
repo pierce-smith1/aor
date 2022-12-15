@@ -61,10 +61,7 @@ LKGameWindow::LKGameWindow()
     ToolSlot::insert_tool_slots();
     EffectSlot::insert_effect_slots();
     PortraitSlot::insert_portrait_slot();
-
-    for (const auto &pair : m_game.characters()) {
-        m_window.explorer_slots->layout()->addWidget(new ExplorerButton(this, pair.first));
-    }
+    ExplorerButton::insert_explorer_buttons();
 
     notify(Discovery, "The Sun breaks on a new adventure.");
 
@@ -73,7 +70,7 @@ LKGameWindow::LKGameWindow()
     m_window.activity_time_bar->setPalette(activity_palette);
 
     QPalette morale_palette;
-    morale_palette.setColor(QPalette::Highlight, Colors::qcolor(BlueRaspberry));
+    morale_palette.setColor(QPalette::Highlight, Colors::qcolor(Blueberry));
     m_window.morale_bar->setPalette(morale_palette);
 
     QPalette energy_palette;
@@ -137,10 +134,6 @@ void LKGameWindow::refresh_slots() {
 
 void LKGameWindow::refresh_ui_bars() {
     m_game.refresh_ui_bars(m_window.activity_time_bar, m_window.morale_bar, m_window.energy_bar, m_selected_char_id);
-
-    for (const auto &pair : m_game.characters()) {
-        findChild<ExplorerButton *>(QString("explorer_button;%1").arg(pair.first))->refresh();
-    }
 }
 
 void LKGameWindow::refresh_ui_buttons() {
@@ -178,8 +171,8 @@ void LKGameWindow::refresh_trade_ui() {
     window().trade_arrow_label->setPixmap(QPixmap(":/assets/img/icons/arrows_disabled.png"));
     window().trade_notification_label->setText("");
 
-    for (auto &pair : game().characters()) {
-        if (pair.second.activity().action() == Trading) {
+    for (Character &character : game().characters()) {
+        if (character.activity().action() == Trading) {
             window().trade_arrow_label->setPixmap(QPixmap(":/assets/img/icons/arrows.png"));
             window().trade_notification_label->setText(QString("%1 is carrying out this trade...").arg(selected_char().name()));
         }
@@ -243,9 +236,9 @@ void LKGameWindow::load() {
 }
 
 void LKGameWindow::timerEvent(QTimerEvent *event) {
-    for (auto &pair : m_game.characters()) {
-        if (pair.second.activity().timer_id() == event->timerId()) {
-            pair.second.activity().progress(ACTIVITY_TICK_RATE_MS);
+    for (Character &character : m_game.characters()) {
+        if (character.activity().timer_id() == event->timerId()) {
+            character.activity().progress(ACTIVITY_TICK_RATE_MS);
         }
     }
 

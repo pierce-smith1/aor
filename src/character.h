@@ -20,6 +20,7 @@ const static int BASE_MAX_ENERGY = 50;
 const static int BASE_MAX_MORALE = 50;
 const static int BASE_MAX_RESOURCE = 20;
 
+using Heritage = std::multiset<Color>;
 using ExternalItemIds = std::map<ItemDomain, std::array<ItemId, MAX_ARRAY_SIZE>>;
 using Effects = std::array<Item, EFFECT_SLOTS>;
 using ToolIds = std::map<ItemDomain, ItemId>;
@@ -29,7 +30,7 @@ struct Character {
     explicit Character(CharacterId id, const QString &name);
 
     QString &name();
-    Color &color();
+    Heritage &heritage();
     CharacterActivity &activity();
     CharacterId id();
 
@@ -65,7 +66,7 @@ struct Character {
 private:
     quint16 m_id;
     QString m_name;
-    Color m_color;
+    Heritage m_heritage;
     CharacterActivity m_activity;
     ExternalItemIds m_external_item_ids {
         { Material, {} },

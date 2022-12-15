@@ -2,71 +2,95 @@
 #include "gamewindow.h"
 #include "itemslot.h"
 
-ExplorerButton::ExplorerButton(QWidget *parent, CharacterId id)
-    : Hoverable(gw()->tooltip(), parent),
-      m_id(id),
-      m_name(new QLabel(this)),
-      m_portrait(new QLabel(this)),
+ExplorerButton::ExplorerButton(CharacterId id)
+    : m_id(id),
       m_activity_icon(new QLabel(this)),
       m_portrait_effect(new QGraphicsColorizeEffect(this))
 {
-    setMouseTracking(true);
+    m_item_label->setGraphicsEffect(m_portrait_effect);
+    m_item_layout->addWidget(m_activity_icon, 0, 0);
 
     setObjectName(QString("explorer_button;%1").arg(id));
-    setMinimumSize(QSize(80, 16777215));
-    setMaximumSize(QSize(120, 140));
-
-    QGridLayout *layout = new QGridLayout(this);
-
-    m_name->setText(QString("<b>%1</b>").arg(gw()->game().characters().at(id).name()));
-    layout->addWidget(m_name, 0, 0);
-
-    m_portrait->setText("");
-    m_portrait->setMaximumSize(QSize(48, 48));
-    m_portrait->setPixmap(QPixmap(":/assets/img/icons/yok.png"));
-    m_portrait_effect->setColor(Colors::qcolor((gw()->game().characters().at(id).color())));
-    m_portrait->setGraphicsEffect(m_portrait_effect);
-    layout->addWidget(m_portrait, 1, 0);
-
-    m_activity_icon->setText("");
-    m_activity_icon->setMaximumSize(QSize(16, 16));
-    m_activity_icon->setPixmap(QPixmap(":/assets/img/icons/leaf.png"));
-    layout->addWidget(m_activity_icon, 1, 1);
-
-    QWidget *status_area = new QWidget(this);
-    QGridLayout *status_layout = new QGridLayout(status_area);
-    status_layout->setContentsMargins(0, 0, 0, 0);
-    layout->addWidget(status_area, 2, 0);
+    gw()->register_slot(this);
 }
 
-void ExplorerButton::refresh() {
+Item ExplorerButton::get_item() {
+    return Item();
+}
+
+void ExplorerButton::set_item(const Item &) { }
+
+void ExplorerButton::refresh_pixmap() {
     Character &character = gw()->game().characters().at(m_id);
+
     m_activity_icon->setPixmap(Icons::activity_icons().at(character.activity().action()));
+    m_portrait_effect->setColor(Colors::blend(character.heritage()));
+    if (character.id() == NOBODY) {
+        m_item_label->setPixmap(QPixmap(":/assets/img/items/empty.png"));
+        m_portrait_effect->setColor(QColor(0, 0, 0));
+    } else {
+        m_item_label->setPixmap(QPixmap(":/assets/img/icons/yok.png"));
+    }
 
     if (m_id == gw()->selected_char_id()) {
-        setFlat(false);
+        //setFlat(false);
     } else {
-        setFlat(true);
+        //setFlat(true);
     }
 }
 
-void ExplorerButton::mousePressEvent(QMouseEvent *) {
+void ExplorerButton::insert_explorer_buttons() {
+    for (int i = 0; i < MAX_EXPLORERS; i++) {
+        gw()->window().explorer_slots->layout()->addWidget(new ExplorerButton(i));
+    }
+}
+
+void ExplorerButton::mouseReleaseEvent(QMouseEvent *) {
     gw()->selected_char_id() = m_id;
     gw()->refresh_ui();
 }
 
 bool ExplorerButton::do_hovering() {
-    return true;
+    Character &character = gw()->game().characters().at(m_id);
+
+    return character.id() != NOBODY;
 }
 
 std::optional<TooltipInfo> ExplorerButton::tooltip_info() {
     Character &character = gw()->game().characters().at(m_id);
+
+    QString heritage_string;
+    int number_of_heritages = 0;
+    for (auto it = begin(character.heritage()); it != end(character.heritage());) {
+        heritage_string += Colors::name(*it) + ", ";
+        std::advance(it, character.heritage().count(*it));
+        number_of_heritages++;
+    }
+
+    heritage_string = heritage_string.left(heritage_string.size() - 2);
+
+    if (number_of_heritages > 1) {
+        heritage_string = "Mixed " + heritage_string;
+    }
+
     return std::optional<TooltipInfo>({
-        character.name(),
-        QString("%1 Fennahian").arg(Colors::name(character.color())),
-        "gnocklin",
+        "<b>" + character.name() + "</b>",
+        QString("%1 Fennahian").arg(heritage_string),
+        character_description(),
         QPixmap(":/assets/img/icons/yok.png"),
         {}
     });
 }
 
+QString ExplorerButton::character_description() {
+    Character &character = gw()->game().characters().at(m_id);
+
+    ItemProperties heritage_props = Colors::blend_heritage(character.heritage());
+
+    QString string;
+    for (const auto &pair : heritage_props) {
+        string += PROPERTY_DESCRIPTIONS.at(pair.first).arg(pair.second) + "<br>";
+    }
+
+    return string.left(string.size() - 4);
+}

@@ -62,6 +62,7 @@ void CharacterActivity::complete() {
     m_ms_total = 0;
 
     gw()->refresh_ui();
+    gw()->game().actions_done()++;
 }
 
 std::vector<Item> CharacterActivity::products() {

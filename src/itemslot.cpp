@@ -15,7 +15,7 @@ ItemSlot::ItemSlot()
     setMouseTracking(true);
     setAcceptDrops(true);
 
-    QLayout *layout = new QHBoxLayout(this);
+    QGridLayout *layout = new QGridLayout(this);
     layout->setSpacing(0);
     layout->setContentsMargins(0, 0, 0, 0);
     m_item_layout = layout;
@@ -26,7 +26,7 @@ ItemSlot::ItemSlot()
     label->setMouseTracking(true);
     m_item_label = label;
 
-    layout->addWidget(label);
+    layout->addWidget(label, 0, 0);
 
     m_opacity_effect->setOpacity(1.0);
     m_item_label->setGraphicsEffect(m_opacity_effect);

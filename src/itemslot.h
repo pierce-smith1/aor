@@ -46,7 +46,7 @@ protected:
     virtual void dropEvent(QDropEvent *event) override;
 
     QLabel *m_item_label;
-    QLayout *m_item_layout;
+    QGridLayout *m_item_layout;
 
 private:
     QGraphicsOpacityEffect *m_opacity_effect;

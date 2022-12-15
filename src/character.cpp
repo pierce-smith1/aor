@@ -3,20 +3,25 @@
 #include "gamewindow.h"
 
 Character::Character()
-    : m_activity(NOBODY, None) { }
+    : m_id(NOBODY),
+      m_name("Nobody"),
+      m_activity(NOBODY, None) { }
 
 Character::Character(CharacterId id, const QString &name)
     : m_id(id),
       m_name(name),
-      m_color(Generators::color()),
-      m_activity(m_id, None) { }
+      m_activity(m_id, None)
+{
+    m_heritage.insert(Generators::color());
+    m_heritage.insert(Generators::color());
+}
 
 QString &Character::name() {
     return m_name;
 }
 
-Color &Character::color() {
-    return m_color;
+Heritage &Character::heritage() {
+    return m_heritage;
 }
 
 CharacterActivity &Character::activity() {
@@ -151,12 +156,6 @@ int Character::energy_to_gain() {
         }
     }
 
-    if (morale() > (double) max_morale() * 0.5) {
-        if (gain < 0) {
-            gain /= 2;
-        }
-    }
-
     return gain;
 }
 
@@ -168,6 +167,13 @@ int Character::morale_to_gain() {
             std::vector<Item> inputs = gw()->game().inventory().items_of_intent(m_id, Eating);
             gain = std::accumulate(begin(inputs), end(inputs), 0, [](int a, const Item &b) {
                 return a + b.def()->properties[ConsumableMoraleBoost];
+            });
+            break;
+        }
+        case Defiling: {
+            std::vector<Item> inputs = gw()->game().inventory().items_of_intent(m_id, Defiling);
+            gain = std::accumulate(begin(inputs), end(inputs), 0, [](int a, const Item &b) {
+                return a + b.def()->item_level * 25;
             });
             break;
         }
@@ -304,77 +310,10 @@ Effects &Character::effects() {
     return m_effects;
 }
 
-void Character::serialize(QIODevice *dev) const {
-    IO::write_short(dev, m_id);
-
-    IO::write_string(dev, m_name);
-
-    IO::write_short(dev, m_color);
-
-    IO::write_long(dev, m_activity.m_ms_left);
-    IO::write_long(dev, m_activity.m_ms_total);
-    IO::write_short(dev, m_activity.m_action);
-
-    for (ItemDomain domain : { Material, Artifact }) {
-        IO::write_short(dev, domain);
-        const auto &ids = m_external_item_ids.at(domain);
-        IO::write_short(dev, ids.size());
-        for (size_t i = 0; i < ids.size(); i++) {
-            IO::write_long(dev, ids[i]);
-        }
-    }
-
-    IO::write_short(dev, m_effects.size());
-    for (size_t i = 0; i < m_effects.size(); i++) {
-        IO::write_item(dev, m_effects[i]);
-    }
-
-    for (ItemDomain domain : { SmithingTool, ForagingTool, MiningTool }) {
-        IO::write_short(dev, domain);
-        IO::write_long(dev, m_tool_ids.at(domain));
-    }
-
-    IO::write_short(dev, m_energy);
-
-    IO::write_short(dev, m_morale);
+void Character::serialize(QIODevice *) const {
 }
 
 // Transfers ownership
-Character *Character::deserialize(QIODevice *dev) {
-    Character *c = new Character;
-
-    c->m_id = IO::read_short(dev);
-
-    c->m_name = IO::read_string(dev);
-
-    c->m_color = (Color) IO::read_short(dev);
-
-    qint64 ms_left = IO::read_long(dev);
-    qint64 ms_total = IO::read_long(dev);
-    ItemDomain action = (ItemDomain) IO::read_short(dev);
-    c->m_activity = CharacterActivity(c->m_id, action, ms_total, ms_left);
-
-    for (int i = 0; i < 2; i++) {
-        ItemDomain domain = (ItemDomain) IO::read_short(dev);
-        quint16 size = IO::read_short(dev);
-        for (size_t i = 0; i < size; i++) {
-            c->m_external_item_ids[domain][i] = IO::read_long(dev);
-        }
-    }
-
-    quint16 size = IO::read_short(dev);
-    for (size_t i = 0; i < size; i++) {
-        c->m_effects[i] = IO::read_item(dev);
-    }
-
-    for (int i = 0; i < 3; i++) {
-        ItemDomain domain = (ItemDomain) IO::read_short(dev);
-        c->m_tool_ids[domain] = IO::read_long(dev);
-    }
-
-    c->m_energy = IO::read_short(dev);
-
-    c->m_morale = IO::read_short(dev);
-
-    return c;
+Character *Character::deserialize(QIODevice *) {
+    return nullptr;
 }

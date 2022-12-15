@@ -115,7 +115,6 @@ Color Generators::color() {
         { Orange, 1 },
         { Cherry, 1, },
         { Blueberry, 1 },
-        { BlueRaspberry, 1 },
         { Plum, 1 },
         { Cucumber, 1 },
         { Lime, 1 },

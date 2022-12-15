@@ -50,6 +50,7 @@ enum ItemDomain : ItemType {
     Portrait        = 1 << 10,
     ForeignOffering = 1 << 11,
     Defiling        = 1 << 12,
+    Coupling        = 1 << 13,
     Tool            = SmithingTool | ForagingTool | MiningTool
 };
 
@@ -94,6 +95,13 @@ enum ItemProperty : quint16 {
     ArtifactMaxEnergyBoost,
     ArtifactMaxMoraleBoost,
     ArtifactSpeedBonus,
+    HeritageMaxEnergyBoost,
+    HeritageMaxMoraleBoost,
+    HeritageConsumableEnergyBoost,
+    HeritageToolUsageBoost,
+    HeritageInjuryResilience,
+    HeritageMaterialValueBonus,
+    HeritageActivitySpeedBonus,
     Cost = 0x2000,
     CostStone = 0x2001,
     CostMetallic = 0x2002,
@@ -112,6 +120,23 @@ enum ItemProperty : quint16 {
     CrystallineResource = 0x8003,
     RunicResource = 0x8004,
     LeafyResource = 0x8005,
+};
+
+const static std::map<ItemProperty, QString> PROPERTY_DESCRIPTIONS = {
+    { ToolEnergyCost, "Costs <b>%1 energy</b> per use." },
+    { ConsumableEnergyBoost, "Gives <b>+%1 energy</b>." },
+    { ConsumableMoraleBoost, "Gives <b>+%1 spirit</b>." },
+    { ConsumableClearsNumEffects, "Clears up to <b>%1 effect(s)</b> (starting with the rightmost.)" },
+    { ArtifactMaxEnergyBoost, "You have <b>+%1 max energy</b>." },
+    { ArtifactMaxMoraleBoost, "You have <b>+%1 max spirit</b>." },
+    { ArtifactSpeedBonus, "Your actions complete <b>%1x faster</b>." },
+    { HeritageMaxEnergyBoost, "I have <b>+%1 max energy</b>." },
+    { HeritageMaxMoraleBoost, "I have <b>+%1 max morale</b>." },
+    { HeritageConsumableEnergyBoost, "I get <b>+%1 bonus energy</b> when I eat something." },
+    { HeritageToolUsageBoost, "Tools that I craft have <b>+%1 use</b>." },
+    { HeritageInjuryResilience, "I am <b>%1% less likely to suffer an injury</b> after taking an action." },
+    { HeritageMaterialValueBonus, "Materials are <b>worth %1% more</b> when I use them." },
+    { HeritageActivitySpeedBonus, "My actions take <b>%1% less time</b>." },
 };
 
 // This basically just wraps a std::map<ItemPropety, int>,

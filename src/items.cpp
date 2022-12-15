@@ -157,19 +157,9 @@ QString Item::type_to_string(ItemType type) {
 QString Item::properties_to_string(const ItemProperties &props) {
     QString string;
 
-    const static std::map<ItemProperty, QString> property_descriptions = {
-        { ToolEnergyCost, "Costs <b>%1 energy</b> per use." },
-        { ConsumableEnergyBoost, "Gives <b>+%1 energy</b>." },
-        { ConsumableMoraleBoost, "Gives <b>+%1 spirit</b>." },
-        { ConsumableClearsNumEffects, "Clears up to <b>%1 effect(s)</b>, moving from right to left." },
-        { ArtifactMaxEnergyBoost, "You have <b>+%1 max energy</b>." },
-        { ArtifactMaxMoraleBoost, "You have <b>+%1 max morale</b>." },
-        { ArtifactSpeedBonus, "Your actions complete <b>%1x faster</b>." },
-    };
-
     for (const auto &pair : props.map) {
-        if (property_descriptions.find(pair.first) != end(property_descriptions)) {
-            string += property_descriptions.at(pair.first).arg(pair.second);
+        if (PROPERTY_DESCRIPTIONS.find(pair.first) != end(PROPERTY_DESCRIPTIONS)) {
+            string += PROPERTY_DESCRIPTIONS.at(pair.first).arg(pair.second);
         }
         string += "<br>";
     }
