@@ -26,6 +26,7 @@ namespace Colors {
     QString name(Color c);
     QColor qcolor(Color c);
     ItemProperties heritage_properties(Color c, int magnitude = 1);
+    ItemProperties blend_heritage(std::multiset<Color> colors);
 
     template <typename ColorContainer> QColor blend(ColorContainer colors) {
         double r, g, b;
@@ -41,16 +42,5 @@ namespace Colors {
         b /= colors.size();
 
         return QColor(r * 255, g * 255, b * 255);
-    }
-
-    template <typename ColorContainer> ItemProperties blend_heritage(ColorContainer colors) {
-        ItemProperties heritage_props;
-
-        for (Color c : colors) {
-            const ItemProperties &other_props = heritage_properties(c);
-            heritage_props.map.insert(std::begin(other_props), std::end(other_props));
-        }
-
-        return heritage_props;
     }
 };

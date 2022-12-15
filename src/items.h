@@ -34,7 +34,7 @@ const static ItemId INVALID_ID = 0xffffffffffffffff;
 const static ItemCode INVALID_CODE = 0xff;
 const static CharacterId NOBODY = 0xffff;
 
-const static quint64 ACTIONS_TO_HATCH = 20;
+const static quint64 ACTIONS_TO_HATCH = 2;
 
 using ItemType = quint16;
 enum ItemDomain : ItemType {

@@ -27,7 +27,7 @@ using ToolIds = std::map<ItemDomain, ItemId>;
 
 struct Character {
     explicit Character();
-    explicit Character(CharacterId id, const QString &name);
+    explicit Character(CharacterId id, const QString &name, const Heritage &heritage);
 
     QString &name();
     Heritage &heritage();

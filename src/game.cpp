@@ -4,14 +4,8 @@
 Game::Game()
     : m_game_id(Generators::game_id()), m_tribe_name(Generators::tribe_name())
 {
-    add_character(Generators::yokin_name());
-    add_character(Generators::yokin_name());
-    add_character(Generators::yokin_name());
-    add_character(Generators::yokin_name());
-    add_character(Generators::yokin_name());
-    add_character(Generators::yokin_name());
-    add_character(Generators::yokin_name());
-    add_character(Generators::yokin_name());
+    add_character(Generators::yokin_name(), { Generators::color() });
+    add_character(Generators::yokin_name(), { Generators::color() });
 
     add_item(Item("globfruit"));
     add_item(Item("globfruit"));
@@ -63,7 +57,7 @@ bool &Game::dead() {
     return m_dead;
 }
 
-bool Game::add_character(const QString &name) {
+bool Game::add_character(const QString &name, const std::multiset<Color> &heritage) {
     CharacterId max_id = 0;
     while (m_explorers[max_id].id() != NOBODY && max_id < MAX_EXPLORERS) {
         max_id++;
@@ -73,7 +67,7 @@ bool Game::add_character(const QString &name) {
         return false;
     }
 
-    m_explorers[max_id] = Character(max_id, name);
+    m_explorers[max_id] = Character(max_id, name, heritage);
     return true;
 }
 
@@ -90,10 +84,16 @@ void Game::check_hatch() {
     for (const Item &item : inventory().items()) {
         if (item.code == (CT_OTHER | 0)) {
             if (actions_done() - item.instance_properties[InstanceEggFoundActionstamp] > ACTIONS_TO_HATCH) {
-                inventory().remove_item(item.id);
-                if (add_character(Generators::yokin_name())) {
+                Heritage heritage = m_explorers.at(item.instance_properties[InstanceEggParent1]).heritage();
+                for (Color c : m_explorers.at(item.instance_properties[InstanceEggParent2]).heritage()) {
+                    heritage.insert(c);
+                }
+
+                if (add_character(Generators::yokin_name(), heritage)) {
                     gw()->notify(Discovery, "A new Fennahian was born!");
                 }
+                inventory().remove_item(item.id);
+
                 gw()->refresh_ui();
             }
         }

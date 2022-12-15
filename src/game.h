@@ -39,7 +39,7 @@ public:
     quint64 &actions_done();
     bool &dead();
 
-    bool add_character(const QString &name);
+    bool add_character(const QString &name, const std::multiset<Color> &heritage);
     bool add_item(const Item &item);
     void check_hatch();
 

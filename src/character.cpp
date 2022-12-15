@@ -7,13 +7,12 @@ Character::Character()
       m_name("Nobody"),
       m_activity(NOBODY, None) { }
 
-Character::Character(CharacterId id, const QString &name)
+Character::Character(CharacterId id, const QString &name, const Heritage &heritage)
     : m_id(id),
       m_name(name),
       m_activity(m_id, None)
 {
-    m_heritage.insert(Generators::color());
-    m_heritage.insert(Generators::color());
+    m_heritage = heritage;
 }
 
 QString &Character::name() {

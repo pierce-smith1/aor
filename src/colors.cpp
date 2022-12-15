@@ -45,3 +45,15 @@ ItemProperties Colors::heritage_properties(Color c, int magnitude) {
     qFatal("unreachable");
     return {};
 }
+
+ItemProperties Colors::blend_heritage(std::multiset<Color> colors) {
+    ItemProperties heritage_props;
+
+    for (auto it = begin(colors); it != end(colors);) {
+        const ItemProperties &other_props = heritage_properties(*it, colors.count(*it));
+        heritage_props.map.insert(std::begin(other_props), std::end(other_props));
+        std::advance(it, colors.count(*it));
+    }
+
+    return heritage_props;
+}
