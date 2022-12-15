@@ -106,7 +106,7 @@ ItemId Generators::item_id() {
     auto time = std::chrono::system_clock::now().time_since_epoch();
     auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(time).count();
 
-    return ((milliseconds & 0xffffffff) + ((std::uint64_t) Generators::rng()->generate() << 32)) & 0x7fffffffffffffff;
+    return ((milliseconds & 0xffffffff) + ((quint64) rng()->generate() << 32)) & 0x7fffffffffffffff;
 }
 
 Color Generators::color() {
@@ -123,4 +123,8 @@ Color Generators::color() {
 
 GameId Generators::game_id() {
     return item_id();
+}
+
+bool Generators::percent_chance(int p) {
+    return ((int) (rng()->generate() % 100)) < p;
 }

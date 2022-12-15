@@ -54,6 +54,7 @@ void CharacterActivity::complete() {
 
     exhaust_character();
     give_bonuses();
+    give_injuries();
     std::vector<Item> items = products();
     exhaust_reagents();
     give(items);
@@ -74,7 +75,12 @@ std::vector<Item> CharacterActivity::products() {
             ItemCode smithing_result = character.smithing_result();
 
             if (smithing_result != 0) {
-                return { Item(smithing_result) };
+                Item result = Item(smithing_result);
+
+                int heritage_use_boost = character.heritage_properties()[HeritageSmithProductUsageBoost];
+                result.uses_left += heritage_use_boost;
+
+                return { result };
             } else {
                 return {};
             }
@@ -232,15 +238,50 @@ void CharacterActivity::give_bonuses() {
             character.add_energy(props[ConsumableEnergyBoost]);
             character.add_morale(props[ConsumableMoraleBoost]);
 
+            int heritage_energy_boost = character.heritage_properties()[HeritageConsumableEnergyBoost];
+            character.add_energy(heritage_energy_boost);
+
             for (int i = 0; i < props[ConsumableClearsNumEffects]; i++) {
                 character.clear_last_effect();
             }
         }
-
-        character.add_morale(character.base_morale_cost());
     } else if (m_action == Defiling) {
         for (const Item &item : gw()->game().inventory().items_of_intent(m_char_id, Defiling)) {
             character.add_morale(item.def()->item_level * 25);
         }
     }
+}
+
+void CharacterActivity::give_injuries() {
+    Character &character = gw()->game().characters().at(m_char_id);
+
+    int injury_chance = 5 + (gw()->game().inventory().get_item(character.tool_id(m_action)).def()->item_level * 6);
+    int injury_dampen = character.heritage_properties()[HeritageInjuryResilience];
+    injury_chance -= injury_dampen;
+
+    if (!Generators::percent_chance(injury_chance)) {
+        return;
+    }
+
+    std::vector<std::pair<ItemCode, double>> possible_weighted_injuries;
+    for (const ItemDefinition &def : ITEM_DEFINITIONS) {
+        if (!(def.type & Effect)) {
+            continue;
+        }
+
+        switch (m_action) {
+            case Smithing: { if (!def.properties[InjurySmithing]) { continue; } break; }
+            case Foraging: { if (!def.properties[InjuryForaging]) { continue; } break; }
+            case Mining: { if (!def.properties[InjuryMining]) { continue; } break; }
+            case Eating: { if (!def.properties[InjuryEating]) { continue; } break; }
+            case Defiling: { if (!def.properties[InjuryDefiling]) { continue; } break; }
+            case Trading: { if (!def.properties[InjuryTrading]) { continue; } break; }
+            default: { qFatal("Tried to give injuries for unknown action domain (%d)", m_action); }
+        }
+
+        possible_weighted_injuries.push_back({ def.code, 1 });
+    }
+
+    character.push_effect(Item(Generators::sample_with_weights(possible_weighted_injuries)));
+    gw()->notify(Warning, QString("%1 suffered an injury...").arg(character.name()));
 }

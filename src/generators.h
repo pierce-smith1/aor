@@ -45,4 +45,5 @@ namespace Generators {
     ItemId item_id();
     Color color();
     GameId game_id();
+    bool percent_chance(int p);
 }

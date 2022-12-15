@@ -38,6 +38,7 @@ private:
     std::vector<Item> products();
     void give(const std::vector<Item> &items);
     void give_bonuses();
+    void give_injuries();
 
     ItemDomain m_action;
     qint64 m_ms_left;

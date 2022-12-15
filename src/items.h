@@ -94,13 +94,21 @@ enum ItemProperty : quint16 {
     ConsumableGivesEffect,
     ConsumableClearsNumEffects,
     MaterialForges,
-    ArtifactMaxEnergyBoost,
-    ArtifactMaxMoraleBoost,
-    ArtifactSpeedBonus,
+    PersistentMaxEnergyBoost,
+    PersistentMaxMoraleBoost,
+    PersistentSpeedBonus,
+    PersistentSpeedPenalty,
+    InjurySmithing,
+    InjuryForaging,
+    InjuryMining,
+    InjuryTradinge,
+    InjuryEating,
+    InjuryDefiling,
+    InjuryTrading,
     HeritageMaxEnergyBoost,
     HeritageMaxMoraleBoost,
     HeritageConsumableEnergyBoost,
-    HeritageToolUsageBoost,
+    HeritageSmithProductUsageBoost,
     HeritageInjuryResilience,
     HeritageMaterialValueBonus,
     HeritageActivitySpeedBonus,
@@ -132,14 +140,15 @@ const static std::map<ItemProperty, QString> PROPERTY_DESCRIPTIONS = {
     { ConsumableEnergyBoost, "Gives <b>+%1 energy</b>." },
     { ConsumableMoraleBoost, "Gives <b>+%1 spirit</b>." },
     { ConsumableClearsNumEffects, "Clears up to <b>%1 effect(s)</b> (starting with the rightmost.)" },
-    { ArtifactMaxEnergyBoost, "You have <b>+%1 max energy</b>." },
-    { ArtifactMaxMoraleBoost, "You have <b>+%1 max spirit</b>." },
-    { ArtifactSpeedBonus, "Your actions complete <b>%1x faster</b>." },
+    { PersistentMaxEnergyBoost, "You have <b>+%1 max energy</b>." },
+    { PersistentMaxMoraleBoost, "You have <b>+%1 max spirit</b>." },
+    { PersistentSpeedBonus, "Your actions complete <b>%1x faster</b>." },
+    { PersistentSpeedPenalty, "Your actions complete <b>%1% slower</b>." },
     { HeritageMaxEnergyBoost, "I have <b>+%1 max energy</b>." },
     { HeritageMaxMoraleBoost, "I have <b>+%1 max morale</b>." },
     { HeritageConsumableEnergyBoost, "I get <b>+%1 bonus energy</b> when I eat something." },
-    { HeritageToolUsageBoost, "Tools that I craft have <b>+%1 use</b>." },
-    { HeritageInjuryResilience, "I am <b>%1% less likely to suffer an injury</b> after taking an action." },
+    { HeritageSmithProductUsageBoost, "Items that I craft have <b>+%1 use(s)</b>." },
+    { HeritageInjuryResilience, "I have a <b>-%1% chance to suffer an injury</b> after taking an action." },
     { HeritageMaterialValueBonus, "Materials are <b>worth %1% more</b> when I use them." },
     { HeritageActivitySpeedBonus, "My actions take <b>%1% less time</b>." },
 };
@@ -204,7 +213,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         CT_MATERIAL | 0,
         "obsilicon", "Obsilicon",
         "<i>This glassy stone cooled from the same primordial magma<br>"
-        "that birthed our wafer-thing planes of reality.</i>",
+        "that birthed Rhodon's wafer-thin planes of reality.</i>",
         1 USES, Material, LEVEL 1,
         {
             { CrystallineResource, 10 },
@@ -353,16 +362,32 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "<i>Tells a sad story of an orphan far from home.</i>",
         0 USES, Artifact, LEVEL 3,
         {
-            { ArtifactMaxMoraleBoost, 20 }
+            { PersistentMaxMoraleBoost, 20 }
         }
     },
     {
         CT_ARTIFACT | 1,
         "scalped_remains", "Scalped Remains",
-        "<i>Whoever this was has been long forgotton... but is not gone.</i>",
+        "<i>The operating spirits of Rhodon haven't decided what to do<br>"
+        "with this unfortunate Fennahian's soul yet, so her ghost still"
+        "inhabits her decapitated skull. She gives good advice</i>",
         0 USES, Artifact, LEVEL 3,
         {
-            { ArtifactMaxEnergyBoost, 20 }
+            { PersistentMaxEnergyBoost, 20 }
+        }
+    },
+    {
+        CT_EFFECT | 0,
+        "disconnected_socket", "Disconnected Socket",
+        "<i>You had a nasty fall and dislocated your shoulder.<br>"
+        "Your body has sent an RST blood cell to your arm to notify it<br>"
+        "that connection has been lost.</i>",
+        5 USES, Effect, LEVEL 1,
+        {
+            { PersistentSpeedPenalty, 20 },
+            { InjuryMining, 1 },
+            { InjuryForaging, 1 },
+            { InjuryTrading, 1 },
         }
     },
     {

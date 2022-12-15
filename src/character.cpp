@@ -35,6 +35,10 @@ CharacterId &Character::partner() {
     return m_partner;
 }
 
+ItemProperties Character::heritage_properties() {
+    return Colors::blend_heritage(m_heritage);
+}
+
 void Character::start_activity(ItemDomain domain) {
     if (domain == None) {
         m_activity = CharacterActivity(m_id, None);
@@ -69,19 +73,33 @@ quint16 &Character::morale() {
 }
 
 int Character::max_energy() {
-    const auto &artifacts = external_items().at(Artifact);
+    int energy = BASE_MAX_ENERGY;
 
-    return BASE_MAX_ENERGY + std::accumulate(begin(artifacts), end(artifacts), 0, [this](int a, ItemId b) {
-        return a + gw()->game().inventory().get_item(b).def()->properties[ArtifactMaxEnergyBoost];
+    const auto &artifacts = external_items().at(Artifact);
+    int artifact_boost = std::accumulate(begin(artifacts), end(artifacts), 0, [](int a, ItemId b) {
+        return a + gw()->game().inventory().get_item(b).def()->properties[PersistentMaxEnergyBoost];
     });
+    energy += artifact_boost;
+
+    int heritage_boost = heritage_properties()[HeritageMaxEnergyBoost];
+    energy += heritage_boost;
+
+    return energy;
 }
 
 int Character::max_morale() {
-    const auto &artifacts = external_items().at(Artifact);
+    int morale = BASE_MAX_MORALE;
 
-    return BASE_MAX_ENERGY + std::accumulate(begin(artifacts), end(artifacts), 0, [this](int a, ItemId b) {
-        return a + gw()->game().inventory().get_item(b).def()->properties[ArtifactMaxMoraleBoost];
+    const auto &artifacts = external_items().at(Artifact);
+    int artifact_boost = std::accumulate(begin(artifacts), end(artifacts), 0, [this](int a, ItemId b) {
+        return a + gw()->game().inventory().get_item(b).def()->properties[PersistentMaxMoraleBoost];
     });
+    morale += artifact_boost;
+
+    int heritage_boost = heritage_properties()[HeritageMaxMoraleBoost];
+    morale += heritage_boost;
+
+    return morale;
 }
 
 int Character::base_morale_cost() {

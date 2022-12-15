@@ -35,6 +35,8 @@ struct Character {
     CharacterId id();
     CharacterId &partner();
 
+    ItemProperties heritage_properties();
+
     void start_activity(ItemDomain domain);
 
     quint16 &energy();
