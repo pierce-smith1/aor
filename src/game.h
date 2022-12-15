@@ -41,6 +41,7 @@ public:
 
     bool add_character(const QString &name);
     bool add_item(const Item &item);
+    void check_hatch();
 
     QString id_to_name(CharacterId char_id);
 

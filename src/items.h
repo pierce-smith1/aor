@@ -34,6 +34,8 @@ const static ItemId INVALID_ID = 0xffffffffffffffff;
 const static ItemCode INVALID_CODE = 0xff;
 const static CharacterId NOBODY = 0xffff;
 
+const static quint64 ACTIONS_TO_HATCH = 20;
+
 using ItemType = quint16;
 enum ItemDomain : ItemType {
     Ordinary        = 0,      None = 0,
@@ -388,6 +390,9 @@ struct Item {
     explicit Item(ItemDefinitionPtr def);
     explicit Item(ItemCode id);
     explicit Item(const QString &name);
+
+    static Item make_egg(CharacterId parent1, CharacterId parent2);
+    static Item make_egg();
 
     ItemDefinitionPtr def() const;
 

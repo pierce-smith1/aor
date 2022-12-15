@@ -1,7 +1,8 @@
 #include "items.h"
 #include "generators.h"
+#include "gamewindow.h"
 
-Item Item::empty_item {Item(0)};
+Item Item::empty_item = Item(0);
 
 ItemProperties::ItemProperties(std::initializer_list<std::pair<const ItemProperty, quint16>> map)
     : map(map) { }
@@ -85,6 +86,20 @@ Item::Item(ItemCode code)
 
 Item::Item(const QString &name)
     : Item(def_of(name)) { }
+
+Item Item::make_egg() {
+    return make_egg(NOBODY, NOBODY);
+}
+
+Item Item::make_egg(CharacterId parent1, CharacterId parent2) {
+    Item egg = Item("fennahian_egg");
+
+    egg.instance_properties.map[InstanceEggParent1] = parent1;
+    egg.instance_properties.map[InstanceEggParent2] = parent2;
+    egg.instance_properties.map[InstanceEggFoundActionstamp] = gw()->game().actions_done();
+
+    return egg;
+}
 
 ItemDefinitionPtr Item::def() const {
     return def_of(code);

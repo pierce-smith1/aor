@@ -101,6 +101,11 @@ void ExplorerButton::dropEvent(QDropEvent *event) {
     QString source_slot_name = event->mimeData()->text();
     ExplorerButton *source_button = gw()->findChild<ExplorerButton *>(source_slot_name);
 
+    if (source_button == this) {
+        mouseReleaseEvent(nullptr);
+        return;
+    }
+
     Character &character = gw()->game().characters().at(m_id);
     Character &partner = gw()->game().characters().at(source_button->id());
 

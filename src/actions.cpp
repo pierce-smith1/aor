@@ -1,7 +1,6 @@
 #include "actions.h"
 #include "externalslot.h"
 #include "gamewindow.h"
-#include "egg.h"
 
 CharacterActivity::CharacterActivity(CharacterId id, ItemDomain action, qint64 ms_total, qint64 ms_left)
     : m_action(action),
@@ -65,7 +64,7 @@ void CharacterActivity::complete() {
     gw()->refresh_ui();
     gw()->game().actions_done()++;
 
-    EggItem::check_hatch();
+    gw()->game().check_hatch();
 }
 
 std::vector<Item> CharacterActivity::products() {
@@ -108,6 +107,12 @@ std::vector<Item> CharacterActivity::products() {
         }
         case Coupling: {
             auto &characters = gw()->game().characters();
+
+            // Coupling actions always end in pairs.
+            // To avoid making two eggs, the first one that finishes their
+            // coupling action resets their partner's partner member.
+            // (That happens later in this very function.)
+            // Here, we check to see if our partner has already made an egg.
             auto partner = std::find_if(begin(characters), end(characters), [&](Character &other) {
                 return other.partner() == character.id();
             });
@@ -116,7 +121,7 @@ std::vector<Item> CharacterActivity::products() {
                 return {};
             }
 
-            std::vector<Item> egg = { EggItem(character.id(), partner->id()) };
+            std::vector<Item> egg = { Item::make_egg(m_char_id, partner->id()) };
 
             partner->partner() = NOBODY;
             character.partner() = NOBODY;

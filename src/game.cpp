@@ -1,4 +1,5 @@
 #include "game.h"
+#include "gamewindow.h"
 
 Game::Game()
     : m_game_id(Generators::game_id()), m_tribe_name(Generators::tribe_name())
@@ -82,6 +83,20 @@ bool Game::add_item(const Item &item) {
         return true;
     } else {
         return false;
+    }
+}
+
+void Game::check_hatch() {
+    for (const Item &item : inventory().items()) {
+        if (item.code == (CT_OTHER | 0)) {
+            if (actions_done() - item.instance_properties[InstanceEggFoundActionstamp] > ACTIONS_TO_HATCH) {
+                inventory().remove_item(item.id);
+                if (add_character(Generators::yokin_name())) {
+                    gw()->notify(Discovery, "A new Fennahian was born!");
+                }
+                gw()->refresh_ui();
+            }
+        }
     }
 }
 
