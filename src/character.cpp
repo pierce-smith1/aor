@@ -45,7 +45,7 @@ void Character::start_activity(ItemDomain domain) {
         return;
     }
 
-    qint64 activity_ms = 1000 * 120;
+    qint64 activity_ms = 10 * 120;
 
     if (domain != Coupling) {
         double heritage_boost = heritage_properties()[HeritageActivitySpeedBonus] / 100.0;

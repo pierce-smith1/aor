@@ -18,7 +18,7 @@ class ExplorerButton : public ItemSlot {
     Q_OBJECT
 
 public:
-    ExplorerButton(CharacterId id);
+    ExplorerButton(int n);
     CharacterId id();
 
     Item get_item() override;
@@ -27,6 +27,8 @@ public:
     ItemDomain type() override;
 
     static void insert_explorer_buttons();
+
+    int n;
 
 protected:
     void mousePressEvent(QMouseEvent *) override;
@@ -39,7 +41,6 @@ protected:
     QString character_description();
 
 private:
-    CharacterId m_id;
     QLabel *m_activity_icon;
     QGraphicsColorizeEffect *m_portrait_effect;
 };

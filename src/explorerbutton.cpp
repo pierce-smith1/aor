@@ -2,23 +2,22 @@
 #include "gamewindow.h"
 #include "itemslot.h"
 
-ExplorerButton::ExplorerButton(CharacterId id)
-    : m_id(id),
+ExplorerButton::ExplorerButton(int n)
+    : n(n),
       m_activity_icon(new QLabel(this)),
       m_portrait_effect(new QGraphicsColorizeEffect(this))
 {
     m_item_label->setGraphicsEffect(m_portrait_effect);
     m_item_label->setAlignment(Qt::AlignRight);
-    m_activity_icon->setGraphicsEffect(nullptr);
     m_activity_icon->setMaximumSize(QSize(16, 16));
     m_activity_icon->setMinimumSize(QSize(16, 16));
 
-    setObjectName(QString("explorer_button;%1").arg(id));
+    setObjectName(QString("explorer_button;%1").arg(n));
     gw()->register_slot(this);
 }
 
 CharacterId ExplorerButton::id() {
-    return m_id;
+    return gw()->game().characters()[n].id();
 }
 
 Item ExplorerButton::get_item() {
@@ -28,7 +27,7 @@ Item ExplorerButton::get_item() {
 void ExplorerButton::set_item(const Item &) { }
 
 void ExplorerButton::refresh_pixmap() {
-    Character &character = gw()->game().characters().at(m_id);
+    Character &character = gw()->game().characters()[n];
 
     m_activity_icon->setPixmap(Icons::activity_icons().at(character.activity().action()));
     m_activity_icon->raise();
@@ -40,7 +39,7 @@ void ExplorerButton::refresh_pixmap() {
         m_item_label->setPixmap(QPixmap(":/assets/img/icons/yok.png"));
     }
 
-    if (m_id == gw()->selected_char_id()) {
+    if (id() == gw()->selected_char_id()) {
         //setFlat(false);
     } else {
         //setFlat(true);
@@ -58,7 +57,7 @@ void ExplorerButton::insert_explorer_buttons() {
 }
 
 void ExplorerButton::mousePressEvent(QMouseEvent *event) {
-    if (m_id == NOBODY) {
+    if (id() == NOBODY) {
         return;
     }
 
@@ -75,11 +74,11 @@ void ExplorerButton::mousePressEvent(QMouseEvent *event) {
 }
 
 void ExplorerButton::mouseReleaseEvent(QMouseEvent *) {
-    if (m_id == NOBODY) {
+    if (id() == NOBODY) {
         return;
     }
 
-    gw()->selected_char_id() = m_id;
+    gw()->selected_char_id() = id();
     gw()->refresh_ui();
 }
 
@@ -92,7 +91,7 @@ void ExplorerButton::dragEnterEvent(QDragEnterEvent *event) {
     QString source_slot_name = event->mimeData()->text();
     ItemSlot *source_slot = gw()->findChild<ItemSlot *>(source_slot_name);
 
-    if (source_slot->type() == Explorer) {
+    if (source_slot->type() == Explorer && id() != NOBODY) {
         event->acceptProposedAction();
     }
 }
@@ -106,23 +105,23 @@ void ExplorerButton::dropEvent(QDropEvent *event) {
         return;
     }
 
-    Character &character = gw()->game().characters().at(m_id);
-    Character &partner = gw()->game().characters().at(source_button->id());
+    Character &character = gw()->game().characters()[n];
+    Character &partner = gw()->game().characters()[source_button->n];
 
     character.start_activity(Coupling);
     character.partner() = source_button->id();
     partner.start_activity(Coupling);
-    partner.partner() = m_id;
+    partner.partner() = id();
 }
 
 bool ExplorerButton::do_hovering() {
-    Character &character = gw()->game().characters().at(m_id);
+    Character &character = gw()->game().characters()[n];
 
     return character.id() != NOBODY;
 }
 
 std::optional<TooltipInfo> ExplorerButton::tooltip_info() {
-    Character &character = gw()->game().characters().at(m_id);
+    Character &character = gw()->game().characters()[n];
 
     QString heritage_string;
     int number_of_heritages = 0;
@@ -149,7 +148,7 @@ std::optional<TooltipInfo> ExplorerButton::tooltip_info() {
 }
 
 QString ExplorerButton::character_description() {
-    Character &character = gw()->game().characters().at(m_id);
+    Character &character = gw()->game().characters()[n];
 
     QString string;
     switch (character.activity().action()) {
@@ -160,8 +159,11 @@ QString ExplorerButton::character_description() {
         case Defiling: { string += "<i>Currently defiling</i><br>"; break; }
         case Trading: { string += "<i>Currently trading</i><br>"; break; }
         case Coupling: {
-            string += QString("<i>Having a child with %1</i><br>")
-                .arg(gw()->game().characters().at(character.partner()).name());
+            auto &characters = gw()->game().characters();
+            auto partner = std::find_if(begin(characters), end(characters), [&](Character &other) {
+                return other.id() == character.partner();
+            });
+            string += QString("<i>Having a child with %1</i><br>").arg(partner->name());
             break;
         }
         default: { break; }
