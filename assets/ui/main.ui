@@ -521,7 +521,7 @@
        </size>
       </property>
       <property name="title">
-       <string>Effects</string>
+       <string>Injuries</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -568,7 +568,6 @@
  <resources>
   <include location="../../images.qrc"/>
   <include location="../../images.qrc"/>
-  <include location="../../../../images.qrc"/>
  </resources>
  <connections/>
 </ui>

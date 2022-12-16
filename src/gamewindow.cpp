@@ -78,6 +78,8 @@ LKGameWindow::LKGameWindow()
     m_window.energy_bar->setPalette(energy_palette);
 
     m_save_file.open(QIODevice::ReadWrite);
+
+    m_encyclopedia->refresh();
 }
 
 Game &LKGameWindow::game() {
@@ -106,6 +108,10 @@ CharacterId &LKGameWindow::selected_char_id() {
 
 GameId &LKGameWindow::selected_tribe_id() {
     return m_selected_tribe_id;
+}
+
+Encyclopedia *&LKGameWindow::encyclopedia() {
+    return m_encyclopedia;
 }
 
 void LKGameWindow::register_slot(ItemSlot *slot) {

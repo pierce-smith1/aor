@@ -1,5 +1,6 @@
 #include "game.h"
 #include "gamewindow.h"
+#include "encyclopedia.h"
 
 Game::Game()
     : m_game_id(Generators::game_id()), m_tribe_name(Generators::tribe_name())
@@ -74,6 +75,9 @@ bool Game::add_character(const QString &name, const std::multiset<Color> &herita
 bool Game::add_item(const Item &item) {
     if (m_inventory.add_item(item)) {
         m_history.insert(item.code);
+        if (gw()->encyclopedia()) {
+            gw()->encyclopedia()->refresh();
+        }
         return true;
     } else {
         return false;

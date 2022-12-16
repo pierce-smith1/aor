@@ -15,7 +15,10 @@ class Encyclopedia : public QWidget {
 public:
     Encyclopedia();
 
+    void refresh();
+
 private:
+    int m_total_items = 0;
     Ui::Encyclopedia m_widget;
 };
 
@@ -29,6 +32,8 @@ public:
     void set_item(const Item &item) override;
     void refresh_pixmap() override;
 
+    ItemCode item_code();
+
 protected:
     std::optional<Item> tooltip_item() override;
     std::optional<TooltipInfo> tooltip_info() override;
@@ -38,7 +43,6 @@ protected:
     void dropEvent(QDropEvent *event) override;
 
 private:
-    ItemCode item_code();
 
     int m_y;
     int m_x;

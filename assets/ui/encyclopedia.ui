@@ -30,7 +30,7 @@
     <normaloff>:/assets/img/items/welchian_rune.png</normaloff>:/assets/img/items/welchian_rune.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
+   <item row="1" column="1">
     <widget class="QGroupBox" name="encyclopedia_box">
      <property name="title">
       <string>Encyclopedia</string>
@@ -47,7 +47,7 @@
            <x>0</x>
            <y>0</y>
            <width>768</width>
-           <height>542</height>
+           <height>510</height>
           </rect>
          </property>
          <layout class="QGridLayout" name="gridLayout_2"/>
@@ -55,6 +55,19 @@
        </widget>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QProgressBar" name="progress_bar">
+     <property name="maximum">
+      <number>50</number>
+     </property>
+     <property name="value">
+      <number>24</number>
+     </property>
+     <property name="format">
+      <string>%v/%m (%p%) Items discovered</string>
+     </property>
     </widget>
    </item>
   </layout>

@@ -20,10 +20,28 @@ Encyclopedia::Encyclopedia()
 
         for (int y = 0; y < ENCYCLOPEDIA_GROUP_ROWS; y++) {
             for (int x = 0; x < ENCYCLOPEDIA_GROUP_COLS; x++) {
-                box_layout->addWidget(new EncyclopediaSlot(y, x, group), y, x);
+                EncyclopediaSlot *slot = new EncyclopediaSlot(y, x, group);
+                box_layout->addWidget(slot, y, x);
+
+                if (slot->get_item().id != EMPTY_ID) {
+                    m_total_items++;
+                }
             }
         }
     }
+}
+
+void Encyclopedia::refresh() {
+    m_widget.progress_bar->setMaximum(m_total_items);
+
+    int discovered = 0;
+    for (EncyclopediaSlot *slot : findChildren<EncyclopediaSlot *>()) {
+        if (!slot->undiscovered()) {
+            discovered++;
+        }
+    }
+
+    m_widget.progress_bar->setValue(discovered);
 }
 
 EncyclopediaSlot::EncyclopediaSlot(int y, int x, ItemCode group)

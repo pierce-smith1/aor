@@ -39,6 +39,7 @@ public:
     CharacterId &selected_char_id();
     GameId &selected_tribe_id();
     DoughbyteConnection &connection();
+    Encyclopedia *&encyclopedia();
 
     Character &selected_char();
     void swap_char(CharacterId char_id);
