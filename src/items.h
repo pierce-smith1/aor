@@ -138,7 +138,7 @@ enum ItemProperty : quint16 {
 };
 
 const static std::map<ItemProperty, QString> PROPERTY_DESCRIPTIONS = {
-    { ToolEnergyCost, "Costs <b>%1 energy</b> per use." },
+    { ToolEnergyCost, "Requires <b>%1 energy</b> per use." },
     { ConsumableEnergyBoost, "Gives <b>+%1 energy</b>." },
     { ConsumableMoraleBoost, "Gives <b>+%1 spirit</b>." },
     { ConsumableClearsNumEffects, "Clears up to <b>%1 effect(s)</b> (starting with the rightmost.)" },

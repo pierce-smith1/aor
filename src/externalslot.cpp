@@ -91,7 +91,7 @@ void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
                     tool_max = BASE_MAX_RESOURCE;
                 }
 
-                if (resource_ceiling > tool.def()->properties[max_prop]) {
+                if (resource_ceiling > tool_max) {
                     tool_supports = false;
                 }
             });
