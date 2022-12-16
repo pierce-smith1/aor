@@ -22,7 +22,7 @@ const static int TRADE_SLOTS = 5;
 
 const static int ARTIFACT_SLOTS = 3;
 
-const static int EFFECT_SLOTS = 3;
+const static int EFFECT_SLOTS = 4;
 
 using ItemCode = quint16;
 using ItemId = quint64;

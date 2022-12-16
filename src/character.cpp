@@ -191,7 +191,11 @@ int Character::energy_to_gain() {
         case Foraging:
         case Mining: {
             Item tool = gw()->game().inventory().get_item(tool_id());
-            gain = tool.def()->properties[ToolEnergyCost];
+            gain = -tool.def()->properties[ToolEnergyCost];
+            break;
+        }
+        case Coupling: {
+            gain = -max_energy();
             break;
         }
         default: {

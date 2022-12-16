@@ -10,6 +10,7 @@ Game::Game()
 
     add_item(Item("globfruit"));
     add_item(Item("globfruit"));
+    add_item(Item("pipeapple"));
 
     m_tribes[NOBODY];
 }

@@ -166,10 +166,8 @@ void CharacterActivity::exhaust_character() {
 
     Item tool = gw()->game().inventory().get_item(character.tool_id(m_action));
 
-    if (m_action != Eating && m_action != Defiling) {
-        character.add_energy(-tool.def()->properties[ToolEnergyCost]);
-        character.add_morale(-character.base_morale_cost());
-    }
+    character.add_energy(character.energy_to_gain());
+    character.add_morale(character.morale_to_gain());
 
     for (Item &effect : character.effects()) {
         if (effect.id == EMPTY_ID) {
