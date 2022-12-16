@@ -85,7 +85,7 @@ bool Game::add_character(const QString &name, const std::multiset<Color> &herita
 bool Game::add_item(const Item &item) {
     if (m_inventory.add_item(item)) {
         m_history.insert(item.code);
-        if (gw()->encyclopedia()) {
+        if (gw()->initialized()) {
             gw()->encyclopedia()->refresh();
         }
         return true;

@@ -21,6 +21,7 @@ LKGameWindow::LKGameWindow()
       m_encyclopedia(new Encyclopedia())
 {
     m_window.setupUi(this);
+    m_initialized = true;
 
     const auto activity_buttons = get_activity_buttons();
     for (const auto &pair : activity_buttons) {
@@ -80,6 +81,10 @@ LKGameWindow::LKGameWindow()
     m_save_file.open(QIODevice::ReadWrite);
 
     m_encyclopedia->refresh();
+}
+
+bool LKGameWindow::initialized() {
+    return m_initialized;
 }
 
 Game &LKGameWindow::game() {

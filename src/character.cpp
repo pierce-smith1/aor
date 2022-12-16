@@ -325,6 +325,18 @@ ItemCode Character::smithing_result() {
     }
 }
 
+ItemProperties Character::total_material_resources() {
+    ItemProperties resources;
+
+    for (ItemId material_id : m_external_item_ids[Material]) {
+        Item::for_each_resource_type([&](ItemProperty, ItemProperty, ItemProperty resource_prop) {
+            resources.map[resource_prop] += gw()->game().inventory().get_item(material_id).def()->properties[resource_prop];
+        });
+    }
+
+    return resources;
+}
+
 bool Character::push_effect(const Item &effect) {
     if (effect.id == EMPTY_ID) {
         return false;

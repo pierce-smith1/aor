@@ -18,7 +18,7 @@ const static int MAX_ARRAY_SIZE = std::max({ SMITHING_SLOTS, TRADE_SLOTS, ARTIFA
 
 const static int BASE_MAX_ENERGY = 50;
 const static int BASE_MAX_MORALE = 50;
-const static int BASE_MAX_RESOURCE = 20;
+const static int BASE_MAX_RESOURCE = 10;
 
 using Heritage = std::multiset<Color>;
 using ExternalItemIds = std::map<ItemDomain, std::array<ItemId, MAX_ARRAY_SIZE>>;
@@ -55,6 +55,7 @@ struct Character {
 
     std::vector<ItemCode> smithable_items();
     ItemCode smithing_result();
+    ItemProperties total_material_resources();
 
     bool clear_last_effect();
     bool push_effect(const Item &effect);

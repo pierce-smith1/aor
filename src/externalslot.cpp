@@ -77,9 +77,29 @@ void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
             break;
         }
         case Material: {
-            if (Item::has_resource_value(dropped_item.code)) {
+            if (!Item::has_resource_value(dropped_item.code)) {
+                break;
+            }
+
+            bool tool_supports = true;
+            ItemProperties current_resources = gw()->selected_char().total_material_resources();
+            Item tool = gw()->game().inventory().get_item(gw()->selected_char().tool_id(Smithing));
+            Item::for_each_resource_type([&](ItemProperty, ItemProperty max_prop, ItemProperty resource_prop) {
+                int resource_ceiling = current_resources[resource_prop] + dropped_item.def()->properties[resource_prop];
+                int tool_max = tool.def()->properties[max_prop];
+                if (tool_max == 0) {
+                    tool_max = BASE_MAX_RESOURCE;
+                }
+
+                if (resource_ceiling > tool.def()->properties[max_prop]) {
+                    tool_supports = false;
+                }
+            });
+
+            if (tool_supports) {
                 event->acceptProposedAction();
             }
+
             break;
         }
         default: {
