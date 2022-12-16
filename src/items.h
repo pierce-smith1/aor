@@ -93,6 +93,7 @@ enum ItemProperty : quint16 {
     ConsumableMoraleBoost,
     ConsumableGivesEffect,
     ConsumableClearsNumEffects,
+    ConsumableMakesCouplable,
     MaterialForges,
     PersistentMaxEnergyBoost,
     PersistentMaxMoraleBoost,
@@ -140,6 +141,7 @@ const static std::map<ItemProperty, QString> PROPERTY_DESCRIPTIONS = {
     { ConsumableEnergyBoost, "Gives <b>+%1 energy</b>." },
     { ConsumableMoraleBoost, "Gives <b>+%1 spirit</b>." },
     { ConsumableClearsNumEffects, "Clears up to <b>%1 effect(s)</b> (starting with the rightmost.)" },
+    { ConsumableMakesCouplable, "Gives the ability to <b><font color=purple>have a child</font></b> with another explorer." },
     { PersistentMaxEnergyBoost, "You have <b>+%1 max energy</b>." },
     { PersistentMaxMoraleBoost, "You have <b>+%1 max spirit</b>." },
     { PersistentSpeedBonus, "Your actions complete <b>%1x faster</b>." },
@@ -294,6 +296,16 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         {
             { ConsumableEnergyBoost, 30 },
             { ConsumableMoraleBoost, 10 }
+        }
+    },
+    {
+        CT_CONSUMABLE | 4,
+        "pipeapple", "Pipeapple",
+        "<i>This fruit acts as a powerful fifodesiac, making it irresistable<br>"
+        "to share your genetic data with someone else.</i>",
+        1 USES, Consumable, LEVEL 3,
+        {
+            { ConsumableMakesCouplable, 1 }
         }
     },
     {

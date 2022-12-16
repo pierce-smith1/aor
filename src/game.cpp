@@ -86,7 +86,7 @@ bool Game::add_item(const Item &item) {
 
 void Game::check_hatch() {
     for (const Item &item : inventory().items()) {
-        if (item.code == (CT_OTHER | 0)) {
+        if (item.code == Item::code_of("fennahian_egg")) {
             if (actions_done() - item.instance_properties[InstanceEggFoundActionstamp] > ACTIONS_TO_HATCH) {
                 Heritage heritage = m_explorers.at(item.instance_properties[InstanceEggParent1]).heritage();
                 for (Color c : m_explorers.at(item.instance_properties[InstanceEggParent2]).heritage()) {

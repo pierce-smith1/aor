@@ -255,6 +255,10 @@ void CharacterActivity::give_bonuses() {
             for (int i = 0; i < props[ConsumableClearsNumEffects]; i++) {
                 character.clear_last_effect();
             }
+
+            if (props[ConsumableMakesCouplable]) {
+                character.can_couple() = true;
+            }
         }
     } else if (m_action == Defiling) {
         for (const Item &item : gw()->game().inventory().items_of_intent(m_char_id, Defiling)) {

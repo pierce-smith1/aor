@@ -5,12 +5,18 @@
 ExplorerButton::ExplorerButton(int n)
     : n(n),
       m_activity_icon(new QLabel(this)),
+      m_couple_status_icon(new QLabel(this)),
       m_portrait_effect(new QGraphicsColorizeEffect(this))
 {
     m_item_label->setGraphicsEffect(m_portrait_effect);
     m_item_label->setAlignment(Qt::AlignRight);
+
     m_activity_icon->setMaximumSize(QSize(16, 16));
     m_activity_icon->setMinimumSize(QSize(16, 16));
+
+    m_couple_status_icon->setMaximumSize(QSize(48, 48));
+    m_couple_status_icon->setMinimumSize(QSize(48, 48));
+    m_couple_status_icon->setPixmap(Icons::activity_icons().at(Coupling));
 
     setObjectName(QString("explorer_button;%1").arg(n));
     gw()->register_slot(this);
@@ -29,26 +35,33 @@ void ExplorerButton::set_item(const Item &) { }
 void ExplorerButton::refresh_pixmap() {
     Character &character = gw()->game().characters()[n];
 
-    if (character.dead()) {
-        m_portrait_effect->setStrength(0.0);
-        m_item_label->setPixmap(QPixmap(":/assets/img/icons/dead_yok.png"));
-        m_activity_icon->hide();
-    } else {
-        m_activity_icon->setPixmap(Icons::activity_icons().at(character.activity().action()));
-        m_activity_icon->raise();
-        m_portrait_effect->setColor(Colors::blend(character.heritage()));
-        if (character.id() == NOBODY) {
-            m_item_label->setPixmap(QPixmap(":/assets/img/items/empty.png"));
-            m_portrait_effect->setColor(QColor(0, 0, 0));
-        } else {
-            m_item_label->setPixmap(QPixmap(":/assets/img/icons/yok.png"));
-        }
-    }
-
     if (id() == gw()->selected_char_id()) {
         //setFlat(false);
     } else {
         //setFlat(true);
+    }
+
+    if (character.dead()) {
+        m_portrait_effect->setStrength(0.0);
+        m_item_label->setPixmap(QPixmap(":/assets/img/icons/dead_yok.png"));
+        m_activity_icon->hide();
+        m_couple_status_icon->hide();
+        return;
+    }
+
+    m_couple_status_icon->setVisible(character.can_couple());
+    m_couple_status_icon->raise();
+
+    m_activity_icon->setPixmap(Icons::activity_icons().at(character.activity().action()));
+    m_activity_icon->raise();
+
+    m_portrait_effect->setColor(Colors::blend(character.heritage()));
+
+    if (character.id() == NOBODY) {
+        m_item_label->setPixmap(QPixmap(":/assets/img/items/empty.png"));
+        m_portrait_effect->setColor(QColor(0, 0, 0));
+    } else {
+        m_item_label->setPixmap(QPixmap(":/assets/img/icons/yok.png"));
     }
 }
 
@@ -63,11 +76,13 @@ void ExplorerButton::insert_explorer_buttons() {
 }
 
 void ExplorerButton::mousePressEvent(QMouseEvent *event) {
+    Character &character = gw()->game().characters()[n];
+
     if (id() == NOBODY) {
         return;
     }
 
-    if (event->button() == Qt::LeftButton) {
+    if (event->button() == Qt::LeftButton && character.can_couple()) {
         QDrag *drag = new QDrag(this);
         QMimeData *data = new QMimeData;
 
@@ -131,6 +146,9 @@ void ExplorerButton::dropEvent(QDropEvent *event) {
     character.partner() = source_button->id();
     partner.start_activity(Coupling);
     partner.partner() = id();
+
+    partner.can_couple() = false; // i'm a tired
+    source_button->refresh_pixmap();
 }
 
 bool ExplorerButton::do_hovering() {
@@ -197,6 +215,11 @@ QString ExplorerButton::character_description() {
             break;
         }
         default: { break; }
+    }
+
+    if (character.can_couple()) {
+        string += "<b><font color=purple>I'm ready to have a child!</font> Drag me onto a partner.</b><br>";
+        string += "<b>Both me and my partner must have <font color=red>full energy</font>.</b><br><br>";
     }
 
     ItemProperties heritage_props = Colors::blend_heritage(character.heritage());

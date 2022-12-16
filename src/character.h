@@ -35,6 +35,7 @@ struct Character {
     CharacterId id();
     CharacterId &partner();
     bool &dead();
+    bool &can_couple();
 
     ItemProperties heritage_properties();
 
@@ -84,6 +85,7 @@ private:
     };
     CharacterId m_partner = NOBODY;
     bool m_dead = false;
+    bool m_can_couple = false;
     quint16 m_energy = 40;
     quint16 m_morale = 40;
 };

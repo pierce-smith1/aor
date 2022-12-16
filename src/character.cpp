@@ -39,6 +39,10 @@ bool &Character::dead() {
     return m_dead;
 }
 
+bool &Character::can_couple() {
+    return m_can_couple;
+}
+
 ItemProperties Character::heritage_properties() {
     return Colors::blend_heritage(m_heritage);
 }

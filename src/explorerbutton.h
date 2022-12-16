@@ -42,5 +42,6 @@ protected:
 
 private:
     QLabel *m_activity_icon;
+    QLabel *m_couple_status_icon;
     QGraphicsColorizeEffect *m_portrait_effect;
 };
