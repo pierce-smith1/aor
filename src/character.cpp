@@ -53,7 +53,7 @@ void Character::start_activity(ItemDomain domain) {
         return;
     }
 
-    qint64 activity_ms = 10 * 120;
+    qint64 activity_ms = 100 * 120;
 
     if (domain != Coupling) {
         double heritage_boost = heritage_properties()[HeritageActivitySpeedBonus] / 100.0;
@@ -231,7 +231,7 @@ int Character::morale_to_gain() {
         }
     }
 
-    return gain;
+    return gain - base_morale_cost();
 }
 
 std::vector<ItemCode> Character::smithable_items() {

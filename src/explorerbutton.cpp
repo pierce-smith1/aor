@@ -85,6 +85,7 @@ void ExplorerButton::mousePressEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton
         && character.can_couple()
         && character.energy() == character.max_energy()
+        && !character.activity().ongoing()
     ) {
         QDrag *drag = new QDrag(this);
         QMimeData *data = new QMimeData;
@@ -127,6 +128,7 @@ void ExplorerButton::dragEnterEvent(QDragEnterEvent *event) {
 
         if ((partner.dead() && partner.id() != character.id())
             || (character.energy() != character.max_energy())
+            || (character.activity().ongoing())
         ) {
             return;
         }
