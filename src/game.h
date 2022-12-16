@@ -47,6 +47,7 @@ public:
     void check_hatch();
     int trade_level();
     int foreign_trade_level(GameId tribe_id);
+    ItemProperties total_resources();
 
     QString id_to_name(CharacterId char_id);
 

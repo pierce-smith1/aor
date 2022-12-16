@@ -27,6 +27,7 @@ public:
 
     void set(const TooltipInfo &item);
     void set(const Item &item, Game &game);
+    void color_cost_text();
 
     Ui::Tooltip widget;
 

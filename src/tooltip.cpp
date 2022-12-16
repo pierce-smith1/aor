@@ -41,6 +41,8 @@ void Tooltip::set(const TooltipInfo &info) {
     } else {
         m_colorize_effect->setStrength(0.0);
     }
+
+    color_cost_text();
 }
 
 void Tooltip::set(const Item &item, Game &game) {
@@ -122,6 +124,23 @@ void Tooltip::set(const Item &item, Game &game) {
             widget.power_container->show();
         }
     }
+
+    color_cost_text();
+}
+
+void Tooltip::color_cost_text() {
+    ItemProperties resources = gw()->game().total_resources();
+
+    Item::for_each_resource_type([&](ItemProperty cost_prop, ItemProperty, ItemProperty resource_prop) {
+        QLabel *label = cost_text().at(cost_prop);
+        quint16 cost = label->text().toUShort();
+        if (resources[resource_prop] < cost) {
+            label->setText("<font color=red> " + label->text() + " </font>");
+        } else {
+            label->setText("<font color=green> " + label->text() + " </font>");
+        }
+
+    });
 }
 
 void Tooltip::hide_resources() {

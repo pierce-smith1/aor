@@ -127,6 +127,18 @@ int Game::foreign_trade_level(GameId tribe_id) {
     });
 }
 
+ItemProperties Game::total_resources() {
+    ItemProperties resources;
+
+    for (const Item &item : m_inventory.items()) {
+        Item::for_each_resource_type([&](ItemProperty, ItemProperty, ItemProperty resource_prop) {
+            resources.map[resource_prop] += item.def()->properties[resource_prop];
+        });
+    }
+
+    return resources;
+}
+
 void Game::refresh_ui_bars(QProgressBar *activity, QProgressBar *morale, QProgressBar *energy, CharacterId char_id) {
     Character &character = m_explorers.at(char_id);
 
