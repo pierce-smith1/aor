@@ -53,7 +53,7 @@ void Character::start_activity(ItemDomain domain) {
         return;
     }
 
-    qint64 activity_ms = 100 * 120;
+    qint64 activity_ms = 10 * 120;
 
     if (domain != Coupling) {
         double heritage_boost = heritage_properties()[HeritageActivitySpeedBonus] / 100.0;
@@ -185,6 +185,7 @@ int Character::energy_to_gain() {
             gain = std::accumulate(begin(inputs), end(inputs), 0, [](int a, const Item &b) {
                 return a + b.def()->properties[ConsumableEnergyBoost];
             });
+            gain += heritage_properties()[HeritageConsumableEnergyBoost];
             break;
         }
         case Smithing:
@@ -235,7 +236,11 @@ int Character::morale_to_gain() {
         }
     }
 
-    return gain - base_morale_cost();
+    if (m_activity.action() != Eating && m_activity.action() != Defiling) {
+        gain -= base_morale_cost();
+    }
+
+    return gain;
 }
 
 std::vector<ItemCode> Character::smithable_items() {

@@ -252,12 +252,6 @@ void CharacterActivity::give_bonuses() {
         for (const Item &item : gw()->game().inventory().items_of_intent(m_char_id, Eating)) {
             const ItemProperties &props = item.def()->properties;
 
-            character.add_energy(props[ConsumableEnergyBoost]);
-            character.add_morale(props[ConsumableMoraleBoost]);
-
-            int heritage_energy_boost = character.heritage_properties()[HeritageConsumableEnergyBoost];
-            character.add_energy(heritage_energy_boost);
-
             for (int i = 0; i < props[ConsumableClearsNumEffects]; i++) {
                 character.clear_last_effect();
             }
@@ -265,10 +259,6 @@ void CharacterActivity::give_bonuses() {
             if (props[ConsumableMakesCouplable]) {
                 character.can_couple() = true;
             }
-        }
-    } else if (m_action == Defiling) {
-        for (const Item &item : gw()->game().inventory().items_of_intent(m_char_id, Defiling)) {
-            character.add_morale(item.def()->item_level * 25);
         }
     }
 }
