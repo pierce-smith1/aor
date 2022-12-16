@@ -11,6 +11,11 @@ Game::Game()
     add_item(Item("globfruit"));
     add_item(Item("globfruit"));
     add_item(Item("pipeapple"));
+    add_item(Item("oolite"));
+    add_item(Item("oolite"));
+    add_item(Item("oolite"));
+    add_item(Item("oolite"));
+    add_item(Item("oolite"));
 
     m_tribes[NOBODY];
 }
@@ -41,6 +46,10 @@ ItemHistory &Game::history() {
 
 Offer &Game::trade_offer() {
     return m_trade_offer;
+}
+
+RemoteOffer &Game::accepted_offer() {
+    return m_accepted_offer;
 }
 
 bool &Game::accepting_trade() {

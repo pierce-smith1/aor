@@ -76,6 +76,8 @@ void DoughbyteConnection::send_info() {
             inventory.get_item(gw()->game().trade_offer()[0]),
             inventory.get_item(gw()->game().trade_offer()[1]),
             inventory.get_item(gw()->game().trade_offer()[2]),
+            inventory.get_item(gw()->game().trade_offer()[3]),
+            inventory.get_item(gw()->game().trade_offer()[4]),
         },
         gw()->game().accepting_trade()
     );
@@ -102,6 +104,7 @@ void DoughbyteConnection::execute_trade() {
 
     gw()->window().trade_partner_combobox->setEnabled(false);
     gw()->game().trade_partner() = gw()->selected_tribe_id();
+    gw()->game().accepted_offer() = gw()->game().tribes().at(gw()->selected_tribe_id()).offer;
 
     gw()->refresh_ui();
 }

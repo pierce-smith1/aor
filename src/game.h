@@ -12,9 +12,11 @@
 
 const static int MAX_EXPLORERS = 11;
 
+using RemoteOffer = std::array<Item, TRADE_SLOTS>;
+
 struct TradeState {
     bool remote_accepted = false;
-    std::array<Item, TRADE_SLOTS> offer {};
+    RemoteOffer offer {};
 };
 
 using Characters = std::array<Character, MAX_EXPLORERS>;
@@ -32,6 +34,7 @@ public:
     ForeignTribes &tribes();
     Offer &trade_offer();
     bool &accepting_trade();
+    RemoteOffer &accepted_offer();
     GameId &trade_partner();
     GameId game_id();
     QString &tribe_name();
@@ -58,6 +61,7 @@ private:
     ForeignTribes m_tribes;
     Offer m_trade_offer {};
     bool m_accepting_trade = false;
+    RemoteOffer m_accepted_offer {};
     GameId m_trade_partner = NOBODY;
     GameId m_game_id;
     QString m_tribe_name;

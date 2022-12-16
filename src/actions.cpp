@@ -145,7 +145,7 @@ std::vector<Item> CharacterActivity::products() {
             return egg;
         }
         case Trading: {
-            auto &offer = gw()->game().tribes().at(gw()->selected_tribe_id()).offer;
+            auto &offer = gw()->game().accepted_offer();
             return std::vector(begin(offer), end(offer));
         }
         default: {
