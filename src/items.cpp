@@ -148,6 +148,19 @@ Item Item::invalid_item() {
     return item;
 }
 
+bool Item::has_resource_value(ItemCode code) {
+    const ItemProperties &properties = def_of(code)->properties;
+    bool has_value = false;
+
+    for_each_resource_type([&](ItemProperty, ItemProperty, ItemProperty resource_prop) {
+        if (properties[resource_prop]) {
+            has_value = true;
+        }
+    });
+
+    return has_value;
+}
+
 void Item::for_each_resource_type(const std::function<void(ItemProperty, ItemProperty, ItemProperty)> &fn) {
     for (quint16 i = 1; i <= 5; i++) {
         ItemProperty cost_prop = (ItemProperty) (Cost + i);

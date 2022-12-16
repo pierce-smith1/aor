@@ -76,6 +76,12 @@ void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
             event->acceptProposedAction();
             break;
         }
+        case Material: {
+            if (Item::has_resource_value(dropped_item.code)) {
+                event->acceptProposedAction();
+            }
+            break;
+        }
         default: {
             if (dropped_type & item_slot_type) {
                 event->acceptProposedAction();

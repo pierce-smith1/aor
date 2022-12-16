@@ -431,6 +431,7 @@ struct Item {
     static QPixmap pixmap_of(const Item &item);
     static QPixmap sil_pixmap_of(ItemCode id);
     static Item invalid_item();
+    static bool has_resource_value(ItemCode code);
 
     static void for_each_resource_type(const std::function<void(ItemProperty, ItemProperty, ItemProperty)> &fn);
     static void for_each_tool_discover(const std::function<void(ItemProperty, ItemProperty)> &fn);

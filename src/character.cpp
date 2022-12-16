@@ -159,12 +159,7 @@ bool Character::can_perform_action(ItemDomain domain) {
             return !m_activity.ongoing();
         }
         case Smithing: {
-            const auto &materials = external_items()[Material];
-            bool enough_materials = std::any_of(begin(materials), begin(materials) + SMITHING_SLOTS, [&](ItemId a) {
-                return a != EMPTY_ID;
-            });
-
-            return enough_materials && !m_activity.ongoing();
+            return smithing_result() != 0 && !m_activity.ongoing();
         }
         case Foraging:
         case Mining: {
@@ -305,7 +300,7 @@ ItemCode Character::smithing_result() {
     );
 
     if (result == end(possible_smiths)) {
-        return CT_EMPTY;
+        return 0;
     } else {
         return *result;
     }
