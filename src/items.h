@@ -94,7 +94,6 @@ enum ItemProperty : quint16 {
     ConsumableGivesEffect,
     ConsumableClearsNumEffects,
     ConsumableMakesCouplable,
-    MaterialForges,
     PersistentMaxEnergyBoost,
     PersistentMaxMoraleBoost,
     PersistentSpeedBonus,
@@ -257,7 +256,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         {
             { CostStone, 30 },
             { CostCrystalline, 10 },
-            { ToolEnergyCost, 20 },
+            { ToolEnergyCost, 10 },
             { ToolCanDiscover1, CT_CONSUMABLE | 2 },
             { ToolCanDiscover2, CT_CONSUMABLE | 3 },
             { ToolDiscoverWeight1, 1 },
@@ -272,7 +271,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         {
             { CostStone, 10 },
             { CostCrystalline, 30 },
-            { ToolEnergyCost, 20 },
+            { ToolEnergyCost, 10 },
             { ToolCanDiscover1, CT_MATERIAL | 2 },
             { ToolCanDiscover2, CT_MATERIAL | 3 },
             { ToolCanDiscover3, CT_MATERIAL | 4 },
@@ -326,7 +325,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "the dwindling elite who still know how to mine it.</i>",
         1 USES, Material, LEVEL 2,
         {
-            { MaterialForges, CT_TOOL | 3 }
         }
     },
     {
@@ -335,7 +333,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "<i>A crucial improvement over oldschool spinning schists.</i>",
         1 USES, Material, LEVEL 2,
         {
-            { MaterialForges, CT_TOOL | 4 }
         }
     },
     {
@@ -345,7 +342,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "another vein of this soft, yellowish metal is born.</i>",
         1 USES, Material, LEVEL 2,
         {
-            { MaterialForges, CT_TOOL | 5 }
         }
     },
     {

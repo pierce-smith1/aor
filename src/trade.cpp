@@ -86,12 +86,10 @@ void DoughbyteConnection::send_info(GameId to, const std::array<Item, TRADE_SLOT
 
     IO::write_long(&m_socket, to);
     IO::write_string(&m_socket, gw()->game().tribe_name());
-    IO::write_short(&m_socket, items[0].code);
-    IO::write_byte(&m_socket, items[0].uses_left);
-    IO::write_short(&m_socket, items[1].code);
-    IO::write_byte(&m_socket, items[1].uses_left);
-    IO::write_short(&m_socket, items[2].code);
-    IO::write_byte(&m_socket, items[2].uses_left);
+    for (int i = 0; i < TRADE_SLOTS; i++) {
+        IO::write_short(&m_socket, items[i].code);
+        IO::write_byte(&m_socket, items[i].uses_left);
+    }
     IO::write_bool(&m_socket, accepting);
 }
 
@@ -166,11 +164,17 @@ void DoughbyteConnection::update_all() {
     char item_uses_2 = IO::read_byte(&m_socket);
     quint16 item_code_3 = IO::read_short(&m_socket);
     char item_uses_3 = IO::read_byte(&m_socket);
+    quint16 item_code_4 = IO::read_short(&m_socket);
+    char item_uses_4 = IO::read_byte(&m_socket);
+    quint16 item_code_5 = IO::read_short(&m_socket);
+    char item_uses_5 = IO::read_byte(&m_socket);
     bool accepting = IO::read_bool(&m_socket);
 
     update_offers(tribe_id, item_code_1, item_uses_1, 0);
     update_offers(tribe_id, item_code_2, item_uses_2, 1);
     update_offers(tribe_id, item_code_3, item_uses_3, 2);
+    update_offers(tribe_id, item_code_4, item_uses_4, 3);
+    update_offers(tribe_id, item_code_5, item_uses_5, 4);
     update_agreements(tribe_id, accepting);
     update_availability(tribe_id, tribe_name, true);
 }

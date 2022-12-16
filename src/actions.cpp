@@ -52,6 +52,16 @@ void CharacterActivity::progress(qint64 ms) {
 void CharacterActivity::complete() {
     gw()->killTimer(m_timer_id);
 
+    if (m_action == Trading) {
+        gw()->connection().agreement_changed(gw()->game().trade_partner(), false);
+        for (int i = 0; i < TRADE_SLOTS; i++) {
+            gw()->connection().offer_changed(Item(), i);
+        }
+        gw()->game().accepting_trade() = false;
+        gw()->game().trade_partner() = NOBODY;
+        gw()->window().trade_partner_combobox->setEnabled(true);
+    }
+
     exhaust_character();
     give_bonuses();
     give_injuries();
@@ -134,6 +144,10 @@ std::vector<Item> CharacterActivity::products() {
 
             return egg;
         }
+        case Trading: {
+            auto &offer = gw()->game().tribes().at(gw()->selected_tribe_id()).offer;
+            return std::vector(begin(offer), end(offer));
+        }
         default: {
             qFatal("Tried to get products for unknown domain (%d)", m_action);
             return {};
@@ -149,8 +163,9 @@ void CharacterActivity::exhaust_reagents() {
             exhaust_item(id);
         }
     } else if (m_action == Trading) {
-        for (ItemId id : character.external_items().at(Offering)) {
+        for (ItemId &id : gw()->game().trade_offer()) {
             gw()->game().inventory().remove_item(id);
+            id = EMPTY_ID;
         }
     } else if (m_action == Eating || m_action == Defiling) {
         for (const Item &item : gw()->game().inventory().items_of_intent(m_char_id, m_action)) {
@@ -187,6 +202,7 @@ void CharacterActivity::exhaust_character() {
     if (character.morale() == 0) {
         character.push_effect(Item("weakness"));
     }
+
 }
 
 void CharacterActivity::exhaust_item(ItemId id) {

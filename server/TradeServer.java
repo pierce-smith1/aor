@@ -157,6 +157,10 @@ class TradeWorker extends Thread {
         byte itemUses2         = in.readByte();
         short itemCode3        = in.readShort();
         byte itemUses3         = in.readByte();
+        short itemCode4        = in.readShort();
+        byte itemUses4         = in.readByte();
+        short itemCode5        = in.readShort();
+        byte itemUses5         = in.readByte();
         boolean acceptingTrade = in.readBoolean();
 
         DataOutputStream client = server.send(reportTo);
@@ -168,9 +172,13 @@ class TradeWorker extends Thread {
             client.writeShort(itemCode1);
             client.writeByte(itemUses1);
             client.writeShort(itemCode2);
-            client.writeByte(itemCode2);
+            client.writeByte(itemUses2);
             client.writeShort(itemCode3);
-            client.writeByte(itemCode3);
+            client.writeByte(itemUses3);
+            client.writeShort(itemCode4);
+            client.writeByte(itemUses4);
+            client.writeShort(itemCode5);
+            client.writeByte(itemUses5);
             client.writeBoolean(acceptingTrade);
 
             client.flush();
