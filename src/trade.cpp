@@ -119,6 +119,14 @@ void DoughbyteConnection::update_offers(GameId tribe_id, ItemCode code, char use
     Item item(code);
     item.uses_left = uses;
     gw()->game().tribes()[tribe_id].offer[n] = item;
+
+    // If we witnessed the remote offer change, stop accepting
+    if (tribe_id == gw()->window().trade_partner_combobox->currentData().toULongLong()) {
+        gw()->game().accepting_trade() = false;
+        agreement_changed(tribe_id, false);
+        gw()->refresh_ui_buttons();
+    }
+
     gw()->refresh_slots();
 }
 
