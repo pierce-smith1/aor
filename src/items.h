@@ -189,7 +189,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         CT_EMPTY,
         "empty", "Empty",
         "Empty slot.",
-        0 USES, Ordinary, LEVEL 1,
+        0 USES, Ordinary, LEVEL 0,
         {}
     },
     {

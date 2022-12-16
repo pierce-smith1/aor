@@ -61,7 +61,9 @@ void Character::start_activity(ItemDomain domain) {
             return a + effect.def()->properties[PersistentSpeedPenalty];
         }) / 100.0;
 
-        activity_ms *= gw()->game().inventory().get_item(m_tool_ids[domain]).def()->item_level;
+        int tool_level = gw()->game().inventory().get_item(m_tool_ids[domain]).def()->item_level;
+
+        activity_ms *= tool_level == 0 ? 1 : tool_level;
         activity_ms -= activity_ms * heritage_boost;
         activity_ms += activity_ms * injury_penalty;
     }

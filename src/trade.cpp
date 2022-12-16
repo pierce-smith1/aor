@@ -128,6 +128,7 @@ void DoughbyteConnection::update_offers(GameId tribe_id, ItemCode code, char use
     }
 
     gw()->refresh_slots();
+    gw()->refresh_trade_ui();
 }
 
 void DoughbyteConnection::update_agreements() {

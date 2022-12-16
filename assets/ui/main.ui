@@ -418,57 +418,6 @@
          <string>Trade</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_4">
-         <item row="3" column="0">
-          <widget class="QLabel" name="trade_notification_label">
-           <property name="text">
-            <string>TextLabel</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="trade_arrow_label">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="pixmap">
-            <pixmap resource="../../images.qrc">:/assets/img/icons/arrows_disabled.png</pixmap>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="0">
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <item>
-            <widget class="QPushButton" name="trade_accept_button">
-             <property name="text">
-              <string>Accept</string>
-             </property>
-             <property name="icon">
-              <iconset resource="../../images.qrc">
-               <normaloff>:/assets/img/icons/focussigil2.png</normaloff>:/assets/img/icons/focussigil2.png</iconset>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="trade_unaccept_button">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Nevermind</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item row="0" column="0">
-          <layout class="QHBoxLayout" name="foreign_trade_slot_layout"/>
-         </item>
-         <item row="4" column="0">
-          <layout class="QHBoxLayout" name="trade_slot_layout"/>
-         </item>
          <item row="1" column="0">
           <layout class="QHBoxLayout" name="horizontalLayout_6">
            <item>
@@ -499,7 +448,84 @@
            <item>
             <widget class="QComboBox" name="trade_partner_combobox"/>
            </item>
+           <item>
+            <widget class="QLabel" name="foreign_trade_level_label">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>TextLabel</string>
+             </property>
+            </widget>
+           </item>
           </layout>
+         </item>
+         <item row="0" column="0">
+          <layout class="QHBoxLayout" name="foreign_trade_slot_layout"/>
+         </item>
+         <item row="5" column="0">
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QPushButton" name="trade_accept_button">
+             <property name="text">
+              <string>Accept</string>
+             </property>
+             <property name="icon">
+              <iconset resource="../../images.qrc">
+               <normaloff>:/assets/img/icons/focussigil2.png</normaloff>:/assets/img/icons/focussigil2.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="trade_unaccept_button">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Nevermind</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="trade_level_label">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>TextLabel</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item row="4" column="0">
+          <layout class="QHBoxLayout" name="trade_slot_layout"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="trade_arrow_label">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="pixmap">
+            <pixmap resource="../../images.qrc">:/assets/img/icons/arrows_disabled.png</pixmap>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="trade_notification_label">
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>

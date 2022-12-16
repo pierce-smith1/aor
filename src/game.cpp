@@ -105,6 +105,19 @@ void Game::check_hatch() {
     }
 }
 
+int Game::trade_level() {
+    return std::accumulate(begin(m_trade_offer), end(m_trade_offer), 0, [this](int a, ItemId id) {
+        return a + m_inventory.get_item(id).def()->item_level;
+    });
+}
+
+int Game::foreign_trade_level(GameId tribe_id) {
+    auto &offer = m_tribes.at(tribe_id).offer;
+    return std::accumulate(begin(offer), end(offer), 0, [](int a, const Item &item) {
+        return a + item.def()->item_level;
+    });
+}
+
 void Game::refresh_ui_bars(QProgressBar *activity, QProgressBar *morale, QProgressBar *energy, CharacterId char_id) {
     Character &character = m_explorers.at(char_id);
 

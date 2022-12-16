@@ -42,6 +42,8 @@ public:
     bool add_character(const QString &name, const std::multiset<Color> &heritage);
     bool add_item(const Item &item);
     void check_hatch();
+    int trade_level();
+    int foreign_trade_level(GameId tribe_id);
 
     QString id_to_name(CharacterId char_id);
 

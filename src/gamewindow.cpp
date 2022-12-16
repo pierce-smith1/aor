@@ -155,6 +155,8 @@ void LKGameWindow::refresh_ui_buttons() {
         || selected_char().activity().ongoing()
         || trade_ongoing(m_selected_tribe_id)
         || m_window.trade_partner_combobox->count() == 0
+        || m_game.foreign_trade_level(m_selected_tribe_id) != m_game.trade_level()
+        || m_game.trade_level() == 0
     ) {
         m_window.trade_accept_button->setEnabled(false);
         m_window.trade_unaccept_button->setEnabled(false);
@@ -172,6 +174,26 @@ void LKGameWindow::refresh_trade_ui() {
         m_window.trade_remote_accept_icon->setPixmap(QPixmap(":/assets/img/icons/check.png"));
     } else {
         m_window.trade_remote_accept_icon->setPixmap(QPixmap(":/assets/img/icons/warning.png"));
+    }
+
+    if (m_selected_tribe_id != NOBODY) {
+        m_window.foreign_trade_level_label->setText(QString("<b>%1</b>")
+            .arg(m_game.foreign_trade_level(m_selected_tribe_id))
+        );
+    } else {
+        m_window.foreign_trade_level_label->setText("");
+    }
+
+    m_window.trade_level_label->setText(QString("<b>%1</b>").arg(m_game.trade_level()));
+
+    if (m_game.foreign_trade_level(m_selected_tribe_id) == m_game.trade_level()) {
+        m_window.foreign_trade_level_label->setText(
+            "<font color=green>" + m_window.foreign_trade_level_label->text() + "</font>"
+        );
+
+        m_window.trade_level_label->setText(
+            "<font color=green>" + m_window.trade_level_label->text() + "</font>"
+        );
     }
 
     window().trade_arrow_label->setPixmap(QPixmap(":/assets/img/icons/arrows_disabled.png"));
