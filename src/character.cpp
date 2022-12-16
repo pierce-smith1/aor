@@ -35,6 +35,10 @@ CharacterId &Character::partner() {
     return m_partner;
 }
 
+bool &Character::dead() {
+    return m_dead;
+}
+
 ItemProperties Character::heritage_properties() {
     return Colors::blend_heritage(m_heritage);
 }
@@ -68,12 +72,20 @@ quint16 &Character::energy() {
         m_energy = max_energy();
     }
 
+    if (m_dead) {
+        m_energy = 0;
+    }
+
     return m_energy;
 }
 
 quint16 &Character::morale() {
     if (m_morale > max_morale()) {
         m_morale = max_morale();
+    }
+
+    if (m_dead) {
+        m_morale = 0;
     }
 
     return m_morale;
@@ -138,6 +150,10 @@ void Character::add_morale(int add) {
 }
 
 bool Character::can_perform_action(ItemDomain domain) {
+    if (m_dead) {
+        return false;
+    }
+
     switch (domain) {
         case Eating: {
             return !m_activity.ongoing();
@@ -300,9 +316,17 @@ bool Character::push_effect(const Item &effect) {
         return false;
     }
 
+    int current_effects = std::count_if(begin(m_effects), end(m_effects), [](const Item &item) {
+        return item.id != EMPTY_ID;
+    });
+
+    if (current_effects == EFFECT_SLOTS - 1) {
+        m_dead = true;
+    }
+
     for (int i = 0; i < EFFECT_SLOTS; i++) {
-        if (effects()[i].id == EMPTY_ID) {
-            effects()[i] = effect;
+        if (m_effects[i].id == EMPTY_ID) {
+            m_effects[i] = effect;
             return true;
         }
     }

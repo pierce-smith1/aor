@@ -127,6 +127,7 @@ void ItemSlot::mousePressEvent(QMouseEvent *event) {
 
     if (event->button() == Qt::LeftButton
         && (!item_being_used || (!is_inventory_slot && !gw()->selected_char().activity().ongoing()))
+        && !gw()->selected_char().dead()
     ) {
         QDrag *drag = new QDrag(this);
         QMimeData *data = new QMimeData;

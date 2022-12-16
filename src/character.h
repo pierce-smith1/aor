@@ -34,6 +34,7 @@ struct Character {
     CharacterActivity &activity();
     CharacterId id();
     CharacterId &partner();
+    bool &dead();
 
     ItemProperties heritage_properties();
 
@@ -82,6 +83,7 @@ private:
         { MiningTool, EMPTY_ID },
     };
     CharacterId m_partner = NOBODY;
+    bool m_dead = false;
     quint16 m_energy = 40;
     quint16 m_morale = 40;
 };

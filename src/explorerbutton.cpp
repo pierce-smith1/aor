@@ -29,14 +29,20 @@ void ExplorerButton::set_item(const Item &) { }
 void ExplorerButton::refresh_pixmap() {
     Character &character = gw()->game().characters()[n];
 
-    m_activity_icon->setPixmap(Icons::activity_icons().at(character.activity().action()));
-    m_activity_icon->raise();
-    m_portrait_effect->setColor(Colors::blend(character.heritage()));
-    if (character.id() == NOBODY) {
-        m_item_label->setPixmap(QPixmap(":/assets/img/items/empty.png"));
-        m_portrait_effect->setColor(QColor(0, 0, 0));
+    if (character.dead()) {
+        m_portrait_effect->setStrength(0.0);
+        m_item_label->setPixmap(QPixmap(":/assets/img/icons/dead_yok.png"));
+        m_activity_icon->hide();
     } else {
-        m_item_label->setPixmap(QPixmap(":/assets/img/icons/yok.png"));
+        m_activity_icon->setPixmap(Icons::activity_icons().at(character.activity().action()));
+        m_activity_icon->raise();
+        m_portrait_effect->setColor(Colors::blend(character.heritage()));
+        if (character.id() == NOBODY) {
+            m_item_label->setPixmap(QPixmap(":/assets/img/items/empty.png"));
+            m_portrait_effect->setColor(QColor(0, 0, 0));
+        } else {
+            m_item_label->setPixmap(QPixmap(":/assets/img/icons/yok.png"));
+        }
     }
 
     if (id() == gw()->selected_char_id()) {
@@ -83,6 +89,8 @@ void ExplorerButton::mouseReleaseEvent(QMouseEvent *) {
 }
 
 void ExplorerButton::dragEnterEvent(QDragEnterEvent *event) {
+    Character &character = gw()->game().characters()[n];
+
     const QMimeData *data = event->mimeData();
     if (!data->hasFormat("text/plain")) {
         return;
@@ -91,7 +99,18 @@ void ExplorerButton::dragEnterEvent(QDragEnterEvent *event) {
     QString source_slot_name = event->mimeData()->text();
     ItemSlot *source_slot = gw()->findChild<ItemSlot *>(source_slot_name);
 
+    if (character.dead() && source_slot != this) {
+        return;
+    }
+
     if (source_slot->type() == Explorer && id() != NOBODY) {
+        ExplorerButton *button = (ExplorerButton *) source_slot;
+        Character &partner = gw()->game().characters()[button->n];
+
+        if (partner.dead() && partner.id() != character.id()) {
+            return;
+        }
+
         event->acceptProposedAction();
     }
 }
@@ -122,6 +141,17 @@ bool ExplorerButton::do_hovering() {
 
 std::optional<TooltipInfo> ExplorerButton::tooltip_info() {
     Character &character = gw()->game().characters()[n];
+
+    if (character.dead()) {
+        return std::optional<TooltipInfo>({
+            "<b>" + character.name() + "</b>",
+            "Dead Fennahian",
+            "<b>This pest has been removed.</b>",
+            QPixmap(":/assets/img/icons/dead_yok.png"),
+            {},
+            std::optional<QColor>()
+        });
+    }
 
     QString heritage_string;
     int number_of_heritages = 0;

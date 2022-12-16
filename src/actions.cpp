@@ -270,7 +270,7 @@ void CharacterActivity::give_injuries() {
     int injury_dampen = character.heritage_properties()[HeritageInjuryResilience];
     injury_chance -= injury_dampen;
 
-    if (!Generators::percent_chance(injury_chance)) {
+    if (!Generators::percent_chance(100)) {
         return;
     }
 
@@ -287,11 +287,15 @@ void CharacterActivity::give_injuries() {
             case Eating: { if (!def.properties[InjuryEating]) { continue; } break; }
             case Defiling: { if (!def.properties[InjuryDefiling]) { continue; } break; }
             case Trading: { if (!def.properties[InjuryTrading]) { continue; } break; }
-            case Coupling: { break; } // COCK INJURED
+            case Coupling: { continue; } // COCK INJURED
             default: { qFatal("Tried to give injuries for unknown action domain (%d)", m_action); }
         }
 
         possible_weighted_injuries.push_back({ def.code, 1 });
+    }
+
+    if (possible_weighted_injuries.empty()) {
+        return;
     }
 
     character.push_effect(Item(Generators::sample_with_weights(possible_weighted_injuries)));
