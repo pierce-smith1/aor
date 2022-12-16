@@ -99,6 +99,7 @@ enum ItemProperty : quint16 {
     PersistentMaxMoraleBoost,
     PersistentSpeedBonus,
     PersistentSpeedPenalty,
+    PersistentEnergyPenalty,
     InjurySmithing,
     InjuryForaging,
     InjuryMining,
@@ -147,6 +148,7 @@ const static std::map<ItemProperty, QString> PROPERTY_DESCRIPTIONS = {
     { PersistentMaxMoraleBoost, "You have <b>+%1 max spirit</b>." },
     { PersistentSpeedBonus, "Your actions complete <b>%1x faster</b>." },
     { PersistentSpeedPenalty, "Your actions complete <b>%1% slower</b>." },
+    { PersistentEnergyPenalty, "Your actions cost an additional <b>%1 energy</b>." },
     { HeritageMaxEnergyBoost, "I have <b>+%1 max energy</b>." },
     { HeritageMaxMoraleBoost, "I have <b>+%1 max morale</b>." },
     { HeritageConsumableEnergyBoost, "I get <b>+%1 bonus energy</b> when I eat something." },
@@ -401,6 +403,25 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
             { InjuryMining, 1 },
             { InjuryForaging, 1 },
             { InjuryTrading, 1 },
+        }
+    },
+    {
+        CT_EFFECT | 1,
+        "starving", "Starving",
+        "<i>This is what happens when the jackass philosopher in the<br>"
+        "seat next to you won't put down their spaghetti forks.</i><br>",
+        3 USES, Effect, LEVEL 1,
+        {
+            { PersistentSpeedPenalty, 20 },
+        }
+    },
+    {
+        CT_EFFECT | 2,
+        "weakness", "Weakness",
+        "<i>All these things I thought I owned are falling between my fingers...</i>",
+        3 USES, Effect, LEVEL 1,
+        {
+            { PersistentEnergyPenalty, 10 },
         }
     },
     {

@@ -179,6 +179,14 @@ void CharacterActivity::exhaust_character() {
             effect = Item();
         }
     }
+
+    if (character.energy() == 0) {
+        character.push_effect(Item("starving"));
+    }
+
+    if (character.morale() == 0) {
+        character.push_effect(Item("weakness"));
+    }
 }
 
 void CharacterActivity::exhaust_item(ItemId id) {

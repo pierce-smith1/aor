@@ -204,6 +204,10 @@ int Character::energy_to_gain() {
         }
     }
 
+    gain -= std::accumulate(begin(m_effects), end(m_effects), 0, [](int a, const Item &item) {
+        return a + item.def()->properties[PersistentEnergyPenalty];
+    });
+
     return gain;
 }
 
