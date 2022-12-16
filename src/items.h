@@ -106,6 +106,7 @@ enum ItemProperty : quint16 {
     InjuryEating,
     InjuryDefiling,
     InjuryTrading,
+    InjuryCoupling, // COCK INJURED
     HeritageMaxEnergyBoost,
     HeritageMaxMoraleBoost,
     HeritageConsumableEnergyBoost,

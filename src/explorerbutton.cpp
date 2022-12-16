@@ -82,7 +82,10 @@ void ExplorerButton::mousePressEvent(QMouseEvent *event) {
         return;
     }
 
-    if (event->button() == Qt::LeftButton && character.can_couple()) {
+    if (event->button() == Qt::LeftButton
+        && character.can_couple()
+        && character.energy() == character.max_energy()
+    ) {
         QDrag *drag = new QDrag(this);
         QMimeData *data = new QMimeData;
 
@@ -122,7 +125,9 @@ void ExplorerButton::dragEnterEvent(QDragEnterEvent *event) {
         ExplorerButton *button = (ExplorerButton *) source_slot;
         Character &partner = gw()->game().characters()[button->n];
 
-        if (partner.dead() && partner.id() != character.id()) {
+        if ((partner.dead() && partner.id() != character.id())
+            || (character.energy() != character.max_energy())
+        ) {
             return;
         }
 
