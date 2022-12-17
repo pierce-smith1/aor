@@ -265,11 +265,11 @@ void LKGameWindow::load() {
 
     m_save_file.reset();
 
-    char l = IO::read_byte(&m_save_file);
-    char k = IO::read_byte(&m_save_file);
-    char i = IO::read_byte(&m_save_file);
+    char r = IO::read_byte(&m_save_file);
+    char h = IO::read_byte(&m_save_file);
+    char o = IO::read_byte(&m_save_file);
 
-    if (l != 'r' || k != 'h' || i != 'o') {
+    if (r != 'r' || h != 'h' || o != 'o') {
         qFatal("Save header is incorrect - it's either corrupt or not a valid save file");
     }
 
