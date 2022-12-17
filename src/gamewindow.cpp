@@ -23,6 +23,10 @@ LKGameWindow::LKGameWindow()
     m_window.setupUi(this);
     m_initialized = true;
 
+    Game *new_game = Game::new_game();
+    m_game = *new_game;
+    delete new_game;
+
     const auto activity_buttons = get_activity_buttons();
     for (const auto &pair : activity_buttons) {
         connect(activity_buttons.at(pair.first), &QPushButton::clicked, [=]() {
@@ -241,11 +245,15 @@ const std::vector<ItemSlot *> LKGameWindow::item_slots(ItemDomain domain) {
 }
 
 void LKGameWindow::save() {
+    if (!m_initialized) {
+        return;
+    }
+
     m_save_file.reset();
 
-    IO::write_byte(&m_save_file, 'l');
-    IO::write_byte(&m_save_file, 'k');
-    IO::write_byte(&m_save_file, 'i');
+    IO::write_byte(&m_save_file, 'r');
+    IO::write_byte(&m_save_file, 'h');
+    IO::write_byte(&m_save_file, 'o');
 
     m_game.serialize(&m_save_file);
 
@@ -259,8 +267,8 @@ void LKGameWindow::load() {
     char k = IO::read_byte(&m_save_file);
     char i = IO::read_byte(&m_save_file);
 
-    if (l != 'l' || k != 'k' || i != 'i') {
-        qFatal("save file is corrupt");
+    if (l != 'r' || k != 'h' || i != 'o') {
+        qFatal("Save header is incorrect - it's either corrupt or not a valid save file");
     }
 
     Game *game = Game::deserialize(&m_save_file);
@@ -278,7 +286,11 @@ void LKGameWindow::timerEvent(QTimerEvent *event) {
     refresh_ui_bars();
 }
 
+void LKGameWindow::closeEvent(QCloseEvent *event) {
+    save();
+    event->accept();
+}
+
 LKGameWindow *gw() {
     return LKGameWindow::the_game_window;
 }
-

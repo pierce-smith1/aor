@@ -66,6 +66,12 @@ Item IO::read_item(QIODevice *dev) {
     item.uses_left = read_byte(dev);
     item.intent = (ItemDomain) read_short(dev);
 
+    quint16 size = read_short(dev);
+    for (quint16 i = 0; i < size; i++) {
+        ItemProperty prop = (ItemProperty) read_short(dev);
+        item.instance_properties.map[prop] = IO::read_short(dev);
+    }
+
     return item;
 }
 
@@ -118,5 +124,11 @@ void IO::write_item(QIODevice *dev, const Item &n) {
     write_short(dev, n.code);
     write_long(dev, n.id);
     write_byte(dev, n.uses_left);
-    write_byte(dev, n.intent);
+    write_short(dev, n.intent);
+
+    write_short(dev, n.instance_properties.map.size());
+    for (const auto &pair : n.instance_properties) {
+        write_short(dev, pair.first);
+        write_short(dev, pair.second);
+    }
 }

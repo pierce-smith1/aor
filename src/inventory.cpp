@@ -1,4 +1,5 @@
 #include "inventory.h"
+#include "gamewindow.h"
 
 Items &Inventory::items() {
     return m_items;
@@ -54,6 +55,7 @@ void Inventory::remove_item(ItemId id) {
     for (size_t i = 0; i < INVENTORY_SIZE; i++) {
         if (m_items[i].id == id) {
             m_items[i] = Item();
+            gw()->save();
 
             return;
         }
@@ -67,6 +69,7 @@ bool Inventory::add_item(const Item &item) {
         for (int x = 0; x < INVENTORY_COLS; x++) {
             if (m_items[inventory_index(y, x)].id == EMPTY_ID) {
                 m_items[inventory_index(y, x)] = item;
+                gw()->save();
                 return true;
             }
         }
@@ -82,11 +85,13 @@ bool Inventory::add_item(const Item &item) {
 
 void Inventory::put_item(const Item &item, int y, int x) {
     m_items[inventory_index(y, x)] = item;
+    gw()->save();
 }
 
 ItemId Inventory::make_item(ItemDefinitionPtr def, int y, int x) {
     Item new_item = Item(def);
     m_items[inventory_index(y, x)] = new_item;
+    gw()->save();
 
     return new_item.id;
 }
@@ -109,22 +114,4 @@ bool Inventory::are_yx_coords_oob(int y, int x) {
 
 size_t Inventory::inventory_index(int y, int x) {
     return y * INVENTORY_COLS + x;
-}
-
-void Inventory::serialize(QIODevice *dev) {
-    IO::write_short(dev, m_items.size());
-    for (size_t i = 0; i < m_items.size(); i++) {
-        IO::write_item(dev, m_items[i]);
-    }
-}
-
-Inventory Inventory::deserialize(QIODevice *dev) {
-    Inventory v;
-
-    quint16 size = IO::read_short(dev);
-    for (size_t i = 0; i < size; i++) {
-        v.m_items[i] = IO::read_item(dev);
-    }
-
-    return v;
 }

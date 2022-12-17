@@ -391,10 +391,72 @@ Effects &Character::effects() {
     return m_effects;
 }
 
-void Character::serialize(QIODevice *) const {
+void Character::serialize(QIODevice *dev) const {
+    IO::write_short(dev, m_id);
+    IO::write_string(dev, m_name);
+    IO::write_short(dev, m_partner);
+    IO::write_bool(dev, m_dead);
+    IO::write_bool(dev, m_can_couple);
+    IO::write_short(dev, m_energy);
+    IO::write_short(dev, m_morale);
+
+    IO::write_short(dev, m_heritage.size());
+    for (Color c : m_heritage) {
+        IO::write_short(dev, c);
+    }
+
+    IO::write_long(dev, m_activity.m_ms_left);
+    IO::write_long(dev, m_activity.m_ms_total);
+    IO::write_short(dev, m_activity.m_action);
+
+    for (int i = 0; i < MAX_ARRAY_SIZE; i++) {
+        IO::write_long(dev, m_external_item_ids.at(Material)[i]);
+        IO::write_long(dev, m_external_item_ids.at(Artifact)[i]);
+    }
+
+    for (const Item &effect : m_effects) {
+        IO::write_item(dev, effect);
+    }
+
+    IO::write_long(dev, m_tool_ids.at(SmithingTool));
+    IO::write_long(dev, m_tool_ids.at(ForagingTool));
+    IO::write_long(dev, m_tool_ids.at(MiningTool));
 }
 
 // Transfers ownership
-Character *Character::deserialize(QIODevice *) {
-    return nullptr;
+Character *Character::deserialize(QIODevice *dev) {
+    Character *c = new Character;
+
+    c->m_id = IO::read_short(dev);
+    c->m_name = IO::read_string(dev);
+    c->m_partner = IO::read_short(dev);
+    c->m_dead = IO::read_bool(dev);
+    c->m_can_couple = IO::read_bool(dev);
+    c->m_energy = IO::read_short(dev);
+    c->m_morale = IO::read_short(dev);
+
+    quint16 size = IO::read_short(dev);
+    for (quint16 i = 0; i < size; i++) {
+        c->m_heritage.insert((Color) IO::read_short(dev));
+    }
+
+    quint64 ms_left = IO::read_long(dev);
+    quint64 ms_total = IO::read_long(dev);
+    ItemDomain action = (ItemDomain) IO::read_short(dev);
+    c->m_activity = CharacterActivity(c->m_id, action, ms_left, ms_total);
+
+    for (int i = 0; i < MAX_ARRAY_SIZE; i++) {
+        c->m_external_item_ids[Material][i] = IO::read_long(dev);
+        c->m_external_item_ids[Artifact][i] = IO::read_long(dev);
+    }
+
+    for (int i = 0; i < EFFECT_SLOTS; i++) {
+        c->m_effects[i] = IO::read_item(dev);
+    }
+
+    c->m_tool_ids[SmithingTool] = IO::read_long(dev);
+    c->m_tool_ids[ForagingTool] = IO::read_long(dev);
+    c->m_tool_ids[MiningTool] = IO::read_long(dev);
+
+    return c;
 }

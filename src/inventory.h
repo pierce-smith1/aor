@@ -27,9 +27,6 @@ public:
     static bool are_yx_coords_oob(int y, int x);
     static size_t inventory_index(int y, int x);
 
-    void serialize(QIODevice *dev);
-    static Inventory deserialize(QIODevice *dev);
-
 private:
     Items m_items;
 };

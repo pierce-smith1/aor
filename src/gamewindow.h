@@ -66,6 +66,7 @@ public:
 
 protected:
     void timerEvent(QTimerEvent *event) override;
+    void closeEvent(QCloseEvent *event) override;
 
 private:
     static LKGameWindow *the_game_window;

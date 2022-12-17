@@ -3,22 +3,7 @@
 #include "encyclopedia.h"
 
 Game::Game()
-    : m_game_id(Generators::game_id()), m_tribe_name(Generators::tribe_name())
-{
-    add_character(Generators::yokin_name(), { Generators::color() });
-    add_character(Generators::yokin_name(), { Generators::color() });
-
-    add_item(Item("globfruit"));
-    add_item(Item("globfruit"));
-    add_item(Item("pipeapple"));
-    add_item(Item("oolite"));
-    add_item(Item("oolite"));
-    add_item(Item("oolite"));
-    add_item(Item("oolite"));
-    add_item(Item("oolite"));
-
-    m_tribes[NOBODY];
-}
+    : m_game_id(Generators::game_id()), m_tribe_name(Generators::tribe_name()) { }
 
 Characters &Game::characters() {
     return m_explorers;
@@ -64,10 +49,6 @@ quint64 &Game::actions_done() {
     return m_actions_done;
 }
 
-bool &Game::dead() {
-    return m_dead;
-}
-
 bool Game::add_character(const QString &name, const std::multiset<Color> &heritage) {
     CharacterId max_id = 0;
     while (m_explorers[max_id].id() != NOBODY && max_id < MAX_EXPLORERS) {
@@ -85,9 +66,8 @@ bool Game::add_character(const QString &name, const std::multiset<Color> &herita
 bool Game::add_item(const Item &item) {
     if (m_inventory.add_item(item)) {
         m_history.insert(item.code);
-        if (gw()->initialized()) {
-            gw()->encyclopedia()->refresh();
-        }
+        gw()->encyclopedia()->refresh();
+
         return true;
     } else {
         return false;
@@ -154,9 +134,81 @@ void Game::refresh_ui_bars(QProgressBar *activity, QProgressBar *morale, QProgre
     energy->setValue(character.energy() + energy_gain);
 }
 
-void Game::serialize(QIODevice *) {
+void Game::serialize(QIODevice *dev) {
+    IO::write_bool(dev, m_accepting_trade);
+    IO::write_string(dev, m_tribe_name);
+    IO::write_long(dev, m_trade_partner);
+    IO::write_long(dev, m_game_id);
+    IO::write_long(dev, m_actions_done);
+
+    for (int i = 0; i < INVENTORY_SIZE; i++) {
+        IO::write_item(dev, m_inventory.items()[i]);
+    }
+
+    for (int i = 0; i < MAX_EXPLORERS; i++) {
+        m_explorers[i].serialize(dev);
+    }
+
+    for (int i = 0; i < TRADE_SLOTS; i++) {
+        IO::write_long(dev, m_trade_offer[i]);
+        IO::write_item(dev, m_accepted_offer[i]);
+    }
+
+    IO::write_short(dev, m_history.size());
+    for (ItemCode code : m_history) {
+        IO::write_short(dev, code);
+    }
 }
 
-Game *Game::deserialize(QIODevice *) {
-    return nullptr;
+Game *Game::deserialize(QIODevice *dev) {
+    Game *g = new Game;
+
+    g->m_accepting_trade = IO::read_bool(dev);
+    g->m_tribe_name = IO::read_string(dev);
+    g->m_trade_partner = IO::read_long(dev);
+    g->m_game_id = IO::read_long(dev);
+    g->m_actions_done = IO::read_long(dev);
+
+    for (size_t i = 0; i < INVENTORY_SIZE; i++) {
+        g->m_inventory.items()[i] = IO::read_item(dev);
+    }
+
+    for (int i = 0; i < MAX_EXPLORERS; i++) {
+        Character *c = Character::deserialize(dev);
+        g->m_explorers[i] = *c;
+        delete c;
+    }
+
+    for (int i = 0; i < TRADE_SLOTS; i++) {
+        g->m_trade_offer[i] = IO::read_long(dev);
+        g->m_accepted_offer[i] = IO::read_item(dev);
+    }
+
+    quint16 size = IO::read_short(dev);
+    for (quint16 i = 0; i < size; i++) {
+        g->m_history.insert(IO::read_short(dev));
+    }
+
+    g->m_tribes[NOBODY];
+    return g;
+}
+
+Game *Game::new_game() {
+    Game *g = new Game;
+
+    g->add_character(Generators::yokin_name(), { Generators::color() });
+    g->add_character(Generators::yokin_name(), { Generators::color() });
+
+    g->add_item(Item("globfruit"));
+    g->add_item(Item("globfruit"));
+    g->add_item(Item("pipeapple"));
+    g->add_item(Item("oolite"));
+    g->add_item(Item("oolite"));
+    g->add_item(Item("oolite"));
+    g->add_item(Item("oolite"));
+    g->add_item(Item("oolite"));
+
+    g->m_tribes[NOBODY];
+
+    return g;
 }

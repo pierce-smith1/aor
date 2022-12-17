@@ -8,7 +8,7 @@ int main(int argc, char **argv) {
     gw()->show();
     gw()->refresh_ui();
 
-    //CheatConsole console(gw());
+    CheatConsole console(gw());
 
     return app.exec();
 }
