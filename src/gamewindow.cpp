@@ -82,8 +82,6 @@ LKGameWindow::LKGameWindow()
     energy_palette.setColor(QPalette::Highlight, Colors::qcolor(Cherry));
     m_window.energy_bar->setPalette(energy_palette);
 
-    m_save_file.open(QIODevice::ReadWrite);
-
     m_encyclopedia->refresh();
 }
 
@@ -245,8 +243,8 @@ const std::vector<ItemSlot *> LKGameWindow::item_slots(ItemDomain domain) {
 }
 
 void LKGameWindow::save() {
-    if (!m_initialized) {
-        return;
+    if (m_save_file.openMode() == QIODevice::NotOpen) {
+        m_save_file.open(QIODevice::ReadWrite);
     }
 
     m_save_file.reset();
@@ -261,6 +259,10 @@ void LKGameWindow::save() {
 }
 
 void LKGameWindow::load() {
+    if (m_save_file.openMode() == QIODevice::NotOpen) {
+        m_save_file.open(QIODevice::ReadWrite);
+    }
+
     m_save_file.reset();
 
     char l = IO::read_byte(&m_save_file);
@@ -274,6 +276,10 @@ void LKGameWindow::load() {
     Game *game = Game::deserialize(&m_save_file);
     m_game = *game;
     delete game;
+}
+
+bool LKGameWindow::save_file_exists() {
+    return QFile::exists(SAVE_FILE_NAME);
 }
 
 void LKGameWindow::timerEvent(QTimerEvent *event) {

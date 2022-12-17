@@ -63,6 +63,7 @@ public:
 
     void save();
     void load();
+    bool save_file_exists();
 
 protected:
     void timerEvent(QTimerEvent *event) override;

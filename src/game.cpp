@@ -197,16 +197,9 @@ Game *Game::new_game() {
     Game *g = new Game;
 
     g->add_character(Generators::yokin_name(), { Generators::color() });
-    g->add_character(Generators::yokin_name(), { Generators::color() });
 
-    g->add_item(Item("globfruit"));
-    g->add_item(Item("globfruit"));
-    g->add_item(Item("pipeapple"));
-    g->add_item(Item("oolite"));
-    g->add_item(Item("oolite"));
-    g->add_item(Item("oolite"));
-    g->add_item(Item("oolite"));
-    g->add_item(Item("oolite"));
+    g->inventory().items()[0] = Item("globfruit");
+    g->inventory().items()[1] = Item("globfruit");
 
     g->m_tribes[NOBODY];
 

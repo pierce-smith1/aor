@@ -3,6 +3,7 @@
 #include <QtGui>
 #include <QApplication>
 #include <QLabel>
+#include <QMessageBox>
 
 #include "itemslot.h"
 #include "gamewindow.h"
