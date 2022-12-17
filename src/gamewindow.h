@@ -15,6 +15,7 @@ class LKGameWindow;
 #include "character.h"
 #include "game.h"
 #include "trade.h"
+#include "encryptedfile.h"
 
 class ItemSlot;
 class RecipieBox;
@@ -80,7 +81,7 @@ private:
     GameId m_selected_tribe_id = NOBODY;
     std::vector<ItemSlot *> m_slots;
     DoughbyteConnection m_connection;
-    QFile m_save_file;
+    EncryptedFile m_save_file;
     Encyclopedia *m_encyclopedia;
 
     friend LKGameWindow *gw();
