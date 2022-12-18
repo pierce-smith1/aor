@@ -5,8 +5,6 @@ CheatConsole::CheatConsole(LKGameWindow *game)
 {
     console.setupUi(this);
     QObject::connect(console.submit_button, SIGNAL(clicked()), this, SLOT(consume_input()));
-
-    show();
 }
 
 void CheatConsole::execute(const QString &input) {

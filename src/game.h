@@ -40,6 +40,7 @@ public:
     QString &tribe_name();
     ItemHistory &history();
     quint64 &actions_done();
+    bool &fast_actions();
 
     bool add_character(const QString &name, const std::multiset<Color> &heritage);
     bool add_item(const Item &item);
@@ -59,7 +60,6 @@ public:
 private:
     Characters m_explorers;
     Inventory m_inventory;
-    ForeignTribes m_tribes;
     Offer m_trade_offer {};
     bool m_accepting_trade = false;
     RemoteOffer m_accepted_offer {};
@@ -68,4 +68,8 @@ private:
     QString m_tribe_name;
     ItemHistory m_history;
     quint64 m_actions_done;
+
+    // Transient
+    ForeignTribes m_tribes;
+    bool m_fast_actions = false;
 };

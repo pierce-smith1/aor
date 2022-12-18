@@ -25,7 +25,8 @@ using ExternalItemIds = std::map<ItemDomain, std::array<ItemId, MAX_ARRAY_SIZE>>
 using Effects = std::array<Item, EFFECT_SLOTS>;
 using ToolIds = std::map<ItemDomain, ItemId>;
 
-struct Character {
+class Character {
+public:
     explicit Character();
     explicit Character(CharacterId id, const QString &name, const Heritage &heritage);
 

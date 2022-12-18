@@ -49,6 +49,10 @@ quint64 &Game::actions_done() {
     return m_actions_done;
 }
 
+bool &Game::fast_actions() {
+    return m_fast_actions;
+}
+
 bool Game::add_character(const QString &name, const std::multiset<Color> &heritage) {
     CharacterId max_id = 0;
     while (m_explorers[max_id].id() != NOBODY && max_id < MAX_EXPLORERS) {

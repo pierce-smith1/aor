@@ -59,7 +59,7 @@ const static std::vector<CheatCommand> COMMANDS = {
     },
     {
         "print",
-        "Print detailed information about the item at yx ($0, $1) in the inventory",
+        "Print detailed information about the item at yx $0, $1 in the inventory",
         2,
         [](LKGameWindow *game, const QStringList &args) {
             QS_TO_INT(y, args[0])
@@ -79,65 +79,27 @@ const static std::vector<CheatCommand> COMMANDS = {
         }
     },
     {
-        "move",
-        "Move the item at yx ($0, $1) in the inventory to yx ($2, $3) in the inventory",
-        4,
-        [](LKGameWindow *game, const QStringList &args) {
-            QS_TO_INT(y0, args[0]);
-            QS_TO_INT(x0, args[1]);
-            QS_TO_INT(y1, args[2]);
-            QS_TO_INT(x1, args[3]);
-
-            OOB_CHECK(y0, x0);
-            OOB_CHECK(y1, x1);
-
-            Item item {game->game().inventory().get_item(y0, x0)};
-            game->game().inventory().put_item(item, y1, x1);
-            game->game().inventory().remove_item(y0, x0);
-
-            qDebug("done");
-        }
-    },
-    {
-        "swap",
-        "Swap the item at yx ($0, $1) in the inventory with the item at yx ($2, $3) in the inventory",
-        4,
-        [](LKGameWindow *game, const QStringList &args) {
-            QS_TO_INT(y0, args[0]);
-            QS_TO_INT(x0, args[1]);
-            QS_TO_INT(y1, args[2]);
-            QS_TO_INT(x1, args[3]);
-
-            OOB_CHECK(y0, x0);
-            OOB_CHECK(y1, x1);
-
-            Item item_a {game->game().inventory().get_item(y0, x0)};
-            Item item_b {game->game().inventory().get_item(y1, x1)};
-
-            game->game().inventory().put_item(item_a, y1, x1);
-            game->game().inventory().put_item(item_b, y0, x0);
-
-            qDebug("done");
-        }
-    },
-    {
         "make",
-        "Make a new item with name ($0) at yx ($1, $2)",
+        "Make a new item with name $0 at yx $1, $2; if $1 and $2 are '.', then make it in the first available slot",
         3,
         [](LKGameWindow *game, const QStringList &args) {
+            if (args[1] == "." && args[2] == ".") {
+                game->game().add_item(Item(args[0]));
+            }
+
             QS_TO_INT(y, args[1]);
             QS_TO_INT(x, args[2]);
 
             OOB_CHECK(y, x);
 
-            game->game().inventory().put_item(Item(Item::def_of(args[0])), y, x);
+            game->game().inventory().put_item(Item(args[0]), y, x);
 
             qDebug("done");
         }
     },
     {
         "save",
-        "Save the current state of the game to the file \"save.lk\"",
+        "Save the current state of the game to disk",
         0,
         [](LKGameWindow *game, const QStringList &) {
             game->save();
@@ -147,7 +109,7 @@ const static std::vector<CheatCommand> COMMANDS = {
     },
     {
         "load",
-        "Load a saved character state from the file \"save.lk\"",
+        "Load a saved character state to disk",
         0,
         [](LKGameWindow *game, const QStringList &) {
             game->load();
@@ -157,7 +119,7 @@ const static std::vector<CheatCommand> COMMANDS = {
     },
     {
         "name",
-        "Change the current character's name to ($0); if $0 is '?', show the current name instead",
+        "Change the current character's name to $0; if $0 is '?', show the current name instead",
         1,
         [](LKGameWindow *game, const QStringList &args) {
             QString new_name = args[0];
@@ -173,7 +135,7 @@ const static std::vector<CheatCommand> COMMANDS = {
     },
     {
         "energy",
-        "Change the current character's energy to ($0); if $0 is '?', show the current energy instead",
+        "Change the current character's energy to $0; if $0 is '?', show the current energy instead",
         1,
         [](LKGameWindow *game, const QStringList &args) {
             if (args[0] == "?") {
@@ -195,7 +157,7 @@ const static std::vector<CheatCommand> COMMANDS = {
     },
     {
         "morale",
-        "Change the current character's morale to ($0); if $0 is '?', show the current morale instead",
+        "Change the current character's morale to $0; if $0 is '?', show the current morale instead",
         1,
         [](LKGameWindow *game, const QStringList &args) {
             if (args[0] == "?") {
@@ -217,7 +179,7 @@ const static std::vector<CheatCommand> COMMANDS = {
     },
     {
         "start",
-        "Start doing activity with domain code ($0)",
+        "Start doing activity with domain code $0",
         2,
         [](LKGameWindow *game, const QStringList &args) {
             QS_TO_INT(action, args[0]);
@@ -229,7 +191,7 @@ const static std::vector<CheatCommand> COMMANDS = {
     },
     {
         "timel",
-        "Change the amount of ms left in the current activity to ($0); if $0 is '?', show the amount of ms left instead",
+        "Change the amount of ms left in the current activity to $0; if $0 is '?', show the amount of ms left instead",
         1,
         [](LKGameWindow *game, const QStringList &args) {
             if (args[0] == "?") {
@@ -246,7 +208,7 @@ const static std::vector<CheatCommand> COMMANDS = {
     },
     {
         "effect",
-        "Set the effect at n = ($0) to a new item with code ($1)",
+        "Set the effect at n = $0 to a new item with code $1",
         2,
         [](LKGameWindow *game, const QStringList &args) {
             QS_TO_INT(n, args[0]);
@@ -255,6 +217,36 @@ const static std::vector<CheatCommand> COMMANDS = {
             game->selected_char().effects()[n] = Item(code);
 
             qDebug("done");
+        }
+    },
+    {
+        "couple",
+        "Add an egg from explorers with names $0 and $1 to your inventory that hatches after 1 action",
+        2,
+        [](LKGameWindow *game, const QStringList &args) {
+            auto &characters = game->game().characters();
+
+            CharacterId parent_id1 = std::find_if(begin(characters), end(characters), [&](Character &a) {
+                return a.name() == args[0];
+            })->id();
+
+            CharacterId parent_id2 = std::find_if(begin(characters), end(characters), [&](Character &a) {
+                return a.name() == args[1];
+            })->id();
+
+            Item egg = Item::make_egg(parent_id1, parent_id2);
+            egg.instance_properties.map[InstanceEggFoundActionstamp] = 0;
+            game->game().add_item(egg);
+        }
+    },
+    {
+        "fast",
+        "If $0 is 0, turn off accelerated actions; otherwise turn it on",
+        1,
+        [](LKGameWindow *game, const QStringList &args) {
+            QS_TO_INT(fast, args[0]);
+
+            game->game().fast_actions() = fast;
         }
     }
 };
