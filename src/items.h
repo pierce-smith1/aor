@@ -53,6 +53,7 @@ enum ItemDomain : ItemType {
     ForeignOffering = 1 << 11,
     Defiling        = 1 << 12,
     Coupling        = 1 << 13, Explorer = 1 << 13, Egg = 1 << 13,
+    Untradeable     = 1 << 14,
     Tool            = SmithingTool | ForagingTool | MiningTool
 };
 
@@ -425,7 +426,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "fennahian_egg", "Fennahian Egg",
         "<i>You could make an omelette out of it, but maybe it's<br>"
         "best to just wait for it to hatch...</i>",
-        1 USES, Consumable, LEVEL 1,
+        1 USES, Consumable | Untradeable, LEVEL 1,
         {
             { ConsumableEnergyBoost, 50 }
         }

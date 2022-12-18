@@ -67,7 +67,9 @@ void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
 
     switch (type()) {
         case Offering: {
-            if (gw()->game().trade_partner() == NOBODY) {
+            if (gw()->game().trade_partner() == NOBODY
+                && !(dropped_item.def()->type & Untradeable)
+            ) {
                 event->acceptProposedAction();
             }
             break;
@@ -181,8 +183,8 @@ void ToolSlot::insert_tool_slots() {
 PortraitSlot::PortraitSlot()
     : ExternalSlot(Portrait, 0)
 {
-    setMinimumSize(QSize(0, 0));
-    setMaximumSize(QSize(10000, 10000));
+    setMinimumSize(QSize(160, 230));
+    setMaximumSize(QSize(160, 230));
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 }
 

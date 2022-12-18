@@ -181,14 +181,16 @@ void Item::for_each_tool_discover(const std::function<void(ItemProperty, ItemPro
 QString Item::type_to_string(ItemType type) {
     QString string;
 
-    if (type & Consumable) string += "Consumable, ";
-    if (type & Material) string += "Material, ";
-    if (type & SmithingTool) string += "Smithing Tool, ";
-    if (type & ForagingTool) string += "Foraging Tool, ";
-    if (type & MiningTool) string += "Mining Tool, ";
-    if (type & Blessing) string += "Blessing, ";
-    if (type & Artifact) string += "Artifact, ";
-    if (type & Rune) string += "Curse, ";
+    if (type & Untradeable) { string += "Untradeable "; }
+
+    if (type & Consumable) { string += "Consumable, "; }
+    if (type & Material)  { string += "Material, "; }
+    if (type & SmithingTool) { string += "Smithing Tool, "; }
+    if (type & ForagingTool) { string += "Foraging Tool, "; }
+    if (type & MiningTool) { string += "Mining Tool, "; }
+    if (type & Blessing) { string += "Blessing, "; }
+    if (type & Artifact) { string += "Artifact, "; }
+    if (type & Rune) { string += "Curse, "; }
 
     // Chop off the last comma and space
     return string.left(string.length() - 2);
