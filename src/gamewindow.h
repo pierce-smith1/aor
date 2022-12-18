@@ -25,6 +25,7 @@ class Tooltip;
 using ActivityTimers = std::map<CharacterId, int>;
 
 static const QString SAVE_FILE_NAME = "save.rho";
+static const int BACKUP_INTERVAL_MS = 1000 * 6;
 
 class LKGameWindow : public QMainWindow {
     Q_OBJECT
@@ -83,6 +84,7 @@ private:
     DoughbyteConnection m_connection;
     EncryptedFile m_save_file;
     Encyclopedia *m_encyclopedia;
+    int m_backup_timer_id;
 
     friend LKGameWindow *gw();
 };

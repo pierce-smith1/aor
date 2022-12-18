@@ -87,6 +87,7 @@ LKGameWindow::LKGameWindow()
     m_encyclopedia->refresh();
 
     m_window.statusbar->showMessage("aor " + GAME_VERSION);
+    m_backup_timer_id = startTimer(BACKUP_INTERVAL_MS);
 }
 
 bool LKGameWindow::initialized() {
@@ -285,6 +286,12 @@ bool LKGameWindow::save_file_exists() {
 }
 
 void LKGameWindow::timerEvent(QTimerEvent *event) {
+    if (event->timerId() == m_backup_timer_id) {
+        if (m_save_file.exists()) {
+            m_save_file.copy(SAVE_FILE_NAME + ".bak");
+        }
+    }
+
     for (Character &character : m_game.characters()) {
         if (character.activity().timer_id() == event->timerId() && character.activity().action() != None) {
             character.activity().progress(ACTIVITY_TICK_RATE_MS);
