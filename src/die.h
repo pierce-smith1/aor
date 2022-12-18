@@ -3,42 +3,65 @@
 #include <sstream>
 
 #include <QString>
+#include <QTextStream>
 #include <QMessageBox>
 
-enum FatalErrorType {
-    ItemCodeNonexistant,
+enum FatalErrorType : int {
+    ItemCodeNonexistant = 1,
     UncaughtUnknownException,
+    ProductsForUnknownDomain,
+    InjuriesForUnknownDomain,
+    AssessmentForUnknownDomain,
+    NonEffectIntoEffectSlot,
+    EncyclopediaSlotSet,
+    PortraitSlotGet,
+    PortraitSlotSet,
+    SaveInvalidHeader,
+    EmptyListSample,
+    EmptyIdRef,
+    ItemByIdLookupMiss,
+    DefLookupMiss,
+    CodeLookupMiss,
+    OutOfRangeException,
 };
 
 QString bugcheck_error_string(FatalErrorType type);
 
-inline std::string format(std::stringstream &ss)
+inline QString format(QTextStream &s)
 {
-    return ss.str();
+    QString string = s.readAll();
+    return string.left(string.size() - 2);
 }
 
-template<typename T, typename... Args> inline std::string format(std::stringstream &ss, T first, Args... args)
-{
-    ss << first;
-    return format(ss, args...);
+inline QString format() {
+    return "";
 }
 
-template<typename T, typename... Args> inline std::string format(T first, Args... args)
+template<typename T, typename... Args> QString format(QTextStream &s, T first, Args... args)
 {
-    std::stringstream ss;
-    return format(ss, first, args...);
+    s << first << ", ";
+    return format(s, args...);
+}
+
+template<typename T, typename... Args> QString format(T first, Args... args)
+{
+    QString u;
+    QTextStream s(&u);
+    return format(s, first, args...);
 }
 
 template <typename... T> void bugcheck(FatalErrorType error, T... args) {
     QMessageBox bugcheck;
+    bugcheck.setStyleSheet("font-family: monospace");
+    bugcheck.setIcon(QMessageBox::Critical);
     bugcheck.setText(
         "A problem has been detected and Rhodon has been resealed to prevent damage<br>"
         "to the universe."
     );
-    bugcheck.setInformativeText(
-        bugcheck_error_string(error) + "<br>"
+    bugcheck.setInformativeText(QString(
+        "<b>%1</b><br><br>"
         "If this is the first time you've seen your consciousness ripped from Rhodon,<br>"
-        "rest until your mind restarts. If this happens again, follow<br>"
+        "just close your eyes and slowly count to 10. If this happens again, follow<br>"
         "these steps:<br>"
         "<br>"
         "Check to make sure any new organs have been properly installed.<br>"
@@ -46,11 +69,13 @@ template <typename... T> void bugcheck(FatalErrorType error, T... args) {
         "<br>"
         "If problems continue, disable or remove any newly installed organs.<br>"
         "Disable memory options such as facial recognition or object permanence.<br>"
-        "If you need to use an anesthetic to remove or disable organs but do not have any,<br>"
-        "suppress any memories of your friends and family until your soul falls alseep,<br>"
+        "If you need to use an anesthetic to remove or disable organs,<br>"
+        "suppress any memories of your friends and family until your soul is quiet,<br>"
         "then proceed.<br>"
         "<br>"
         "Technical information:<br>"
-        "*** STOP: " + format(args...)
-    );
+        "*** STOP: %2"
+    ).arg(bugcheck_error_string(error)).arg(format(args...)));
+    bugcheck.exec();
+    exit(error);
 }

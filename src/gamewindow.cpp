@@ -5,6 +5,7 @@
 #include "effectslot.h"
 #include "encyclopedia.h"
 #include "explorerbutton.h"
+#include "die.h"
 
 LKGameWindow *LKGameWindow::the_game_window;
 
@@ -270,7 +271,7 @@ void LKGameWindow::load() {
     char o = IO::read_byte(&m_save_file);
 
     if (r != 'r' || h != 'h' || o != 'o') {
-        qFatal("Save header is incorrect - it's either corrupt or not a valid save file");
+        bugcheck(SaveInvalidHeader, r, h, o);
     }
 
     Game *game = Game::deserialize(&m_save_file);

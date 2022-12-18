@@ -1,6 +1,7 @@
 #include "character.h"
 #include "game.h"
 #include "gamewindow.h"
+#include "die.h"
 
 Character::Character()
     : m_id(NOBODY),
@@ -178,7 +179,8 @@ bool Character::can_perform_action(ItemDomain domain) {
             return energy() >= tool.def()->properties[ToolEnergyCost] && !m_activity.ongoing();
         }
         default: {
-            qFatal("Tried to assess whether character (%s) can do invalid action domain (%d)", m_name.toStdString().c_str(), domain);
+            bugcheck(AssessmentForUnknownDomain, m_id, domain);
+            return false;
         }
     }
 }

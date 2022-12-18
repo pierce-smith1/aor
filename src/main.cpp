@@ -1,26 +1,35 @@
 #include "main.h"
 #include "generators.h"
+#include "die.h"
 
 int main(int argc, char **argv) {
-    QApplication app(argc, argv);
+    std::set_terminate([]() {
+        bugcheck(UncaughtUnknownException);
+    });
 
-    LKGameWindow::instantiate_singleton();
+    try {
+        QApplication app(argc, argv);
 
-    if (!gw()->save_file_exists()) {
-        new_game_prompt();
-    } else {
-        gw()->load();
+        LKGameWindow::instantiate_singleton();
+
+        if (!gw()->save_file_exists()) {
+            new_game_prompt();
+        } else {
+            gw()->load();
+        }
+
+        gw()->show();
+        gw()->refresh_ui();
+
+        CheatConsole console(gw());
+        if (argc == 2 && strcmp(argv[1], "cheat") == 0) {
+            console.show();
+        }
+
+        return app.exec();
+    } catch (std::out_of_range &e) {
+        bugcheck(OutOfRangeException, e.what());
     }
-
-    gw()->show();
-    gw()->refresh_ui();
-
-    CheatConsole console(gw());
-    if (argc == 2 && strcmp(argv[1], "cheat") == 0) {
-        console.show();
-    }
-
-    return app.exec();
 }
 
 void new_game_prompt() {

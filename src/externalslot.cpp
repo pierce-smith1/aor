@@ -2,6 +2,7 @@
 #include "items.h"
 #include "foreigntradeslot.h"
 #include "smithingresultslot.h"
+#include "die.h"
 
 ExternalSlot::ExternalSlot(ItemDomain type, int n)
     : ItemSlot(), item_slot_type(type), n(n)
@@ -189,11 +190,12 @@ PortraitSlot::PortraitSlot()
 }
 
 Item PortraitSlot::get_item() {
-    qFatal("Tried to get item from a portrait slot");
+    bugcheck(PortraitSlotGet);
+    return Item();
 }
 
 void PortraitSlot::set_item(const Item &item) {
-    qFatal("Tried to set item of a portrait slot (code %d, id %lld)", item.code, item.id);
+    bugcheck(PortraitSlotSet, item.code, item.id, item.uses_left, item.intent);
 }
 
 void PortraitSlot::refresh_pixmap() {

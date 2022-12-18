@@ -11,7 +11,6 @@ QString Colors::name(Color c) {
         case Lime: { return "Lime"; }
     }
 
-    qFatal("unreachable");
     return "";
 }
 
@@ -26,7 +25,6 @@ QColor Colors::qcolor(Color c) {
         case Lime: { return QColor(102, 204, 51); }
     }
 
-    qFatal("unreachable");
     return QColor(0, 0, 0);
 }
 
@@ -42,7 +40,6 @@ ItemProperties Colors::heritage_properties(Color c, int magnitude) {
         case Lime: { return { { HeritageMaterialValueBonus, 7 * factor } }; }
     }
 
-    qFatal("unreachable");
     return {};
 }
 

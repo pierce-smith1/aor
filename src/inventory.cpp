@@ -1,5 +1,6 @@
 #include "inventory.h"
 #include "gamewindow.h"
+#include "die.h"
 
 Items &Inventory::items() {
     return m_items;
@@ -7,7 +8,7 @@ Items &Inventory::items() {
 
 Item &Inventory::get_item_ref(ItemId id) {
     if (id == EMPTY_ID) {
-        qFatal("Tried to get reference for the empty id");
+        bugcheck(EmptyIdRef);
     }
 
     auto search_result = std::find_if(begin(m_items), end(m_items), [id](const Item &item) {
@@ -15,7 +16,7 @@ Item &Inventory::get_item_ref(ItemId id) {
     });
 
     if (search_result == end(m_items)) {
-        qFatal("Searching for an item by id turned up nothing (%llx)", id);
+        bugcheck(ItemByIdLookupMiss, "get_ref", id);
     }
 
     return *search_result;
@@ -31,7 +32,7 @@ Item Inventory::get_item(ItemId id) const {
     });
 
     if (search_result == end(m_items)) {
-        qFatal("Searching for an item by id turned up nothing (%llx)", id);
+        bugcheck(ItemByIdLookupMiss, "get_instance", id);
     }
 
     return *search_result;
@@ -61,7 +62,7 @@ void Inventory::remove_item(ItemId id) {
         }
     }
 
-    qWarning("Tried to remove item by id, but it didn't exist (%lld)", id);
+    bugcheck(ItemByIdLookupMiss, "remove", id);
 }
 
 bool Inventory::add_item(const Item &item) {
@@ -75,11 +76,6 @@ bool Inventory::add_item(const Item &item) {
         }
     }
 
-    qWarning(
-        "Tried to add item (code %d, id %lld) to items, but there was no open spot",
-        item.code,
-        item.id
-    );
     return false;
 }
 

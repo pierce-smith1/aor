@@ -10,6 +10,7 @@
 
 #include "items.h"
 #include "colors.h"
+#include "die.h"
 
 class Character;
 
@@ -20,7 +21,7 @@ namespace Generators {
 
     template<typename T> T sample_with_weights(const std::vector<std::pair<T, double>> &weights) {
         if (weights.empty()) {
-            qFatal("Tried to sample from an empty list");
+            bugcheck(EmptyListSample);
         }
 
         double total_weight = 0.0;

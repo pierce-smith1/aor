@@ -1,4 +1,5 @@
 #include "effectslot.h"
+#include "die.h"
 
 EffectSlot::EffectSlot(int n)
     : ItemSlot(), n(n), m_effect_code(0)
@@ -20,7 +21,7 @@ void EffectSlot::set_item(const Item &item) {
         return;
     }
 
-    qFatal("Tried to slot non-effect item into effect slot (code %d, slotn %d)", item.code, n);
+    bugcheck(NonEffectIntoEffectSlot, item.code, n);
 }
 
 ItemDomain EffectSlot::type() {

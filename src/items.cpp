@@ -1,6 +1,7 @@
 #include "items.h"
 #include "generators.h"
 #include "gamewindow.h"
+#include "die.h"
 
 Item Item::empty_item = Item(0);
 
@@ -33,7 +34,7 @@ ItemDefinitionPtr Item::def_of(ItemCode code) {
     );
 
     if (result == ITEM_DEFINITIONS.end()) {
-        qFatal("Tried to get definition for invalid item code (%d)", code);
+        bugcheck(DefLookupMiss, "code", code);
     }
 
     return result;
@@ -44,7 +45,7 @@ ItemDefinitionPtr Item::def_of(const QString &name) {
     auto result = std::find_if(begin(ITEM_DEFINITIONS), end(ITEM_DEFINITIONS), match_name);
 
     if (result == ITEM_DEFINITIONS.end()) {
-        qFatal("Tried to get definition for invalid item name (%s)", name.toStdString().c_str());
+        bugcheck(DefLookupMiss, "name", name);
     }
 
     return result;
@@ -60,7 +61,7 @@ ItemCode Item::code_of(const QString &name) {
     });
 
     if (result == end(ITEM_DEFINITIONS)) {
-        qFatal("Tried to look up code for invalid item name (%s)", name.toStdString().c_str());
+        bugcheck(CodeLookupMiss, "name", name);
     }
 
     return result->code;
@@ -117,7 +118,7 @@ QPixmap Item::pixmap_of(const ItemDefinition &def) {
     QString pixmap_name = QString(":/assets/img/items/%1.png").arg(def.internal_name);
 
     if (!QFile(pixmap_name).exists()) {
-        qDebug("Missing item pixmap (%s)", def.internal_name.toStdString().c_str());
+        qWarning("Missing item pixmap (%s)", def.internal_name.toStdString().c_str());
         pixmap_name = ":/assets/img/items/missing.png";
     }
 
@@ -133,7 +134,7 @@ QPixmap Item::sil_pixmap_of(ItemCode code) {
     QString pixmap_name = QString(":/assets/img/items/sil/%1.png").arg(def->internal_name);
 
     if (!QFile(pixmap_name).exists()) {
-        qDebug("Missing item sil pixmap (%s)", def->internal_name.toStdString().c_str());
+        qWarning("Missing item sil pixmap (%s)", def->internal_name.toStdString().c_str());
         pixmap_name = ":/assets/img/items/missing_sil.png";
     }
 

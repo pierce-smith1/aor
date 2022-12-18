@@ -1,6 +1,7 @@
 #include "actions.h"
 #include "externalslot.h"
 #include "gamewindow.h"
+#include "die.h"
 
 CharacterActivity::CharacterActivity(CharacterId id, ItemDomain action, qint64 ms_total, qint64 ms_left)
     : m_action(action),
@@ -149,7 +150,7 @@ std::vector<Item> CharacterActivity::products() {
             return std::vector(begin(offer), end(offer));
         }
         default: {
-            qFatal("Tried to get products for unknown domain (%d)", m_action);
+            bugcheck(ProductsForUnknownDomain, m_char_id, m_action);
             return {};
         }
     }
@@ -304,7 +305,7 @@ void CharacterActivity::give_injuries() {
             case Defiling: { if (!def.properties[InjuryDefiling]) { continue; } break; }
             case Trading: { if (!def.properties[InjuryTrading]) { continue; } break; }
             case Coupling: { if (!def.properties[InjuryCoupling]) { continue; } break; }
-            default: { qFatal("Tried to give injuries for unknown action domain (%d)", m_action); }
+            default: { bugcheck(InjuriesForUnknownDomain, m_char_id, m_action); }
         }
 
         possible_weighted_injuries.push_back({ def.code, 1 });

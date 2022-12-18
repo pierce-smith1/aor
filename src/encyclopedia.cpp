@@ -1,4 +1,5 @@
 #include "encyclopedia.h"
+#include "die.h"
 
 Encyclopedia::Encyclopedia()
     : m_widget()
@@ -65,8 +66,8 @@ Item EncyclopediaSlot::get_item() {
     return code_exists ? Item(item_code()) : Item();
 }
 
-void EncyclopediaSlot::set_item(const Item &) {
-    qFatal("Tried to set item of encyclopedia slot");
+void EncyclopediaSlot::set_item(const Item &item) {
+    bugcheck(EncyclopediaSlotSet, item.code, item.id, item.uses_left, item.intent);
 }
 
 void EncyclopediaSlot::refresh_pixmap() {
