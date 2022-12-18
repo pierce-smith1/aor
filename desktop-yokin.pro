@@ -5,7 +5,7 @@
 TEMPLATE = app
 TARGET = desktop-yokin
 INCLUDEPATH += .
-CONFIG += debug
+CONFIG += debug_and_release
 CONFIG += static
 
 RESOURCES += images.qrc

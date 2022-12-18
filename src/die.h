@@ -37,14 +37,12 @@ inline QString format() {
     return "";
 }
 
-template<typename T, typename... Args> QString format(QTextStream &s, T first, Args... args)
-{
+template<typename T, typename... Args> QString format(QTextStream &s, T first, Args... args) {
     s << first << ", ";
     return format(s, args...);
 }
 
-template<typename T, typename... Args> QString format(T first, Args... args)
-{
+template<typename T, typename... Args> QString format(T first, Args... args) {
     QString u;
     QTextStream s(&u);
     return format(s, first, args...);

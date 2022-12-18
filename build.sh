@@ -11,10 +11,10 @@ compile() {
     qmake
 
     # extract the include flags made by qmake into .clangd
-    INCFLAGS=$(grep 'INCPATH *=' Makefile | cut -f 2- -d '-' | tr ' ' ',')
+    INCFLAGS=$(grep 'INCPATH *=' Makefile.Debug | cut -f 2- -d '-' | tr ' ' ',')
     echo -e "CompileFlags:\n\tAdd: [${INCFLAGS},-std=c++17]" > .clangd
 
-    make
+    make debug
 
     cd $WHEREAMI/server
     ./build.sh
@@ -46,19 +46,6 @@ generate_qrc() {
 
     echo "</qresource></RCC>" >> .images.qrc
 
-    # I use QT Designer.
-    # QT Designer has this UNSUPPRESSABLE feature where it whines at you if the
-    # resource file it's using changes externally.
-    # This causes QT Designer to complain with a stop-the-world, focus-grabbing dialog
-    # every.
-    # fucking.
-    # time.
-    # you compile this shit.
-    # It makes me desire the sweet icy release of death.
-    # This is why the images.qrc is written to a temporary file,
-    # and then checked to see if it's the same as any existing images.qrc
-    # before actually changing it!!!!
-    #
     if [[ $(sha256sum .images.qrc | cut -f 1 -d " ") != $(sha256sum images.qrc | cut -f 1 -d " ") ]]; then
         cp .images.qrc images.qrc
     fi

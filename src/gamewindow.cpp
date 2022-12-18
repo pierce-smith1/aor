@@ -6,6 +6,7 @@
 #include "encyclopedia.h"
 #include "explorerbutton.h"
 #include "die.h"
+#include "main.h"
 
 LKGameWindow *LKGameWindow::the_game_window;
 
@@ -84,6 +85,8 @@ LKGameWindow::LKGameWindow()
     m_window.energy_bar->setPalette(energy_palette);
 
     m_encyclopedia->refresh();
+
+    m_window.statusbar->showMessage("aor " + GAME_VERSION);
 }
 
 bool LKGameWindow::initialized() {
@@ -126,9 +129,7 @@ void LKGameWindow::register_slot(ItemSlot *slot) {
     m_slots.push_back(slot);
 }
 
-void LKGameWindow::notify(NotificationType, const QString &message) {
-    m_window.statusbar->showMessage(message);
-}
+void LKGameWindow::notify(NotificationType, const QString &message) { }
 
 void LKGameWindow::refresh_ui() {
     m_window.player_name_label->setText(QString("Explorer <b>%1</b>").arg(selected_char().name()));
