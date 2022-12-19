@@ -149,11 +149,11 @@ void Game::refresh_ui_bars(QProgressBar *activity, QProgressBar *spirit, QProgre
 
     double spirit_gain = character.spirit_to_gain() * character.activity().percent_complete();
     spirit->setMaximum(character.max_spirit());
-    spirit->setValue(character.spirit() + spirit_gain);
+    spirit->setValue(character.spirit_int() + spirit_gain);
 
     double energy_gain = character.energy_to_gain() * character.activity().percent_complete();
     energy->setMaximum(character.max_energy());
-    energy->setValue(character.energy() + energy_gain);
+    energy->setValue(character.energy_int() + energy_gain);
 }
 
 void Game::serialize(QIODevice *dev) {

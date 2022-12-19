@@ -51,7 +51,7 @@ public:
 
     Character &character(CharacterId id);
 
-    void refresh_ui_bars(QProgressBar *activity, QProgressBar *morale, QProgressBar *energy, CharacterId char_id);
+    void refresh_ui_bars(QProgressBar *activity, QProgressBar *spirit, QProgressBar *energy, CharacterId char_id);
 
     void serialize(QIODevice *dev);
     static Game *deserialize(QIODevice *dev);

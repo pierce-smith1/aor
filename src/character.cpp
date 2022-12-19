@@ -103,6 +103,14 @@ quint16 &Character::spirit() {
     return m_spirit;
 }
 
+int Character::energy_int() {
+    return energy();
+}
+
+int Character::spirit_int() {
+    return spirit();
+}
+
 int Character::max_energy() {
     int energy = BASE_MAX_ENERGY;
 

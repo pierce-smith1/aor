@@ -9,7 +9,7 @@
 #include "items.h"
 
 const static int CHERRY_ENERGY_MULTIPLIER = 20;
-const static int BLUERASPBERRY_MORALE_MULTIPLIER = 20;
+const static int BLUERASPBERRY_spirit_MULTIPLIER = 20;
 const static int BLUEBERRY_ENERGY_BONUS = 10;
 
 enum Color : quint16 {

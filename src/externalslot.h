@@ -52,6 +52,8 @@ public:
     void set_item(const Item &item) override;
     void refresh_pixmap() override;
 
+    QPixmap activity_pixmap();
+
     static void insert_portrait_slot();
 
 protected:

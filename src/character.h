@@ -44,6 +44,8 @@ public:
 
     quint16 &energy();
     quint16 &spirit();
+    int energy_int();
+    int spirit_int();
     int max_energy();
     int max_spirit();
     int base_spirit_cost();

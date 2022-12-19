@@ -186,7 +186,9 @@ PortraitSlot::PortraitSlot()
 {
     setMinimumSize(QSize(160, 230));
     setMaximumSize(QSize(160, 230));
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    m_item_label->setMaximumSize(QSize(160, 230));
+    m_item_label->setMinimumSize(QSize(160, 230));
+    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 }
 
 Item PortraitSlot::get_item() {
@@ -199,6 +201,21 @@ void PortraitSlot::set_item(const Item &item) {
 }
 
 void PortraitSlot::refresh_pixmap() {
+    m_item_label->setPixmap(activity_pixmap());
+    setStyleSheet("background-color: "
+        + Colors::blend(gw()->selected_char().heritage()).name() +
+        "; border-radius: 5px;"
+    );
+}
+
+QPixmap PortraitSlot::activity_pixmap() {
+    switch (gw()->selected_char().activity().action()) {
+        default: {
+            return QPixmap(":assets/img/lk/idle.png");
+        }
+    }
+
+    return QPixmap();
 }
 
 void PortraitSlot::insert_portrait_slot() {
