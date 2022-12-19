@@ -64,7 +64,6 @@ test/test
 desktop-yokin
 *.qrc
 .clangd
-lk
 *.class
 *.kate-swp
 *.png~
