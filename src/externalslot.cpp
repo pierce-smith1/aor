@@ -219,7 +219,8 @@ QPixmap PortraitSlot::activity_pixmap() {
 }
 
 void PortraitSlot::insert_portrait_slot() {
-    gw()->window().player_layout->addWidget(new PortraitSlot());
+    QGridLayout *layout = (QGridLayout *) gw()->window().player_widget->layout();
+    layout->addWidget(new PortraitSlot(), 3, 0);
 }
 
 void PortraitSlot::enterEvent(QEvent *) { }
