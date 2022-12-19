@@ -75,7 +75,7 @@ private:
     static LKGameWindow *the_game_window;
 
     bool m_initialized = false;
-    CharacterId m_selected_char_id = 0;
+    CharacterId m_selected_char_id = NOBODY;
     Ui::LKMainWindow m_window;
     Tooltip *m_item_tooltip;
     Game m_game;

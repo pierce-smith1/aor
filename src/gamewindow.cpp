@@ -111,10 +111,14 @@ Tooltip *&LKGameWindow::tooltip() {
 }
 
 Character &LKGameWindow::selected_char() {
-    return m_game.characters().at(m_selected_char_id);
+    return m_game.character(selected_char_id());
 }
 
 CharacterId &LKGameWindow::selected_char_id() {
+    if (m_selected_char_id == NOBODY) {
+        m_selected_char_id = m_game.characters()[0].id();
+    }
+
     return m_selected_char_id;
 }
 
@@ -130,7 +134,7 @@ void LKGameWindow::register_slot(ItemSlot *slot) {
     m_slots.push_back(slot);
 }
 
-void LKGameWindow::notify(NotificationType, const QString &message) { }
+void LKGameWindow::notify(NotificationType, const QString &) { }
 
 void LKGameWindow::refresh_ui() {
     m_window.player_name_label->setText(QString("Explorer <b>%1</b>").arg(selected_char().name()));

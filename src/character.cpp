@@ -161,6 +161,10 @@ void Character::add_morale(int add) {
     }
 }
 
+quint16 Character::egg_find_percent_chance() {
+    return 5;
+}
+
 bool Character::can_perform_action(ItemDomain domain) {
     if (m_dead) {
         return false;

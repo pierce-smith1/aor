@@ -50,6 +50,10 @@ void CharacterActivity::progress(qint64 ms) {
     }
 }
 
+Character &CharacterActivity::character() {
+    return gw()->game().character(m_char_id);
+}
+
 void CharacterActivity::complete() {
     gw()->killTimer(m_timer_id);
 
@@ -80,15 +84,14 @@ void CharacterActivity::complete() {
 }
 
 std::vector<Item> CharacterActivity::products() {
-    Character &character = gw()->game().characters().at(m_char_id);
     switch (m_action) {
         case Smithing: {
-            ItemCode smithing_result = character.smithing_result();
+            ItemCode smithing_result = character().smithing_result();
 
             if (smithing_result != 0) {
                 Item result = Item(smithing_result);
 
-                int heritage_use_boost = character.heritage_properties()[HeritageSmithProductUsageBoost];
+                int heritage_use_boost = character().heritage_properties()[HeritageSmithProductUsageBoost];
                 result.uses_left += heritage_use_boost;
 
                 return { result };
@@ -98,7 +101,7 @@ std::vector<Item> CharacterActivity::products() {
         }
         case Foraging:
         case Mining: {
-            Item tool = gw()->game().inventory().get_item(character.tool_id(m_action));
+            Item tool = gw()->game().inventory().get_item(character().tool_id(m_action));
             const ItemProperties &tool_props = tool.def()->properties;
 
             if (tool.id == EMPTY_ID) {
@@ -116,7 +119,13 @@ std::vector<Item> CharacterActivity::products() {
                 }
             });
 
-            return { Item(Generators::sample_with_weights<ItemCode>(weighted_discoverables)) };
+            std::vector<Item> final_items = { Item(Generators::sample_with_weights<ItemCode>(weighted_discoverables)) };
+
+            if (m_action == Foraging && Generators::percent_chance(character().egg_find_percent_chance())) {
+                final_items.push_back(Item::make_egg());
+            }
+
+            return final_items;
         }
         case Eating:
         case Defiling: {
@@ -131,7 +140,7 @@ std::vector<Item> CharacterActivity::products() {
             // (That happens later in this very function.)
             // Here, we check to see if our partner has already made an egg.
             auto partner = std::find_if(begin(characters), end(characters), [&](Character &other) {
-                return other.partner() == character.id();
+                return other.partner() == character().id();
             });
 
             if (partner == end(characters)) {
@@ -141,7 +150,7 @@ std::vector<Item> CharacterActivity::products() {
             std::vector<Item> egg = { Item::make_egg(m_char_id, partner->id()) };
 
             partner->partner() = NOBODY;
-            character.partner() = NOBODY;
+            character().partner() = NOBODY;
 
             return egg;
         }
@@ -157,10 +166,8 @@ std::vector<Item> CharacterActivity::products() {
 }
 
 void CharacterActivity::exhaust_reagents() {
-    Character &character = gw()->game().characters().at(m_char_id);
-
     if (m_action == Smithing) {
-        for (ItemId id : character.external_items().at(Material)) {
+        for (ItemId id : character().external_items().at(Material)) {
             exhaust_item(id);
         }
     } else if (m_action == Trading) {
@@ -174,18 +181,16 @@ void CharacterActivity::exhaust_reagents() {
         }
     }
 
-    exhaust_item(character.tool_id(m_action));
+    exhaust_item(character().tool_id(m_action));
 }
 
 void CharacterActivity::exhaust_character() {
-    Character &character = gw()->game().characters().at(m_char_id);
+    Item tool = gw()->game().inventory().get_item(character().tool_id(m_action));
 
-    Item tool = gw()->game().inventory().get_item(character.tool_id(m_action));
+    character().add_energy(character().energy_to_gain());
+    character().add_morale(character().morale_to_gain());
 
-    character.add_energy(character.energy_to_gain());
-    character.add_morale(character.morale_to_gain());
-
-    for (Item &effect : character.effects()) {
+    for (Item &effect : character().effects()) {
         if (effect.id == EMPTY_ID) {
             continue;
         }
@@ -196,19 +201,17 @@ void CharacterActivity::exhaust_character() {
         }
     }
 
-    if (character.energy() == 0) {
-        character.push_effect(Item("starving"));
+    if (character().energy() == 0) {
+        character().push_effect(Item("starving"));
     }
 
-    if (character.morale() == 0) {
-        character.push_effect(Item("weakness"));
+    if (character().morale() == 0) {
+        character().push_effect(Item("weakness"));
     }
 
 }
 
 void CharacterActivity::exhaust_item(ItemId id) {
-    Character &character = gw()->game().characters().at(m_char_id);
-
     if (id != EMPTY_ID) {
         Item &item = gw()->game().inventory().get_item_ref(id);
         if (item.uses_left > 0) {
@@ -216,11 +219,11 @@ void CharacterActivity::exhaust_item(ItemId id) {
             if (item.uses_left == 0) {
                 if (item.code & CT_TOOL) {
                     gw()->notify(Warning, QString("%1's %2 broke!")
-                        .arg(gw()->game().characters().at(m_char_id).name())
+                        .arg(gw()->game().character(m_char_id).name())
                         .arg(item.def()->display_name)
                     );
 
-                    character.tools().at(m_action) = EMPTY_ID;
+                    character().tools().at(m_action) = EMPTY_ID;
                 }
 
                 gw()->game().inventory().remove_item(id);
@@ -232,13 +235,13 @@ void CharacterActivity::exhaust_item(ItemId id) {
         }
 
         if (m_action == Smithing) {
-            for (ItemId &mid : character.external_items().at(Material)) {
+            for (ItemId &mid : character().external_items().at(Material)) {
                 if (id == mid) {
                     mid = EMPTY_ID;
                 }
             }
         } else if (m_action == Trading) {
-            for (ItemId &oid : character.external_items().at(Offering)) {
+            for (ItemId &oid : character().external_items().at(Offering)) {
                 if (id == oid) {
                     oid = EMPTY_ID;
                 }
@@ -251,12 +254,12 @@ void CharacterActivity::give(const std::vector<Item> &items) {
     for (const Item &item : items) {
         if (!gw()->game().add_item(item)) {
             gw()->notify(Warning, QString("%1 discovered a(n) %2, but the inventory was too full to accept it!")
-                .arg(gw()->game().characters().at(m_char_id).name())
+                .arg(gw()->game().character(m_char_id).name())
                 .arg(item.def()->display_name)
             );
         } else {
             gw()->notify(Discovery, QString("%1 discovered a(n) %2!")
-                .arg(gw()->game().characters().at(m_char_id).name())
+                .arg(gw()->game().character(m_char_id).name())
                 .arg(item.def()->display_name)
             );
         }
@@ -264,27 +267,24 @@ void CharacterActivity::give(const std::vector<Item> &items) {
 }
 
 void CharacterActivity::give_bonuses() {
-    Character &character = gw()->game().characters().at(m_char_id);
     if (m_action == Eating) {
         for (const Item &item : gw()->game().inventory().items_of_intent(m_char_id, Eating)) {
             const ItemProperties &props = item.def()->properties;
 
             for (int i = 0; i < props[ConsumableClearsNumEffects]; i++) {
-                character.clear_last_effect();
+                character().clear_last_effect();
             }
 
             if (props[ConsumableMakesCouplable]) {
-                character.can_couple() = true;
+                character().can_couple() = true;
             }
         }
     }
 }
 
 void CharacterActivity::give_injuries() {
-    Character &character = gw()->game().characters().at(m_char_id);
-
-    int injury_chance = 5 + (gw()->game().inventory().get_item(character.tool_id(m_action)).def()->item_level * 6);
-    int injury_dampen = character.heritage_properties()[HeritageInjuryResilience];
+    int injury_chance = 5 + (gw()->game().inventory().get_item(character().tool_id(m_action)).def()->item_level * 6);
+    int injury_dampen = character().heritage_properties()[HeritageInjuryResilience];
     injury_chance -= injury_dampen;
 
     if (!Generators::percent_chance(injury_chance)) {
@@ -315,6 +315,6 @@ void CharacterActivity::give_injuries() {
         return;
     }
 
-    character.push_effect(Item(Generators::sample_with_weights(possible_weighted_injuries)));
-    gw()->notify(Warning, QString("%1 suffered an injury...").arg(character.name()));
+    character().push_effect(Item(Generators::sample_with_weights(possible_weighted_injuries)));
+    gw()->notify(Warning, QString("%1 suffered an injury...").arg(character().name()));
 }

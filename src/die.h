@@ -23,6 +23,8 @@ enum FatalErrorType : int {
     DefLookupMiss,
     CodeLookupMiss,
     OutOfRangeException,
+    DeserializationFailure,
+    CharacterByIdLookupMiss,
 };
 
 QString bugcheck_error_string(FatalErrorType type);

@@ -49,7 +49,7 @@ public:
     int foreign_trade_level(GameId tribe_id);
     ItemProperties total_resources();
 
-    QString id_to_name(CharacterId char_id);
+    Character &character(CharacterId id);
 
     void refresh_ui_bars(QProgressBar *activity, QProgressBar *morale, QProgressBar *energy, CharacterId char_id);
 

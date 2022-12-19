@@ -52,7 +52,7 @@ void Tooltip::set(const Item &item, Game &game) {
     widget.item_image->setPixmap(Item::pixmap_of(item));
 
     ItemDefinitionPtr this_def = item.def();
-    QString character_name = item.intent_holder == NOBODY ? "" : game.characters().at(item.intent_holder).name();
+    QString character_name = item.intent_holder == NOBODY ? "" : game.character(item.intent_holder).name();
 
     widget.item_name->setText(QString("<b>%1</b>").arg(this_def->display_name));
     QString description = this_def->description;
@@ -97,6 +97,8 @@ void Tooltip::set(const Item &item, Game &game) {
     }
 
     widget.item_subtext->setText(subtext);
+
+    description += "<br>" + item.instance_properties_to_string();
     widget.item_description->setText(description);
 
     const ItemProperties &properties = item.def()->properties;

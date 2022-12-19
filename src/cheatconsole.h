@@ -240,6 +240,14 @@ const static std::vector<CheatCommand> COMMANDS = {
         }
     },
     {
+        "egg",
+        "Put a random found egg into the inventory",
+        0,
+        [](LKGameWindow *game, const QStringList &) {
+            game->game().add_item(Item::make_egg());
+        }
+    },
+    {
         "fast",
         "If $0 is 0, turn off accelerated actions; otherwise turn it on",
         1,

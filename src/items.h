@@ -32,9 +32,9 @@ using GameId = quint64;
 const static ItemId EMPTY_ID = 0;
 const static ItemId INVALID_ID = 0xffffffffffffffff;
 const static ItemCode INVALID_CODE = 0xff;
-const static CharacterId NOBODY = 0xffff;
+const static CharacterId NOBODY = 0;
 
-const static quint64 ACTIONS_TO_HATCH = 2;
+const static quint64 ACTIONS_TO_HATCH = 25;
 
 using ItemType = quint16;
 enum ItemDomain : ItemType {
@@ -115,9 +115,10 @@ enum ItemProperty : quint16 {
     HeritageInjuryResilience,
     HeritageMaterialValueBonus,
     HeritageActivitySpeedBonus,
-    InstanceEggParent1,
+    InstanceEggParent1 = 0x1000,
     InstanceEggParent2,
     InstanceEggFoundActionstamp,
+    InstanceEggFoundFlavor,
     Cost = 0x2000,
     CostStone = 0x2001,
     CostMetallic = 0x2002,
@@ -451,6 +452,7 @@ struct Item {
     static Item make_egg();
 
     ItemDefinitionPtr def() const;
+    QString instance_properties_to_string() const;
 
     static ItemDefinitionPtr def_of(ItemCode id);
     static ItemDefinitionPtr def_of(const QString &name);

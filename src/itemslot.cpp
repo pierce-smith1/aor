@@ -11,7 +11,7 @@ ItemSlot::ItemSlot()
     setMinimumSize(QSize(56, 56));
     setMaximumSize(QSize(56, 56));
     setFrameShape(QFrame::StyledPanel);
-    setFrameShadow(QFrame::Raised);
+    setFrameShadow(QFrame::Sunken);
     setMouseTracking(true);
     setAcceptDrops(true);
 

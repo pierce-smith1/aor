@@ -50,6 +50,12 @@ QString bugcheck_error_string(FatalErrorType type) {
         case OutOfRangeException: {
             return "OUT_OF_RANGE_EXCEPTION";
         }
+        case DeserializationFailure: {
+            return "DESERIALIZATION_FAILURE";
+        }
+        case CharacterByIdLookupMiss: {
+            return "CHARACTER_BY_ID_LOOKUP_MISS";
+        }
     }
 
     return "TOTAL_RUIN";

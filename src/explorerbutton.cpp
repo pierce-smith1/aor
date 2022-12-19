@@ -33,7 +33,7 @@ Item ExplorerButton::get_item() {
 void ExplorerButton::set_item(const Item &) { }
 
 void ExplorerButton::refresh_pixmap() {
-    Character &character = gw()->game().characters()[n];
+    Character &character = gw()->game().character(id());
 
     if (id() == gw()->selected_char_id()) {
         //setFlat(false);
@@ -214,11 +214,8 @@ QString ExplorerButton::character_description() {
         case Defiling: { string += "<i>Currently defiling</i><br>"; break; }
         case Trading: { string += "<i>Currently trading</i><br>"; break; }
         case Coupling: {
-            auto &characters = gw()->game().characters();
-            auto partner = std::find_if(begin(characters), end(characters), [&](Character &other) {
-                return other.id() == character.partner();
-            });
-            string += QString("<i>Having a child with %1</i><br>").arg(partner->name());
+            Character &partner = gw()->game().character(character.partner());
+            string += QString("<i>Having a child with %1</i><br>").arg(partner.name());
             break;
         }
         default: { break; }

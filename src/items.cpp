@@ -89,7 +89,9 @@ Item::Item(const QString &name)
     : Item(def_of(name)) { }
 
 Item Item::make_egg() {
-    return make_egg(NOBODY, NOBODY);
+    Item egg = make_egg(NOBODY, NOBODY);
+    egg.instance_properties.map[InstanceEggFoundFlavor] = Generators::color();
+    return egg;
 }
 
 Item Item::make_egg(CharacterId parent1, CharacterId parent2) {
@@ -104,6 +106,28 @@ Item Item::make_egg(CharacterId parent1, CharacterId parent2) {
 
 ItemDefinitionPtr Item::def() const {
     return def_of(code);
+}
+
+QString Item::instance_properties_to_string() const {
+    QString string = "<br>";
+
+    if (instance_properties[InstanceEggParent1] != NOBODY) {
+        string += QString("<i>Lovingly made by <b>%1</b> and <b>%2</b>.</i><br>")
+            .arg(gw()->game().character(instance_properties[InstanceEggParent1]).name())
+            .arg(gw()->game().character(instance_properties[InstanceEggParent2]).name());
+    }
+
+    if (instance_properties[InstanceEggFoundActionstamp]) {
+        string += QString("Hatches after <b>%1 more actions.</b></i><br>")
+            .arg(ACTIONS_TO_HATCH - (gw()->game().actions_done() - instance_properties[InstanceEggFoundActionstamp]) + 1);
+    }
+
+    if (instance_properties[InstanceEggFoundFlavor]) {
+        string += QString("<i>Smells like fresh %1...</i><br>")
+            .arg(Colors::name((Color) instance_properties[InstanceEggFoundFlavor]));
+    }
+
+    return string;
 }
 
 QPixmap Item::pixmap_of(ItemCode id) {

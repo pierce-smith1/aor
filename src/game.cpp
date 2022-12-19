@@ -54,16 +54,16 @@ bool &Game::fast_actions() {
 }
 
 bool Game::add_character(const QString &name, const std::multiset<Color> &heritage) {
-    CharacterId max_id = 0;
-    while (m_explorers[max_id].id() != NOBODY && max_id < MAX_EXPLORERS) {
-        max_id++;
+    int max = 0;
+    while (m_explorers[max].id() != NOBODY && max < MAX_EXPLORERS) {
+        max++;
     }
 
-    if (max_id == MAX_EXPLORERS) {
+    if (max == MAX_EXPLORERS) {
         return false;
     }
 
-    m_explorers[max_id] = Character(max_id, name, heritage);
+    m_explorers[max] = Character(Generators::char_id(), name, heritage);
     return true;
 }
 
@@ -82,9 +82,15 @@ void Game::check_hatch() {
     for (const Item &item : inventory().items()) {
         if (item.code == Item::code_of("fennahian_egg")) {
             if (actions_done() - item.instance_properties[InstanceEggFoundActionstamp] > ACTIONS_TO_HATCH) {
-                Heritage heritage = m_explorers.at(item.instance_properties[InstanceEggParent1]).heritage();
-                for (Color c : m_explorers.at(item.instance_properties[InstanceEggParent2]).heritage()) {
-                    heritage.insert(c);
+                Heritage heritage;
+
+                if (item.instance_properties[InstanceEggFoundFlavor]) {
+                    heritage.insert((Color) item.instance_properties[InstanceEggFoundFlavor]);
+                } else {
+                    heritage = character(item.instance_properties[InstanceEggParent1]).heritage();
+                    for (Color c : character(item.instance_properties[InstanceEggParent2]).heritage()) {
+                        heritage.insert(c);
+                    }
                 }
 
                 if (add_character(Generators::yokin_name(), heritage)) {
@@ -123,8 +129,20 @@ ItemProperties Game::total_resources() {
     return resources;
 }
 
+Character &Game::character(CharacterId id) {
+    auto result = std::find_if(begin(m_explorers), end(m_explorers), [=](Character &c) {
+        return c.id() == id;
+    });
+
+    if (result == end(m_explorers)) {
+        bugcheck(CharacterByIdLookupMiss, id);
+    }
+
+    return *result;
+}
+
 void Game::refresh_ui_bars(QProgressBar *activity, QProgressBar *morale, QProgressBar *energy, CharacterId char_id) {
-    Character &character = m_explorers.at(char_id);
+    Character &character = Game::character(char_id);
 
     activity->setMaximum(100);
     activity->setValue(character.activity().percent_complete() * 100);

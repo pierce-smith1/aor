@@ -49,6 +49,7 @@ public:
     int base_morale_cost();
     void add_energy(int add);
     void add_morale(int add);
+    quint16 egg_find_percent_chance();
 
     bool can_perform_action(ItemDomain action);
     int energy_to_gain();

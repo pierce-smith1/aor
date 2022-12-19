@@ -12,6 +12,7 @@
 #include "items.h"
 
 class LKGameWindow;
+class Character;
 
 const static qint64 ACTIVITY_TICK_RATE_MS = 500;
 
@@ -30,6 +31,8 @@ public:
     void progress(qint64 ms);
 
 private:
+    Character &character();
+
     void complete();
 
     void exhaust_reagents();

@@ -13,7 +13,7 @@ const static int BLUERASPBERRY_MORALE_MULTIPLIER = 20;
 const static int BLUEBERRY_ENERGY_BONUS = 10;
 
 enum Color : quint16 {
-    Banana,
+    Banana = 1,
     Orange,
     Cherry,
     Blueberry,

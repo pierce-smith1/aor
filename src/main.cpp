@@ -3,13 +3,16 @@
 #include "die.h"
 
 int main(int argc, char **argv) {
+#ifdef Q_NO_DEBUG
     std::set_terminate([]() {
         bugcheck(UncaughtUnknownException);
     });
+#endif
 
+    QApplication app(argc, argv);
+#ifdef Q_NO_DEBUG
     try {
-        QApplication app(argc, argv);
-
+#endif
         LKGameWindow::instantiate_singleton();
 
         if (!gw()->save_file_exists()) {
@@ -27,9 +30,14 @@ int main(int argc, char **argv) {
         }
 
         return app.exec();
-    } catch (std::out_of_range &e) {
-        bugcheck(OutOfRangeException, e.what());
+#ifdef Q_NO_DEBUG
     }
+    catch (std::out_of_range &e) {
+        bugcheck(OutOfRangeException, e.what());
+    } catch (IO::RetryException &e) {
+        bugcheck(DeserializationFailure);
+    }
+#endif
 }
 
 void new_game_prompt() {
