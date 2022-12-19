@@ -216,7 +216,7 @@ void LKGameWindow::refresh_trade_ui() {
     for (Character &character : game().characters()) {
         if (character.activity().action() == Trading) {
             window().trade_arrow_label->setPixmap(QPixmap(":/assets/img/icons/arrows.png"));
-            window().trade_notification_label->setText(QString("%1 is carrying out this trade...").arg(selected_char().name()));
+            window().trade_notification_label->setText(QString("%1 is carrying out this trade...").arg(character.name()));
         }
     }
 }
