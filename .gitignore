@@ -70,4 +70,5 @@ lk
 *.png~
 *.kra~
 *.kra-autosave*
-save.rho
+save.rho*
+assets/img/items/sil/*

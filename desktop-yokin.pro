@@ -7,6 +7,7 @@ TARGET = desktop-yokin
 INCLUDEPATH += .
 CONFIG += debug_and_release
 CONFIG += static
+CONFIG += c++17
 
 RESOURCES += images.qrc
 FORMS += assets/ui/main.ui

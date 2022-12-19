@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 #include "items.h"
 #include "io.h"
 
