@@ -10,6 +10,14 @@ int main(int argc, char **argv) {
 #endif
 
     QApplication app(argc, argv);
+
+#ifdef _WIN32
+    app.setStyleSheet(
+        "*[slot=\"true\"] { border: 1px solid #bbb; border-radius: 3px; background-color: white; }"
+        "*[tooltip=\"true\"] { border-radius: 3px; }"
+    );
+#endif
+
 #ifdef Q_NO_DEBUG
     try {
 #endif
@@ -57,8 +65,4 @@ void new_game_prompt() {
     if (new_game_message.exec() != QMessageBox::Yes) {
         exit(1);
     }
-}
-
-void style_for_windows(QApplication &app) {
-    app.setStyleSheet("*[slot=\"true\"] { border: 1px solid #bbb; border-radius: 3px; background-color: white; }");
 }

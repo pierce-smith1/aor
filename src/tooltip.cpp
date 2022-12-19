@@ -9,10 +9,20 @@ Tooltip::Tooltip()
       m_colorize_effect(new QGraphicsColorizeEffect(this))
 {
     widget.setupUi(this);
+
+#ifdef _WIN32
+    setWindowFlags(Qt::Tool
+        | Qt::CustomizeWindowHint
+        | Qt::WindowTransparentForInput
+        | Qt::WindowDoesNotAcceptFocus
+    );
+    setProperty("tooltip", true);
+#else
     setWindowFlags(Qt::ToolTip
         | Qt::WindowTransparentForInput
         | Qt::WindowDoesNotAcceptFocus
     );
+#endif
 
     widget.item_image->setGraphicsEffect(m_colorize_effect);
     hide_resources();
