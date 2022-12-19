@@ -94,6 +94,9 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="toolTip">
+          <string/>
+         </property>
          <property name="title">
           <string>Artifacts</string>
          </property>
@@ -179,6 +182,9 @@
         <height>16777215</height>
        </size>
       </property>
+      <property name="toolTip">
+       <string/>
+      </property>
       <property name="title">
        <string>Explorers</string>
       </property>
@@ -188,7 +194,7 @@
     <item row="3" column="2">
      <layout class="QGridLayout" name="gridLayout_5">
       <item row="2" column="0">
-       <widget class="QLabel" name="morale_icon">
+       <widget class="QLabel" name="spirit_icon">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -223,6 +229,9 @@
           <height>80</height>
          </size>
         </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the current explorer's &lt;span style=&quot; font-weight:600;&quot;&gt;energy.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Energy is required fofr her to use tools. You can refill it by eating food recovered from &lt;span style=&quot; font-weight:600;&quot;&gt;foraging.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If her energy reaches 0,&lt;span style=&quot; font-weight:600;&quot;&gt; she will begin to die.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="maximum">
          <number>100</number>
         </property>
@@ -247,6 +256,12 @@
           <width>16777215</width>
           <height>80</height>
          </size>
+        </property>
+        <property name="statusTip">
+         <string/>
+        </property>
+        <property name="whatsThis">
+         <string/>
         </property>
         <property name="value">
          <number>24</number>
@@ -289,7 +304,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QProgressBar" name="morale_bar">
+       <widget class="QProgressBar" name="spirit_bar">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
           <horstretch>0</horstretch>
@@ -301,6 +316,12 @@
           <width>16777215</width>
           <height>80</height>
          </size>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the current explorer's &lt;span style=&quot; font-weight:600;&quot;&gt;spirit&lt;/span&gt;. &lt;/p&gt;&lt;p&gt;Every action she takes drains a small amount of spirit. She can refill it by &lt;span style=&quot; font-weight:600;&quot;&gt;defiling&lt;/span&gt; an item. Drag any non-consumable to her portrait to have her defile it for &lt;span style=&quot; font-weight:600;&quot;&gt;25 spirit per level &lt;/span&gt;of the defiled item.&lt;/p&gt;&lt;p&gt;If her spirit reaches 0, &lt;span style=&quot; font-weight:600;&quot;&gt;she will begin to die.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="whatsThis">
+         <string/>
         </property>
         <property name="value">
          <number>24</number>
@@ -338,6 +359,9 @@
                <width>16777215</width>
                <height>16777215</height>
               </size>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Smith &lt;/span&gt;to craft new items from existing ones. The slots above are for your materials and your smithing tool; the slot to the right shows what you will recieve.&lt;/p&gt;&lt;p&gt;Without a tool, you can slot up to&lt;span style=&quot; font-weight:600;&quot;&gt; 10&lt;/span&gt; of each resource type here. To craft more expensive items, you need a tool. A tool's &lt;span style=&quot; font-weight:600;&quot;&gt;power&lt;/span&gt; describes the maximum number of resources it can support.&lt;/p&gt;&lt;p&gt;The &lt;span style=&quot; font-weight:600;&quot;&gt;encyclopedia&lt;/span&gt; shows smithing costs for all items, even those you haven't discovered yet.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Forge!</string>
@@ -379,7 +403,7 @@
               </size>
              </property>
              <property name="toolTip">
-              <string>Find foods and medicines, which you can use to keep your energy levels up.</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Forage&lt;/span&gt; to find foods and medicines that keep your explorers' energy up and stave off their injuries.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Forage</string>
@@ -393,7 +417,7 @@
            <item row="4" column="0">
             <widget class="QPushButton" name="mine_button">
              <property name="toolTip">
-              <string>Find earthly materials, which you can use to smith better tools.</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Mine &lt;/span&gt;to discover earthly materials you can use to craft new items.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Mine</string>
@@ -470,6 +494,9 @@
           <layout class="QHBoxLayout" name="horizontalLayout">
            <item>
             <widget class="QPushButton" name="trade_accept_button">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Trade &lt;/span&gt;with other expeditions to quickly recieve items you need. &lt;/p&gt;&lt;p&gt;Every other player running Aegis of Rhodon will appear in the drop-down above. You may propose an offer at any time and all other players will instantly see it. Once two trading parties accept a trade simultaneously, the current explorer will carry out the trade.&lt;/p&gt;&lt;p&gt;To accept a trade, your offer &lt;span style=&quot; font-weight:600;&quot;&gt;must match &lt;/span&gt;the other party's in terms of &lt;span style=&quot; font-weight:600;&quot;&gt;cumulative item level&lt;/span&gt;. The current explorer must also not be doing anything. If you have accepted a trade and the other party changes their offer, you will automatically unaccept it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
              <property name="text">
               <string>Accept</string>
              </property>
@@ -545,6 +572,9 @@
         <width>16777215</width>
         <height>100</height>
        </size>
+      </property>
+      <property name="toolTip">
+       <string/>
       </property>
       <property name="title">
        <string>Injuries</string>

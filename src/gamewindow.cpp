@@ -76,9 +76,9 @@ LKGameWindow::LKGameWindow()
     activity_palette.setColor(QPalette::Highlight, Colors::qcolor(Lime));
     m_window.activity_time_bar->setPalette(activity_palette);
 
-    QPalette morale_palette;
-    morale_palette.setColor(QPalette::Highlight, Colors::qcolor(Blueberry));
-    m_window.morale_bar->setPalette(morale_palette);
+    QPalette spirit_palette;
+    spirit_palette.setColor(QPalette::Highlight, Colors::qcolor(Blueberry));
+    m_window.spirit_bar->setPalette(spirit_palette);
 
     QPalette energy_palette;
     energy_palette.setColor(QPalette::Highlight, Colors::qcolor(Cherry));
@@ -153,7 +153,7 @@ void LKGameWindow::refresh_slots() {
 }
 
 void LKGameWindow::refresh_ui_bars() {
-    m_game.refresh_ui_bars(m_window.activity_time_bar, m_window.morale_bar, m_window.energy_bar, m_selected_char_id);
+    m_game.refresh_ui_bars(m_window.activity_time_bar, m_window.spirit_bar, m_window.energy_bar, m_selected_char_id);
 }
 
 void LKGameWindow::refresh_ui_buttons() {

@@ -91,16 +91,16 @@ quint16 &Character::energy() {
     return m_energy;
 }
 
-quint16 &Character::morale() {
-    if (m_morale > max_morale()) {
-        m_morale = max_morale();
+quint16 &Character::spirit() {
+    if (m_spirit > max_spirit()) {
+        m_spirit = max_spirit();
     }
 
     if (m_dead) {
-        m_morale = 0;
+        m_spirit = 0;
     }
 
-    return m_morale;
+    return m_spirit;
 }
 
 int Character::max_energy() {
@@ -118,22 +118,22 @@ int Character::max_energy() {
     return energy;
 }
 
-int Character::max_morale() {
-    int morale = BASE_MAX_MORALE;
+int Character::max_spirit() {
+    int spirit = BASE_MAX_SPIRIT;
 
     const auto &artifacts = external_items().at(Artifact);
     int artifact_boost = std::accumulate(begin(artifacts), end(artifacts), 0, [this](int a, ItemId b) {
-        return a + gw()->game().inventory().get_item(b).def()->properties[PersistentMaxMoraleBoost];
+        return a + gw()->game().inventory().get_item(b).def()->properties[PersistentMaxSpiritBoost];
     });
-    morale += artifact_boost;
+    spirit += artifact_boost;
 
-    int heritage_boost = heritage_properties()[HeritageMaxMoraleBoost];
-    morale += heritage_boost;
+    int heritage_boost = heritage_properties()[HeritageMaxSpiritBoost];
+    spirit += heritage_boost;
 
-    return morale;
+    return spirit;
 }
 
-int Character::base_morale_cost() {
+int Character::base_spirit_cost() {
     return 5;
 }
 
@@ -149,15 +149,15 @@ void Character::add_energy(int add) {
     }
 }
 
-void Character::add_morale(int add) {
-    if (-add > m_morale) {
-        m_morale = 0;
+void Character::add_spirit(int add) {
+    if (-add > m_spirit) {
+        m_spirit = 0;
         return;
     }
 
-    m_morale += add;
-    if (m_morale > max_morale()) {
-        m_morale = max_morale();
+    m_spirit += add;
+    if (m_spirit > max_spirit()) {
+        m_spirit = max_spirit();
     }
 }
 
@@ -225,14 +225,14 @@ int Character::energy_to_gain() {
     return gain;
 }
 
-int Character::morale_to_gain() {
+int Character::spirit_to_gain() {
     int gain;
 
     switch (m_activity.action()) {
         case Eating: {
             std::vector<Item> inputs = gw()->game().inventory().items_of_intent(m_id, Eating);
             gain = std::accumulate(begin(inputs), end(inputs), 0, [](int a, const Item &b) {
-                return a + b.def()->properties[ConsumableMoraleBoost];
+                return a + b.def()->properties[ConsumableSpiritBoost];
             });
             break;
         }
@@ -250,7 +250,7 @@ int Character::morale_to_gain() {
     }
 
     if (m_activity.action() != Eating && m_activity.action() != Defiling) {
-        gain -= base_morale_cost();
+        gain -= base_spirit_cost();
     }
 
     return gain;
@@ -409,7 +409,7 @@ void Character::serialize(QIODevice *dev) const {
     IO::write_bool(dev, m_dead);
     IO::write_bool(dev, m_can_couple);
     IO::write_short(dev, m_energy);
-    IO::write_short(dev, m_morale);
+    IO::write_short(dev, m_spirit);
 
     IO::write_short(dev, m_heritage.size());
     for (Color c : m_heritage) {
@@ -444,7 +444,7 @@ Character *Character::deserialize(QIODevice *dev) {
     c->m_dead = IO::read_bool(dev);
     c->m_can_couple = IO::read_bool(dev);
     c->m_energy = IO::read_short(dev);
-    c->m_morale = IO::read_short(dev);
+    c->m_spirit = IO::read_short(dev);
 
     quint16 size = IO::read_short(dev);
     for (quint16 i = 0; i < size; i++) {

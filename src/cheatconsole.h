@@ -156,23 +156,23 @@ const static std::vector<CheatCommand> COMMANDS = {
         }
     },
     {
-        "morale",
-        "Change the current character's morale to $0; if $0 is '?', show the current morale instead",
+        "spirit",
+        "Change the current character's spirit to $0; if $0 is '?', show the current spirit instead",
         1,
         [](LKGameWindow *game, const QStringList &args) {
             if (args[0] == "?") {
-                qDebug("Current morale is (%d)", game->selected_char().morale());
+                qDebug("Current spirit is (%d)", game->selected_char().spirit());
                 return;
             }
 
-            QS_TO_INT(morale, args[0]);
+            QS_TO_INT(spirit, args[0]);
 
-            if (morale < 0 || morale > 100) {
-                qWarning("New morale value is oob (%d)", morale);
+            if (spirit < 0 || spirit > 100) {
+                qWarning("New spirit value is oob (%d)", spirit);
                 return;
             }
 
-            game->selected_char().morale() = morale;
+            game->selected_char().spirit() = spirit;
 
             qDebug("done");
         }

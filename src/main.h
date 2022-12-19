@@ -15,4 +15,3 @@
 const static QString GAME_VERSION = "0.1.0";
 
 void new_game_prompt();
-void style_for_windows(QApplication &app);

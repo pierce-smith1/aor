@@ -141,15 +141,15 @@ Character &Game::character(CharacterId id) {
     return *result;
 }
 
-void Game::refresh_ui_bars(QProgressBar *activity, QProgressBar *morale, QProgressBar *energy, CharacterId char_id) {
+void Game::refresh_ui_bars(QProgressBar *activity, QProgressBar *spirit, QProgressBar *energy, CharacterId char_id) {
     Character &character = Game::character(char_id);
 
     activity->setMaximum(100);
     activity->setValue(character.activity().percent_complete() * 100);
 
-    double morale_gain = character.morale_to_gain() * character.activity().percent_complete();
-    morale->setMaximum(character.max_morale());
-    morale->setValue(character.morale() + morale_gain);
+    double spirit_gain = character.spirit_to_gain() * character.activity().percent_complete();
+    spirit->setMaximum(character.max_spirit());
+    spirit->setValue(character.spirit() + spirit_gain);
 
     double energy_gain = character.energy_to_gain() * character.activity().percent_complete();
     energy->setMaximum(character.max_energy());

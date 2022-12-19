@@ -188,7 +188,7 @@ void CharacterActivity::exhaust_character() {
     Item tool = gw()->game().inventory().get_item(character().tool_id(m_action));
 
     character().add_energy(character().energy_to_gain());
-    character().add_morale(character().morale_to_gain());
+    character().add_spirit(character().spirit_to_gain());
 
     for (Item &effect : character().effects()) {
         if (effect.id == EMPTY_ID) {
@@ -205,7 +205,7 @@ void CharacterActivity::exhaust_character() {
         character().push_effect(Item("starving"));
     }
 
-    if (character().morale() == 0) {
+    if (character().spirit() == 0) {
         character().push_effect(Item("weakness"));
     }
 

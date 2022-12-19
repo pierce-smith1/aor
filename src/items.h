@@ -91,12 +91,12 @@ enum ItemProperty : quint16 {
     ToolDiscoverWeight8,
     ToolDiscoverWeight9,
     ConsumableEnergyBoost,
-    ConsumableMoraleBoost,
+    ConsumableSpiritBoost,
     ConsumableGivesEffect,
     ConsumableClearsNumEffects,
     ConsumableMakesCouplable,
     PersistentMaxEnergyBoost,
-    PersistentMaxMoraleBoost,
+    PersistentMaxSpiritBoost,
     PersistentSpeedBonus,
     PersistentSpeedPenalty,
     PersistentEnergyPenalty,
@@ -109,7 +109,7 @@ enum ItemProperty : quint16 {
     InjuryTrading,
     InjuryCoupling, // COCK INJURED
     HeritageMaxEnergyBoost,
-    HeritageMaxMoraleBoost,
+    HeritageMaxSpiritBoost,
     HeritageConsumableEnergyBoost,
     HeritageSmithProductUsageBoost,
     HeritageInjuryResilience,
@@ -142,16 +142,16 @@ enum ItemProperty : quint16 {
 const static std::map<ItemProperty, QString> PROPERTY_DESCRIPTIONS = {
     { ToolEnergyCost, "Requires <b>%1 energy</b> per use." },
     { ConsumableEnergyBoost, "Gives <b>+%1 energy</b>." },
-    { ConsumableMoraleBoost, "Gives <b>+%1 spirit</b>." },
+    { ConsumableSpiritBoost, "Gives <b>+%1 spirit</b>." },
     { ConsumableClearsNumEffects, "Clears up to <b>%1 effect(s)</b> (starting with the rightmost.)" },
     { ConsumableMakesCouplable, "Gives the ability to <b><font color=purple>have a child</font></b> with another explorer." },
     { PersistentMaxEnergyBoost, "You have <b>+%1 max energy</b>." },
-    { PersistentMaxMoraleBoost, "You have <b>+%1 max spirit</b>." },
+    { PersistentMaxSpiritBoost, "You have <b>+%1 max spirit</b>." },
     { PersistentSpeedBonus, "Your actions complete <b>%1x faster</b>." },
     { PersistentSpeedPenalty, "Your actions complete <b>%1% slower</b>." },
     { PersistentEnergyPenalty, "Your actions cost an additional <b>%1 energy</b>." },
     { HeritageMaxEnergyBoost, "I have <b>+%1 max energy</b>." },
-    { HeritageMaxMoraleBoost, "I have <b>+%1 max morale</b>." },
+    { HeritageMaxSpiritBoost, "I have <b>+%1 max spirit</b>." },
     { HeritageConsumableEnergyBoost, "I get <b>+%1 bonus energy</b> when I eat something." },
     { HeritageSmithProductUsageBoost, "Items that I craft have <b>+%1 use(s)</b>." },
     { HeritageInjuryResilience, "I have a <b>-%1% chance to suffer an injury</b> after taking an action." },
@@ -211,7 +211,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         1 USES, Consumable, LEVEL 1,
         {
             { ConsumableEnergyBoost, 10 },
-            { ConsumableMoraleBoost, 10 },
+            { ConsumableSpiritBoost, 10 },
             { LeafyResource, 5 },
         }
     },
@@ -295,11 +295,11 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_CONSUMABLE | 3,
         "bleeding_krazaheart", "Bleeding Krazaheart",
-        "<i>Don't read too far into it, Kraza is fine.</i>",
+        "<i>Who's Kraza? Don't read too far into it.</i>",
         1 USES, Consumable, LEVEL 2,
         {
             { ConsumableEnergyBoost, 30 },
-            { ConsumableMoraleBoost, 10 }
+            { ConsumableSpiritBoost, 10 }
         }
     },
     {
@@ -375,7 +375,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "<i>Tells a sad story of an orphan far from home.</i>",
         0 USES, Artifact, LEVEL 3,
         {
-            { PersistentMaxMoraleBoost, 20 }
+            { PersistentMaxSpiritBoost, 20 }
         }
     },
     {

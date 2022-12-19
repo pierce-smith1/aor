@@ -17,7 +17,7 @@ class Game;
 const static int MAX_ARRAY_SIZE = std::max({ SMITHING_SLOTS, TRADE_SLOTS, ARTIFACT_SLOTS });
 
 const static int BASE_MAX_ENERGY = 50;
-const static int BASE_MAX_MORALE = 50;
+const static int BASE_MAX_SPIRIT = 50;
 const static int BASE_MAX_RESOURCE = 10;
 
 using Heritage = std::multiset<Color>;
@@ -43,17 +43,17 @@ public:
     void start_activity(ItemDomain domain);
 
     quint16 &energy();
-    quint16 &morale();
+    quint16 &spirit();
     int max_energy();
-    int max_morale();
-    int base_morale_cost();
+    int max_spirit();
+    int base_spirit_cost();
     void add_energy(int add);
-    void add_morale(int add);
+    void add_spirit(int add);
     quint16 egg_find_percent_chance();
 
     bool can_perform_action(ItemDomain action);
     int energy_to_gain();
-    int morale_to_gain();
+    int spirit_to_gain();
 
     std::vector<ItemCode> smithable_items();
     ItemCode smithing_result();
@@ -90,5 +90,5 @@ private:
     bool m_dead = false;
     bool m_can_couple = false;
     quint16 m_energy = 40;
-    quint16 m_morale = 40;
+    quint16 m_spirit = 40;
 };
