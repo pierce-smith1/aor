@@ -58,3 +58,7 @@ void new_game_prompt() {
         exit(1);
     }
 }
+
+void style_for_windows(QApplication &app) {
+    app.setStyleSheet("*[slot=\"true\"] { border: 1px solid #bbb; border-radius: 3px; background-color: white; }");
+}

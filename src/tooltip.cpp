@@ -99,6 +99,11 @@ void Tooltip::set(const Item &item, Game &game) {
     widget.item_subtext->setText(subtext);
 
     description += "<br>" + item.instance_properties_to_string();
+
+    while (description.endsWith("<br>")) {
+        description = description.left(description.length() - 4);
+    }
+
     widget.item_description->setText(description);
 
     const ItemProperties &properties = item.def()->properties;
