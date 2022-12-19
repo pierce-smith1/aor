@@ -165,6 +165,8 @@ void LKGameWindow::refresh_ui_buttons() {
         }
     }
 
+    m_window.trade_partner_combobox->setEnabled(m_game.trade_partner() == NOBODY);
+
     if (!m_connection.is_connected()
         || selected_char().activity().ongoing()
         || trade_ongoing(m_selected_tribe_id)

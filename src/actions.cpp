@@ -64,7 +64,6 @@ void CharacterActivity::complete() {
         }
         gw()->game().accepting_trade() = false;
         gw()->game().trade_partner() = NOBODY;
-        gw()->window().trade_partner_combobox->setEnabled(true);
     }
 
     exhaust_character();
