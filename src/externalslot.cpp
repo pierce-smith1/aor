@@ -186,8 +186,8 @@ PortraitSlot::PortraitSlot()
 {
     setMinimumSize(QSize(160, 230));
     setMaximumSize(QSize(160, 230));
-    m_item_label->setMaximumSize(QSize(160, 230));
-    m_item_label->setMinimumSize(QSize(160, 230));
+    m_item_label->setMaximumSize(QSize(156, 226));
+    m_item_label->setMinimumSize(QSize(156, 226));
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 }
 
