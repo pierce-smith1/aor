@@ -8,15 +8,17 @@ ForeignTradeSlot::ForeignTradeSlot(int n)
 }
 
 Item ForeignTradeSlot::get_item() {
-    if (gw()->selected_tribe_id() == NOBODY) {
+    if (gw()->game().trade_partner() != NOBODY) {
+        return gw()->game().accepted_offer().at(n);
+    } else if (gw()->selected_tribe_id() == NOBODY) {
         return Item();
     } else {
-        return gw()->game().tribes()[gw()->selected_tribe_id()].offer[n];
+        return gw()->game().tribes().at(gw()->selected_tribe_id()).offer.at(n);
     }
 }
 
 void ForeignTradeSlot::set_item(const Item &item) {
-    gw()->game().tribes().at(gw()->selected_tribe_id()).offer[n] = item;
+    gw()->game().tribes().at(gw()->selected_tribe_id()).offer.at(n) = item;
     refresh_pixmap();
 }
 
