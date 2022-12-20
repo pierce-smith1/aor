@@ -47,5 +47,6 @@ namespace Generators {
     Color color();
     GameId game_id();
     CharacterId char_id();
+    ActivityId activity_id();
     bool percent_chance(int p);
 }

@@ -18,8 +18,6 @@ int main(int argc, char **argv) {
     );
 #endif
 
-    check_most_recent_build(argv[0]);
-
 #ifdef Q_NO_DEBUG
     try {
 #endif
@@ -67,41 +65,4 @@ void new_game_prompt() {
     if (new_game_message.exec() != QMessageBox::Yes) {
         exit(1);
     }
-}
-
-void check_most_recent_build(char *program_name) {
-    QNetworkAccessManager *nam = new QNetworkAccessManager;
-    QObject::connect(nam, &QNetworkAccessManager::finished, [=](QNetworkReply *reply) {
-        if (reply->rawHeader("AOR-Ignore-Update") == "0") {
-            QFile program = QFile(program_name);
-            program.open(QIODevice::ReadOnly);
-
-            QCryptographicHash hasher(QCryptographicHash::Sha256);
-            hasher.addData(program.readAll());
-            QByteArray hash = hasher.result();
-
-#ifdef _WIN32
-            QByteArray latest = QByteArray::fromHex(reply->rawHeader("AOR-Latest-Hash-Windows"));
-#else
-            QByteArray latest = QByteArray::fromHex(reply->rawHeader("AOR-Latest-Hash-Linux"));
-#endif
-
-            if (latest != hash) {
-                QMessageBox update_notify;
-                update_notify.setText(
-                    "A new version of Aegis of Rhodon is available."
-                );
-                update_notify.setInformativeText(
-                    "Visit <a href=\"https://doughbyte.com/aut/aor\">doughbyte</a> to get the update."
-                );
-                update_notify.setIcon(QMessageBox::Information);
-                update_notify.exec();
-            }
-        }
-    });
-
-    QNetworkReply *reply = nam->get(QNetworkRequest(QUrl("https://doughbyte.com/aut/aor/")));
-    QObject::connect(reply, &QNetworkReply::errorOccurred, [=](QNetworkReply::NetworkError code) {
-        bugcheck(UncaughtUnknownException, code);
-    });
 }

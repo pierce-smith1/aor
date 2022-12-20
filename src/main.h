@@ -17,4 +17,3 @@
 const static QString GAME_VERSION = "0.1.0";
 
 void new_game_prompt();
-void check_most_recent_build(char *program_name);

@@ -25,6 +25,12 @@ enum FatalErrorType : int {
     OutOfRangeException,
     DeserializationFailure,
     CharacterByIdLookupMiss,
+    QueuedActivitySlotGet,
+    QueuedActivitySlotSet,
+    NoMoreActivitySlots,
+    ActivityByIdLookupMiss,
+    NoStringForActionDomain,
+    NoDescriptionForActionDomain,
 };
 
 QString bugcheck_error_string(FatalErrorType type);
@@ -61,11 +67,11 @@ template <typename... T> void bugcheck(FatalErrorType error, T... args) {
     bugcheck.setInformativeText(QString(
         "<b>%1</b><br><br>"
         "If this is the first time you've seen your consciousness ripped from Rhodon,<br>"
-        "just close your eyes and slowly count to 10. If this happens again, follow<br>"
+        "please close your eyes and slowly count to 10. If this happens again, follow<br>"
         "these steps:<br>"
         "<br>"
         "Check to make sure any new organs have been properly installed.<br>"
-        "If this is a new body, ask your diety for any updates you might need.<br>"
+        "If this is a new body, ask your deity for any updates you might need.<br>"
         "<br>"
         "If problems continue, disable or remove any newly installed organs.<br>"
         "Disable memory options such as facial recognition or object permanence.<br>"

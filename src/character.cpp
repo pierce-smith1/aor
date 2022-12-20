@@ -5,13 +5,11 @@
 
 Character::Character()
     : m_id(NOBODY),
-      m_name("Nobody"),
-      m_activity(NOBODY, None) { }
+      m_name("Nobody") { }
 
 Character::Character(CharacterId id, const QString &name, const Heritage &heritage)
     : m_id(id),
-      m_name(name),
-      m_activity(m_id, None)
+      m_name(name)
 {
     m_heritage = heritage;
 }
@@ -24,8 +22,8 @@ Heritage &Character::heritage() {
     return m_heritage;
 }
 
-CharacterActivity &Character::activity() {
-    return m_activity;
+Activities &Character::activities() {
+    return m_activities;
 }
 
 CharacterId Character::id() {
@@ -48,9 +46,8 @@ ItemProperties Character::heritage_properties() {
     return Colors::blend_heritage(m_heritage);
 }
 
-void Character::start_activity(ItemDomain domain) {
+void Character::queue_activity(ItemDomain domain, const std::vector<ItemId> &items) {
     if (domain == None) {
-        m_activity = CharacterActivity(m_id, None);
         return;
     }
 
@@ -61,6 +58,8 @@ void Character::start_activity(ItemDomain domain) {
         activity_ms = 1000 * 120;
     }
 
+    // Don't do any sort of time adjustment if we're coupling - both participants
+    // should finish at the same time.
     if (domain != Coupling) {
         double heritage_boost = heritage_properties()[HeritageActivitySpeedBonus] / 100.0;
         double injury_penalty = std::accumulate(begin(m_effects), end(m_effects), 0, [](int a, const Item &effect) {
@@ -74,9 +73,23 @@ void Character::start_activity(ItemDomain domain) {
         activity_ms += activity_ms * injury_penalty;
     }
 
-    m_activity = CharacterActivity(m_id, domain, activity_ms, activity_ms);
+    CharacterActivity new_activity = CharacterActivity(m_id, domain, items, activity_ms, activity_ms);
+    m_activities.push_back(new_activity);
+    for (ItemId id : items) {
+        gw()->game().inventory().get_item_ref(id).owning_action = new_activity.id();
+    }
+
+    // If this was the first activity added, get it started!
+    if (m_activities.size() == 1) {
+        m_activities.front().start();
+    }
+
     gw()->refresh_ui_buttons();
     gw()->refresh_slots();
+}
+
+CharacterActivity &Character::activity() {
+    return m_activities.front();
 }
 
 quint16 &Character::energy() {
@@ -179,16 +192,20 @@ bool Character::can_perform_action(ItemDomain domain) {
     }
 
     switch (domain) {
-        case Eating: {
-            return !m_activity.ongoing();
+        case Eating:
+        case Defiling: {
+            return true;
         }
         case Smithing: {
-            return smithing_result() != 0 && !m_activity.ongoing();
+            bool smithing_already_queued = std::any_of(begin(m_activities), end(m_activities), [](CharacterActivity &a) {
+                return a.action() == Smithing;
+            });
+            return smithing_result() != 0 && !smithing_already_queued;
         }
         case Foraging:
         case Mining: {
             Item tool = gw()->game().inventory().get_item(tool_id(domain));
-            return energy() >= tool.def()->properties[ToolEnergyCost] && !m_activity.ongoing();
+            return energy() >= tool.def()->properties[ToolEnergyCost];
         }
         default: {
             bugcheck(AssessmentForUnknownDomain, m_id, domain);
@@ -199,12 +216,12 @@ bool Character::can_perform_action(ItemDomain domain) {
 
 int Character::energy_to_gain() {
     int gain;
-
-    switch (m_activity.action()) {
+    CharacterActivity &activity = m_activities.front();
+    switch (activity.action()) {
         case Eating: {
-            std::vector<Item> inputs = gw()->game().inventory().items_of_intent(m_id, Eating);
-            gain = std::accumulate(begin(inputs), end(inputs), 0, [](int a, const Item &b) {
-                return a + b.def()->properties[ConsumableEnergyBoost];
+            std::vector<ItemId> inputs = activity.owned_items();
+            gain = std::accumulate(begin(inputs), end(inputs), 0, [](int a, ItemId b) {
+                return a + gw()->game().inventory().get_item(b).def()->properties[ConsumableEnergyBoost];
             });
             gain += heritage_properties()[HeritageConsumableEnergyBoost];
             break;
@@ -212,7 +229,7 @@ int Character::energy_to_gain() {
         case Smithing:
         case Foraging:
         case Mining: {
-            Item tool = gw()->game().inventory().get_item(tool_id());
+            Item tool = gw()->game().inventory().get_item(tool_id(activity.action()));
             gain = -tool.def()->properties[ToolEnergyCost];
             break;
         }
@@ -235,19 +252,19 @@ int Character::energy_to_gain() {
 
 int Character::spirit_to_gain() {
     int gain;
-
-    switch (m_activity.action()) {
+    CharacterActivity &activity = m_activities.front();
+    switch (activity.action()) {
         case Eating: {
-            std::vector<Item> inputs = gw()->game().inventory().items_of_intent(m_id, Eating);
-            gain = std::accumulate(begin(inputs), end(inputs), 0, [](int a, const Item &b) {
-                return a + b.def()->properties[ConsumableSpiritBoost];
+            std::vector<ItemId> inputs = activity.owned_items();
+            gain = std::accumulate(begin(inputs), end(inputs), 0, [](int a, ItemId b) {
+                return a + gw()->game().inventory().get_item(b).def()->properties[ConsumableSpiritBoost];
             });
             break;
         }
         case Defiling: {
-            std::vector<Item> inputs = gw()->game().inventory().items_of_intent(m_id, Defiling);
-            gain = std::accumulate(begin(inputs), end(inputs), 0, [](int a, const Item &b) {
-                return a + b.def()->item_level * 25;
+            std::vector<ItemId> inputs = activity.owned_items();
+            gain = std::accumulate(begin(inputs), end(inputs), 0, [](int a, ItemId b) {
+                return a + gw()->game().inventory().get_item(b).def()->item_level * 25;
             });
             break;
         }
@@ -257,7 +274,7 @@ int Character::spirit_to_gain() {
         }
     }
 
-    if (m_activity.action() != Eating && m_activity.action() != Defiling) {
+    if (activity.action() != Eating && activity.action() != Defiling) {
         gain -= base_spirit_cost();
     }
 
@@ -390,10 +407,6 @@ bool Character::clear_last_effect() {
     return false;
 }
 
-ItemId Character::tool_id() {
-    return m_tool_ids[m_activity.action()];
-}
-
 ItemId Character::tool_id(ItemDomain domain) {
     return m_tool_ids[domain];
 }
@@ -424,10 +437,6 @@ void Character::serialize(QIODevice *dev) const {
         IO::write_short(dev, c);
     }
 
-    IO::write_long(dev, m_activity.m_ms_left);
-    IO::write_long(dev, m_activity.m_ms_total);
-    IO::write_short(dev, m_activity.m_action);
-
     for (int i = 0; i < MAX_ARRAY_SIZE; i++) {
         IO::write_long(dev, m_external_item_ids.at(Material)[i]);
         IO::write_long(dev, m_external_item_ids.at(Artifact)[i]);
@@ -435,6 +444,11 @@ void Character::serialize(QIODevice *dev) const {
 
     for (const Item &effect : m_effects) {
         IO::write_item(dev, effect);
+    }
+
+    IO::write_short(dev, m_activities.size());
+    for (const CharacterActivity &activity : m_activities) {
+        activity.serialize(dev);
     }
 
     IO::write_long(dev, m_tool_ids.at(SmithingTool));
@@ -454,15 +468,10 @@ Character *Character::deserialize(QIODevice *dev) {
     c->m_energy = IO::read_short(dev);
     c->m_spirit = IO::read_short(dev);
 
-    quint16 size = IO::read_short(dev);
-    for (quint16 i = 0; i < size; i++) {
+    quint16 heritage_size = IO::read_short(dev);
+    for (quint16 i = 0; i < heritage_size; i++) {
         c->m_heritage.insert((Color) IO::read_short(dev));
     }
-
-    quint64 ms_left = IO::read_long(dev);
-    quint64 ms_total = IO::read_long(dev);
-    ItemDomain action = (ItemDomain) IO::read_short(dev);
-    c->m_activity = CharacterActivity(c->m_id, action, ms_left, ms_total);
 
     for (int i = 0; i < MAX_ARRAY_SIZE; i++) {
         c->m_external_item_ids[Material][i] = IO::read_long(dev);
@@ -471,6 +480,13 @@ Character *Character::deserialize(QIODevice *dev) {
 
     for (int i = 0; i < EFFECT_SLOTS; i++) {
         c->m_effects[i] = IO::read_item(dev);
+    }
+
+    quint16 activities_size = IO::read_short(dev);
+    for (quint16 i = 0; i < activities_size; i++) {
+        CharacterActivity *a = CharacterActivity::deserialize(dev);
+        c->m_activities.push_back(*a);
+        delete a;
     }
 
     c->m_tool_ids[SmithingTool] = IO::read_long(dev);

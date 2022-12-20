@@ -3,6 +3,7 @@
 #include "itemslot.h"
 #include "externalslot.h"
 #include "effectslot.h"
+#include "queuedactivityslot.h"
 #include "encyclopedia.h"
 #include "explorerbutton.h"
 #include "die.h"
@@ -32,7 +33,7 @@ LKGameWindow::LKGameWindow()
     const auto activity_buttons = get_activity_buttons();
     for (const auto &pair : activity_buttons) {
         connect(activity_buttons.at(pair.first), &QPushButton::clicked, [=]() {
-            selected_char().start_activity(pair.first);
+            selected_char().queue_activity(pair.first, {});
         });
     }
 
@@ -69,6 +70,7 @@ LKGameWindow::LKGameWindow()
     EffectSlot::insert_effect_slots();
     PortraitSlot::insert_portrait_slot();
     ExplorerButton::insert_explorer_buttons();
+    QueuedActivitySlot::insert_queued_activity_slots();
 
     notify(Discovery, "The Sun breaks on a new adventure.");
 
@@ -158,7 +160,7 @@ void LKGameWindow::refresh_ui_bars() {
 
 void LKGameWindow::refresh_ui_buttons() {
     for (ItemDomain domain : { Smithing, Foraging, Mining }) {
-        if (selected_char().can_perform_action(domain) && !selected_char().activity().ongoing()) {
+        if (selected_char().can_perform_action(domain)) {
             get_activity_buttons().at(domain)->setEnabled(true);
         } else {
             get_activity_buttons().at(domain)->setEnabled(false);
@@ -285,6 +287,10 @@ void LKGameWindow::load() {
     Game *game = Game::deserialize(&m_save_file);
     m_game = *game;
     delete game;
+
+    for (Character &character : m_game.characters()) {
+        character.activities().front().start();
+    }
 }
 
 bool LKGameWindow::save_file_exists() {

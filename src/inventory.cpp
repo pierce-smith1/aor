@@ -92,18 +92,6 @@ ItemId Inventory::make_item(ItemDefinitionPtr def, int y, int x) {
     return new_item.id;
 }
 
-std::vector<Item> Inventory::items_of_intent(CharacterId char_id, ItemDomain intent) {
-    std::vector<Item> items;
-
-    for (const Item &item : m_items) {
-        if (item.intent == intent && item.intent_holder == char_id) {
-            items.push_back(item);
-        }
-    }
-
-    return items;
-}
-
 bool Inventory::are_yx_coords_oob(int y, int x) {
     return (y < 0 || y >= INVENTORY_ROWS) || (x < 0 || x >= INVENTORY_COLS);
 }

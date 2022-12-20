@@ -28,11 +28,13 @@ using ItemCode = quint16;
 using ItemId = quint64;
 using CharacterId = quint16;
 using GameId = quint64;
+using ActivityId = quint64;
 
 const static ItemId EMPTY_ID = 0;
 const static ItemId INVALID_ID = 0xffffffffffffffff;
 const static ItemCode INVALID_CODE = 0xff;
 const static CharacterId NOBODY = 0;
+const static ActivityId NO_ACTION = 0;
 
 const static quint64 ACTIONS_TO_HATCH = 25;
 
@@ -439,7 +441,7 @@ struct Item {
     ItemId id = EMPTY_ID;
     unsigned char uses_left = 0;
     ItemDomain intent = Ordinary;
-    CharacterId intent_holder = NOBODY;
+    ActivityId owning_action = NO_ACTION;
     ItemProperties instance_properties = {};
 
     Item() = default;

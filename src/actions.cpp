@@ -3,15 +3,36 @@
 #include "gamewindow.h"
 #include "die.h"
 
-CharacterActivity::CharacterActivity(CharacterId id, ItemDomain action, qint64 ms_total, qint64 ms_left)
-    : m_action(action),
+CharacterActivity::CharacterActivity()
+    : m_id(NO_ACTION),
+      m_action(None),
+      m_ms_left(0),
+      m_ms_total(0),
+      m_owned_items(),
+      m_char_id(NOBODY) { }
+
+CharacterActivity::CharacterActivity(
+    CharacterId id,
+    ItemDomain action,
+    const std::vector<ItemId> &owned_items,
+    qint64 ms_total,
+    qint64 ms_left
+)
+    : m_id(Generators::activity_id()),
+      m_action(action),
       m_ms_left(ms_total),
       m_ms_total(ms_left),
-      m_char_id(id)
-{
+      m_owned_items(owned_items),
+      m_char_id(id) { }
+
+void CharacterActivity::start() {
     if (m_action != None) {
         m_timer_id = gw()->startTimer(ACTIVITY_TICK_RATE_MS);
     }
+}
+
+ActivityId CharacterActivity::id() {
+    return m_id;
 }
 
 ItemDomain &CharacterActivity::action() {
@@ -26,8 +47,16 @@ qint64 &CharacterActivity::ms_total() {
     return m_ms_total;
 }
 
+const std::vector<ItemId> &CharacterActivity::owned_items() {
+    return m_owned_items;
+}
+
 int CharacterActivity::timer_id() {
     return m_timer_id;
+}
+
+bool &CharacterActivity::started() {
+    return m_started;
 }
 
 double CharacterActivity::percent_complete() {
@@ -48,6 +77,21 @@ void CharacterActivity::progress(qint64 ms) {
     if (m_ms_left <= 0) {
         complete();
     }
+}
+
+QString CharacterActivity::domain_to_action_string(ItemDomain domain) {
+    switch (domain) {
+        case Eating: { return "Eating"; }
+        case Smithing: { return "Smithing"; }
+        case Mining: { return "Mining"; }
+        case Foraging: { return "Foraging"; }
+        case Trading: { return "Trading"; }
+        case Defiling: { return "Defiling"; }
+        case Coupling: { return "Coupling"; }
+        default: { bugcheck(NoStringForActionDomain, domain); }
+    }
+
+    return "";
 }
 
 Character &CharacterActivity::character() {
@@ -78,6 +122,9 @@ void CharacterActivity::complete() {
 
     gw()->refresh_ui();
     gw()->game().actions_done()++;
+    gw()->game().character(m_char_id).activities().pop_front();
+    gw()->game().character(m_char_id).activities().front().start();
+    gw()->refresh_slots();
 
     gw()->game().check_hatch();
 }
@@ -175,8 +222,8 @@ void CharacterActivity::exhaust_reagents() {
             id = EMPTY_ID;
         }
     } else if (m_action == Eating || m_action == Defiling) {
-        for (const Item &item : gw()->game().inventory().items_of_intent(m_char_id, m_action)) {
-            exhaust_item(item.id);
+        for (const ItemId id : m_owned_items) {
+            exhaust_item(id);
         }
     }
 
@@ -267,7 +314,8 @@ void CharacterActivity::give(const std::vector<Item> &items) {
 
 void CharacterActivity::give_bonuses() {
     if (m_action == Eating) {
-        for (const Item &item : gw()->game().inventory().items_of_intent(m_char_id, Eating)) {
+        for (const ItemId id : m_owned_items) {
+            Item item = gw()->game().inventory().get_item(id);
             const ItemProperties &props = item.def()->properties;
 
             for (int i = 0; i < props[ConsumableClearsNumEffects]; i++) {
@@ -316,4 +364,47 @@ void CharacterActivity::give_injuries() {
 
     character().push_effect(Item(Generators::sample_with_weights(possible_weighted_injuries)));
     gw()->notify(Warning, QString("%1 suffered an injury...").arg(character().name()));
+}
+
+void CharacterActivity::serialize(QIODevice *dev) const {
+    IO::write_long(dev, m_id);
+    IO::write_short(dev, m_action);
+    IO::write_long(dev, m_ms_left);
+    IO::write_long(dev, m_ms_total);
+    IO::write_bool(dev, m_started);
+    IO::write_short(dev, m_char_id);
+
+    IO::write_short(dev, m_owned_items.size());
+    for (ItemId id : m_owned_items) {
+        IO::write_long(dev, id);
+    }
+}
+
+CharacterActivity *CharacterActivity::deserialize(QIODevice *dev) {
+    CharacterActivity *a = new CharacterActivity;
+
+    a->m_id = IO::read_long(dev);
+    a->m_action = (ItemDomain) IO::read_short(dev);
+    a->m_ms_left = IO::read_long(dev);
+    a->m_ms_total = IO::read_long(dev);
+    a->m_started = IO::read_bool(dev);
+    a->m_char_id = IO::read_short(dev);
+
+    quint16 owned_size = IO::read_short(dev);
+    for (quint16 i = 0; i < owned_size; i++) {
+        a->m_owned_items.push_back(IO::read_long(dev));
+    }
+
+    return a;
+}
+
+CharacterActivity Activities::empty_activity;
+
+Activities::reference Activities::front() {
+    Activities::empty_activity = CharacterActivity();
+    if (empty()) {
+        return empty_activity;
+    } else {
+        return std::deque<CharacterActivity>::front();
+    }
 }

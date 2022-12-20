@@ -53,10 +53,6 @@ void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
         return;
     }
 
-    if (gw()->selected_char().activity().ongoing()) {
-        return;
-    }
-
     QString source_slot_name = event->mimeData()->text();
     ItemSlot *source_slot = gw()->findChild<ItemSlot *>(source_slot_name);
     Item dropped_item = source_slot->get_item();
@@ -127,7 +123,6 @@ void ExternalSlot::dropEvent(QDropEvent *event) {
     }
 
     gw()->game().inventory().get_item_ref(source_item.id).intent = type();
-    gw()->game().inventory().get_item_ref(source_item.id).intent_holder = gw()->selected_char().id();
 
     gw()->refresh_ui();
 }
@@ -220,7 +215,7 @@ QPixmap PortraitSlot::activity_pixmap() {
 
 void PortraitSlot::insert_portrait_slot() {
     QGridLayout *layout = (QGridLayout *) gw()->window().player_widget->layout();
-    layout->addWidget(new PortraitSlot(), 3, 0);
+    layout->addWidget(new PortraitSlot(), 3, 1);
 }
 
 void PortraitSlot::enterEvent(QEvent *) { }
@@ -240,14 +235,12 @@ void PortraitSlot::dropEvent(QDropEvent *event) {
 
     if (item.def()->type & Consumable) {
         gw()->game().inventory().get_item_ref(item.id).intent = Consumable;
-        gw()->game().inventory().get_item_ref(item.id).intent_holder = gw()->selected_char().id();
-        gw()->selected_char().start_activity(Eating);
+        gw()->selected_char().queue_activity(Eating, { item.id });
 
         source_slot->refresh_pixmap();
     } else {
         gw()->game().inventory().get_item_ref(item.id).intent = Defiling;
-        gw()->game().inventory().get_item_ref(item.id).intent_holder = gw()->selected_char().id();
-        gw()->selected_char().start_activity(Defiling);
+        gw()->selected_char().queue_activity(Defiling, { item.id });
 
         source_slot->refresh_pixmap();
     }

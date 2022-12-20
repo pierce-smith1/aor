@@ -29,7 +29,7 @@ namespace Colors {
     ItemProperties blend_heritage(std::multiset<Color> colors);
 
     template <typename ColorContainer> QColor blend(ColorContainer colors) {
-        double r, g, b;
+        double r = 0.0, g = 0.0, b = 0.0;
 
         for (Color c : colors) {
             r += qcolor(c).redF();

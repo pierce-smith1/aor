@@ -100,7 +100,7 @@ void DoughbyteConnection::want_game_state() {
 }
 
 void DoughbyteConnection::execute_trade() {
-    gw()->selected_char().start_activity(Trading);
+    gw()->selected_char().queue_activity(Trading, {});
 
     gw()->game().trade_partner() = gw()->selected_tribe_id();
     gw()->game().accepted_offer() = gw()->game().tribes().at(gw()->selected_tribe_id()).offer;

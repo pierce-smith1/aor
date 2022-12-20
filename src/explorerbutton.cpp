@@ -149,9 +149,9 @@ void ExplorerButton::dropEvent(QDropEvent *event) {
     Character &character = gw()->game().characters()[n];
     Character &partner = gw()->game().characters()[source_button->n];
 
-    character.start_activity(Coupling);
+    character.queue_activity(Coupling, {});
     character.partner() = source_button->id();
-    partner.start_activity(Coupling);
+    partner.queue_activity(Coupling, {});
     partner.partner() = id();
 
     partner.can_couple() = false; // i'm a tired

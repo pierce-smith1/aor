@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <map>
 #include <array>
+#include <deque>
 
 #include "items.h"
 #include "inventory.h"
@@ -15,6 +16,7 @@
 class Game;
 
 const static int MAX_ARRAY_SIZE = std::max({ SMITHING_SLOTS, TRADE_SLOTS, ARTIFACT_SLOTS });
+const static int MAX_QUEUED_ACTIVITIES = 8;
 
 const static int BASE_MAX_ENERGY = 50;
 const static int BASE_MAX_SPIRIT = 50;
@@ -32,7 +34,7 @@ public:
 
     QString &name();
     Heritage &heritage();
-    CharacterActivity &activity();
+    Activities &activities();
     CharacterId id();
     CharacterId &partner();
     bool &dead();
@@ -40,7 +42,8 @@ public:
 
     ItemProperties heritage_properties();
 
-    void start_activity(ItemDomain domain);
+    void queue_activity(ItemDomain domain, const std::vector<ItemId> &items);
+    CharacterActivity &activity();
 
     quint16 &energy();
     quint16 &spirit();
@@ -64,7 +67,6 @@ public:
     bool clear_last_effect();
     bool push_effect(const Item &effect);
 
-    ItemId tool_id();
     ItemId tool_id(ItemDomain domain);
     ToolIds &tools();
     ExternalItemIds &external_items();
@@ -77,7 +79,7 @@ private:
     quint16 m_id;
     QString m_name;
     Heritage m_heritage;
-    CharacterActivity m_activity;
+    Activities m_activities;
     ExternalItemIds m_external_item_ids {
         { Material, {} },
         { Artifact, {} },

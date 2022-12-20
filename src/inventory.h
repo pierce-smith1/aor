@@ -5,8 +5,8 @@
 #include "items.h"
 #include "io.h"
 
-const static int INVENTORY_ROWS = 6;
-const static int INVENTORY_COLS = 10;
+const static int INVENTORY_ROWS = 7;
+const static int INVENTORY_COLS = 11;
 const static int INVENTORY_SIZE = INVENTORY_COLS * INVENTORY_ROWS;
 
 using Items = std::array<Item, INVENTORY_SIZE>;
@@ -24,7 +24,6 @@ public:
     bool add_item(const Item &item);
     void put_item(const Item &item, int y, int x);
     ItemId make_item(ItemDefinitionPtr def, int y, int x);
-    std::vector<Item> items_of_intent(CharacterId char_id, ItemDomain intent);
 
     static bool are_yx_coords_oob(int y, int x);
     static size_t inventory_index(int y, int x);

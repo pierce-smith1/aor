@@ -126,8 +126,11 @@ GameId Generators::game_id() {
 }
 
 CharacterId Generators::char_id() {
-    static quint16 id = 1;
-    return id++;
+    return rng()->generate() % 0xffff;
+}
+
+ActivityId Generators::activity_id() {
+    return item_id();
 }
 
 bool Generators::percent_chance(int p) {

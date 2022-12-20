@@ -62,7 +62,10 @@ void Tooltip::set(const Item &item, Game &game) {
     widget.item_image->setPixmap(Item::pixmap_of(item));
 
     ItemDefinitionPtr this_def = item.def();
-    QString character_name = item.intent_holder == NOBODY ? "" : game.character(item.intent_holder).name();
+    QString character_name;
+    if (item.owning_action != NO_ACTION) {
+        character_name = game.activity(item.owning_action).character().name();
+    }
 
     widget.item_name->setText(QString("<b>%1</b>").arg(this_def->display_name));
     QString description = this_def->description;
@@ -76,19 +79,19 @@ void Tooltip::set(const Item &item, Game &game) {
             break;
         }
         case Consumable: {
-            subtext += QString(" <b><font color=green>(Being eaten by %1)</font></b>").arg(character_name);
+            subtext += QString(" <b><font color=green>(Will be eaten by %1)</font></b>").arg(character_name);
             break;
         }
         case Defiling: {
-            subtext += QString(" <b><font color=green>(Being defiled by %1)</font></b>").arg(character_name);
+            subtext += QString(" <b><font color=green>(Will be defiled by %1)</font></b>").arg(character_name);
             break;
         }
         case Material: {
-            subtext += QString(" <b><font color=green>(Queued for smithing by %1)</font></b>").arg(character_name);
+            subtext += QString(" <b><font color=green>(Will be used by %1)</font></b>").arg(character_name);
             break;
         }
         case Offering: {
-            subtext += QString(" <b><font color=green>(Queued for trading)</font></b>");
+            subtext += QString(" <b><font color=green>(Will be traded away)</font></b>");
             break;
         }
         case SmithingTool:

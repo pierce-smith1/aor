@@ -141,6 +141,22 @@ Character &Game::character(CharacterId id) {
     return *result;
 }
 
+CharacterActivity &Game::activity(ActivityId id) {
+    auto result = std::find_if(begin(m_explorers), end(m_explorers), [=](Character &c) {
+        return std::any_of(begin(c.activities()), end(c.activities()), [=](CharacterActivity &a) {
+            return a.id() == id;
+        });
+    });
+
+    if (result == end(m_explorers)) {
+        bugcheck(ActivityByIdLookupMiss, id);
+    }
+
+    return *std::find_if(begin(result->activities()), end(result->activities()), [=](CharacterActivity &a) {
+        return a.id() == id;
+    });
+}
+
 void Game::refresh_ui_bars(QProgressBar *activity, QProgressBar *spirit, QProgressBar *energy, CharacterId char_id) {
     Character &character = Game::character(char_id);
 

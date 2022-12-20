@@ -178,18 +178,6 @@ const static std::vector<CheatCommand> COMMANDS = {
         }
     },
     {
-        "start",
-        "Start doing activity with domain code $0",
-        2,
-        [](LKGameWindow *game, const QStringList &args) {
-            QS_TO_INT(action, args[0]);
-
-            game->selected_char().start_activity((ItemDomain) action);
-
-            qDebug("done");
-        }
-    },
-    {
         "timel",
         "Change the amount of ms left in the current activity to $0; if $0 is '?', show the amount of ms left instead",
         1,

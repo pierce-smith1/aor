@@ -50,6 +50,7 @@ public:
     ItemProperties total_resources();
 
     Character &character(CharacterId id);
+    CharacterActivity &activity(ActivityId id);
 
     void refresh_ui_bars(QProgressBar *activity, QProgressBar *spirit, QProgressBar *energy, CharacterId char_id);
 
