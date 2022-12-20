@@ -73,33 +73,35 @@ void Tooltip::set(const Item &item, Game &game) {
 
     subtext += Item::type_to_string(this_def->type);
 
-    switch (item.intent) {
-        default:
-        case None: {
-            break;
-        }
-        case Consumable: {
-            subtext += QString(" <b><font color=green>(Will be eaten by %1)</font></b>").arg(character_name);
-            break;
-        }
-        case Defiling: {
-            subtext += QString(" <b><font color=green>(Will be defiled by %1)</font></b>").arg(character_name);
-            break;
-        }
-        case Material: {
-            subtext += QString(" <b><font color=green>(Will be used by %1)</font></b>").arg(character_name);
-            break;
-        }
-        case Offering: {
-            subtext += QString(" <b><font color=green>(Will be traded away)</font></b>");
-            break;
-        }
-        case SmithingTool:
-        case ForagingTool:
-        case MiningTool:
-        case Artifact: {
-            subtext += QString(" <b><font color=green>(Equipped by %1)</font></b>").arg(character_name);
-            break;
+    if (item.owning_action != NO_ACTION) {
+        switch (item.intent) {
+            default:
+            case None: {
+                break;
+            }
+            case Consumable: {
+                subtext += QString(" <b><font color=green>(Will be eaten by %1)</font></b>").arg(character_name);
+                break;
+            }
+            case Defiling: {
+                subtext += QString(" <b><font color=green>(Will be defiled by %1)</font></b>").arg(character_name);
+                break;
+            }
+            case Material: {
+                subtext += QString(" <b><font color=green>(Will be used by %1)</font></b>").arg(character_name);
+                break;
+            }
+            case Offering: {
+                subtext += QString(" <b><font color=green>(Will be traded away)</font></b>");
+                break;
+            }
+            case SmithingTool:
+            case ForagingTool:
+            case MiningTool:
+            case Artifact: {
+                subtext += QString(" <b><font color=green>(Equipped by %1)</font></b>").arg(character_name);
+                break;
+            }
         }
     }
 

@@ -199,7 +199,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_CONSUMABLE | 0,
         "globfruit", "Globfruit",
-        "<i>A relative of the starfruit, this one is a lot stickier.</i>",
+        "<i>It's unusually sticky, but I really like it.</i><br>",
         1 USES, Consumable, LEVEL 1,
         {
             { ConsumableEnergyBoost, 20 },
@@ -209,7 +209,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_CONSUMABLE | 1,
         "byteberry", "Byteberry",
-        "<i>Grown on the leaves of tries, these make an excellent treat when lightly charred.</i>",
+        "<i>These little fruits grow in octuplets on the leaves of tries.</i><br>"
+        "<i>Each individual berry is either in a ripe or unripened state, so you have to eat carefully.</i><br>",
         1 USES, Consumable, LEVEL 1,
         {
             { ConsumableEnergyBoost, 10 },
@@ -220,8 +221,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_MATERIAL | 0,
         "obsilicon", "Obsilicon",
-        "<i>This glassy stone cooled from the same primordial magma<br>"
-        "that birthed Rhodon's wafer-thin planes of reality.</i>",
+        "<i>I see little flashes of light now and again under its glassy surface -</i><br>"
+        "<i>I wonder if it was cooled from the same primordial magma that forged this place.</i><br>",
         1 USES, Material, LEVEL 1,
         {
             { CrystallineResource, 10 },
@@ -230,8 +231,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_MATERIAL | 1,
         "oolite", "Oolite",
-        "<i>You've heard small talk from geologists that this may<br>"
-        "have been the first rock ever constructed by the earth.</i>",
+        "<i>I've heard small talk that these little egg-shaped stones may</i><br>"
+        "<i>have been one the first stones to form in Rhodon.</i><br>"
+        "<i>Each one is a little different, but they all fit just as well in my palm.</i><br>",
         1 USES, Material, LEVEL 1,
         {
             { StoneResource, 10 }
@@ -240,8 +242,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_TOOL | 0,
         "maven_mallet", "Maven Mallet",
-        "<i>A rudimentary tool. You've named it after the maven, a strange<br>"
-        "little bird you've seen around here that tells you long-winded stories.</i>",
+        "<i>I built this rudimentary tool with the help of a colorful little bird who gave</i><br>"
+        "<i>me an annoyingly long-winded series of directions.</i><br>",
         3 USES, SmithingTool, LEVEL 1,
         {
             { CostStone, 10 },
@@ -254,8 +256,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_TOOL | 1,
         "hashcracker", "Hashcracker",
-        "<i>Rhodon is covered in layers of hard shale-256 - but with a good axe like this,<br>"
-        "you should be able to brute-force your way through it to find the goodies underneath.</i>",
+        "<i>Rhodon is covered in layers of hard Shale-256 - but with a good axe like this,</i><br>"
+        "<i>I should be able to brute-force my way through it to find the goodies underneath.</i><br>",
         4 USES, ForagingTool, LEVEL 1,
         {
             { CostStone, 30 },
@@ -269,8 +271,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     },
     {
         CT_TOOL | 2,
-        "basalt_destructor", "Basalt Destructor",
-        "<i>It's just plain old dirt - this will be good enough.</i>",
+        "metamorphic_destructor", "Metamorphic Destructor",
+        "<i>It's very important that ore-bearing rocks are destroyed property, or else you can</i><br>"
+        "<i>leak their precious minerals back into the earth.</i><br>",
         4 USES, MiningTool, LEVEL 2,
         {
             { CostStone, 10 },
@@ -287,8 +290,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_CONSUMABLE | 2,
         "norton_ghost_pepper", "Norton Ghost Pepper",
-        "<i>Haunted with a benevolent spirit that will cure your ailments.<br>"
-        "Often found growing in places you didn't ask them to.</i>",
+        "<i>This pepper grows all over the place, but only very few of them are edible.</i><br>"
+        "<i>They've started growing at camp. I ask them to leave but they pretend they're not listening.</i><br>",
         1 USES, Consumable, LEVEL 2,
         {
             { ConsumableClearsNumEffects, 1 }
@@ -296,8 +299,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     },
     {
         CT_CONSUMABLE | 3,
-        "bleeding_krazaheart", "Bleeding Krazaheart",
-        "<i>Who's Kraza? Don't read too far into it.</i>",
+        "bleeding_wildheart", "Bleeding Wildheart",
+        "<i>If you're ever climbing a tree and you think you're near the top, just keep going.</i><br>"
+        "<i>There are some interesting things up there. I think I found someone's keys.</i><br>",
         1 USES, Consumable, LEVEL 2,
         {
             { ConsumableEnergyBoost, 30 },
@@ -307,96 +311,117 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_CONSUMABLE | 4,
         "pipeapple", "Pipeapple",
-        "<i>This fruit acts as a powerful fifodesiac, making it irresistable<br>"
-        "to share your genetic data with someone else.</i>",
+        "<i>The pipeapple is a \"fifodesiac\" -<br>"
+        "<i>That is to say, it facilitates the sharing of information, if you know what I mean.</i><br>",
         1 USES, Consumable, LEVEL 3,
         {
+            { LeafyResource, 20 },
             { ConsumableMakesCouplable, 1 }
         }
     },
     {
         CT_MATERIAL | 5,
         "fireclay", "Fireclay",
-        "<i>Used to build firewalls, this peculiar substance is selectively<br>"
-        "porous to microbes on its surface.</i>",
+        "<i>Careful examination of this clay reveals it is selectively permeable -</i><br>"
+        "<i>some particles can get through, but others can't.</i><br>"
+        "<i>If I put it up to my face, I can't hear anything, but everyone else can still hear me.</i><br>",
         1 USES, Material, LEVEL 2,
-        {}
+        {
+            { StoneResource, 50 },
+        }
     },
     {
         CT_MATERIAL | 2,
         "cobolt_bar", "Cobolt Bar",
-        "<i>Once a foundational metal of the Rhodon world, now an outdated curiosity owned mostly by<br>"
-        "the dwindling elite who still know how to mine it.</i>",
+        "<i>Ancient writings reveal that entire cities used to be built of this charming metal,</i><br>"
+        "<i>But no one seems to know what it is anymore.</i><br>",
         1 USES, Material, LEVEL 2,
         {
+            { MetallicResource, 25 }
         }
     },
     {
         CT_MATERIAL | 3,
         "solid_slate", "Solid Slate",
-        "<i>A crucial improvement over oldschool spinning schists.</i>",
+        "<i>I used to have to carve my notes on these awful spinning schists -</i><br>"
+        "<i>powered by rune magic or something else sinister, they were slow, loud, and broke easily.</i><br>"
+        "<i>This smaller, more stable stone is a crucial improvement.</i><br>",
         1 USES, Material, LEVEL 2,
         {
+            { StoneResource, 5 },
+            { RunicResource, 10 }
         }
     },
     {
         CT_MATERIAL | 4,
         "scandiskium", "Scandiskium",
-        "<i>Whenever Rhodon is torn into darkness by a Great Reroot,<br>"
-        "another vein of this soft, yellowish metal is born.</i>",
+        "<i>Every once in a while, stillness grips the whole of Rhodon as it falls into night.</i><br>"
+        "<i>Sometimes this happens very suddenly. I get awful headaches and nausea from it.</i><br>"
+        "<i>And I can hear things changing as the world re-roots itself...</i><br>",
         1 USES, Material, LEVEL 2,
         {
+            { CrystallineResource, 10 },
+            { MetallicResource, 5 },
         }
     },
     {
         CT_TOOL | 3,
         "seaquake", "Seaquake",
-        "<i>And with a thunderous clang, the great towers of<br>"
-        "the sea were assembled from liquid rubble.</i>",
+        "<i>It makes a very satisfying clang.</i><br>",
         4 USES, SmithingTool, LEVEL 3,
         {
             { ToolEnergyCost, 30 },
+            { CostMetallic, 10 },
+            { CostCrystalline, 30 },
+            { ToolMaximumMetallic, 80 },
+            { ToolMaximumRunic, 20 },
         }
     },
     {
         CT_TOOL | 4,
-        "disk_fragmenter", "Disk Fragmenter",
-        "This is how it happens.",
+        "defragmenter", "Defragmenter",
+        "<i>You very rarely see flat, even bands of rock in Rhodon -</i><br>"
+        "<i>as the world fills up, it becomes harder and harder to lay the sediment down sequentially.</i><br>",
         1 USES, MiningTool, LEVEL 3,
         {
-            { ToolEnergyCost, 15 },
+            { ToolEnergyCost, 30 },
+            { CostMetallic, 40 },
+            { CostRuinc, 15 },
             { ToolCanDiscover1, CT_ARTIFACT | 0 },
             { ToolCanDiscover2, CT_ARTIFACT | 1 },
+            { ToolCanDiscover3, CT_MATERIAL | 5 },
             { ToolDiscoverWeight1, 1 },
-            { ToolDiscoverWeight2, 1 }
+            { ToolDiscoverWeight2, 1 },
+            { ToolDiscoverWeight3, 1 },
         }
     },
     {
         CT_ARTIFACT | 0,
         "recovered_journal", "Recovered Journal",
-        "<i>Tells a sad story of an orphan far from home.</i>",
+        "<i>It's in an odd language I can't quite read -</i><br>"
+        "<i>but I can gather it tells a sad story of an orphan far from /home.<br><br>",
         0 USES, Artifact, LEVEL 3,
         {
-            { PersistentMaxSpiritBoost, 20 }
+            { PersistentMaxSpiritBoost, 40 }
         }
     },
     {
         CT_ARTIFACT | 1,
         "scalped_remains", "Scalped Remains",
-        "<i>The operating spirits of Rhodon haven't decided what to do<br>"
-        "with this unfortunate Fennahian's soul yet, so her ghost still"
-        "inhabits her decapitated skull. She gives good advice</i>",
+        "<i>Perhaps a marker of a previous failed expedition, this is definitely a Fennahian skull.</i><br>"
+        "<i>However, it remains animated by her soul, supposedly because the spirits of Rhodon haven't</i><br>"
+        "<i>figured out what to do with her yet.</i><br>"
+        "<i>In the meantime, I'll keep her around, as I am eager for company.</i><br>",
         0 USES, Artifact, LEVEL 3,
         {
-            { PersistentMaxEnergyBoost, 20 }
+            { PersistentMaxEnergyBoost, 40 }
         }
     },
     {
         CT_EFFECT | 0,
         "disconnected_socket", "Disconnected Socket",
-        "<i>You had a nasty fall and dislocated your shoulder.<br>"
-        "Your body has sent an RST blood cell to your arm to notify it<br>"
-        "that connection has been lost.</i>",
+        "<i>I took quite a nasty fall and dislocated my shoulder.</i><br>"
+        "<i>The doctor said doing a handshake would reconnect it, but I keep being refused.</i><br>",
         5 USES, Effect, LEVEL 1,
         {
             { PersistentSpeedPenalty, 20 },
@@ -408,8 +433,10 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_EFFECT | 1,
         "starving", "Starving",
-        "<i>This is what happens when the jackass philosopher in the<br>"
-        "seat next to you won't put down their spaghetti forks.</i><br>",
+        "<i>I've gone without food for too long -</i><br>"
+        "<i>sometimes I am reminded of spaghetti nights back home, where there weren't enough</i><br>"
+        "<i>forks to go around and you had to just sit and think about how hungry you were while</i><br>"
+        "<i>everyone else ate.</i><br>",
         3 USES, Effect, LEVEL 1,
         {
             { PersistentSpeedPenalty, 20 },
@@ -418,7 +445,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_EFFECT | 2,
         "weakness", "Weakness",
-        "<i>All these things I thought I owned are falling between my fingers...</i>",
+        "<i>There's a numbness to my whole body -</i><br>"
+        "<i>I feel like my soul no longer owns it, and so I'm just watching myself stumble around.</i><br>",
         3 USES, Effect, LEVEL 1,
         {
             { PersistentEnergyPenalty, 10 },
@@ -427,8 +455,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_OTHER | 0,
         "fennahian_egg", "Fennahian Egg",
-        "<i>You could make an omelette out of it, but maybe it's<br>"
-        "best to just wait for it to hatch...</i>",
+        "<i>I could make an omelette out of it, but maybe it's best to just wait for it to hatch.</i><br>",
         1 USES, Consumable | Untradeable, LEVEL 1,
         {
             { ConsumableEnergyBoost, 50 }

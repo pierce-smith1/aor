@@ -24,7 +24,7 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>1100</width>
+    <width>1200</width>
     <height>850</height>
    </size>
   </property>
@@ -176,7 +176,7 @@
             <x>0</x>
             <y>0</y>
             <width>783</width>
-            <height>549</height>
+            <height>545</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_7"/>
@@ -369,7 +369,7 @@
              <property name="minimumSize">
               <size>
                <width>56</width>
-               <height>0</height>
+               <height>40</height>
               </size>
              </property>
              <property name="maximumSize">
@@ -411,7 +411,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>0</height>
+               <height>40</height>
               </size>
              </property>
              <property name="maximumSize">
@@ -434,6 +434,12 @@
            </item>
            <item row="4" column="0">
             <widget class="QPushButton" name="mine_button">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>40</height>
+              </size>
+             </property>
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Mine &lt;/span&gt;to discover earthly materials you can use to craft new items.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
@@ -512,6 +518,12 @@
           <layout class="QHBoxLayout" name="horizontalLayout">
            <item>
             <widget class="QPushButton" name="trade_accept_button">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>40</height>
+              </size>
+             </property>
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Trade &lt;/span&gt;with other expeditions to quickly recieve items you need. &lt;/p&gt;&lt;p&gt;Every other player running Aegis of Rhodon will appear in the drop-down above. You may propose an offer at any time and all other players will instantly see it. Once two trading parties accept a trade simultaneously, the current explorer will carry out the trade.&lt;/p&gt;&lt;p&gt;To accept a trade, your offer &lt;span style=&quot; font-weight:600;&quot;&gt;must match &lt;/span&gt;the other party's in terms of &lt;span style=&quot; font-weight:600;&quot;&gt;cumulative item level&lt;/span&gt;. The current explorer must also not be doing anything. If you have accepted a trade and the other party changes their offer, you will automatically unaccept it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
@@ -528,6 +540,12 @@
             <widget class="QPushButton" name="trade_unaccept_button">
              <property name="enabled">
               <bool>false</bool>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>40</height>
+              </size>
              </property>
              <property name="text">
               <string>Nevermind</string>
@@ -642,6 +660,7 @@
  <resources>
   <include location="../../images.qrc"/>
   <include location="../../images.qrc"/>
+  <include location="../../../../images.qrc"/>
  </resources>
  <connections/>
 </ui>

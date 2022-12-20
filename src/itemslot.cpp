@@ -82,6 +82,17 @@ void ItemSlot::drop_external_item() {
     gw()->game().inventory().get_item_ref(external_item_id).intent = None;
     set_item(Item());
 
+    // Hacky: if we dropped a smithing tool, unslot all of the active materials,
+    // because we may no longer be able to support them without the tool's power.
+    if (item_to_drop.def()->type & SmithingTool) {
+        for (ItemSlot *slot : gw()->item_slots(Material)) {
+            if (slot->get_item().id != EMPTY_ID) {
+                gw()->game().inventory().get_item_ref(slot->get_item().id).intent = None;
+                slot->set_item(Item());
+            }
+        }
+    }
+
     refresh_pixmap();
     gw()->refresh_ui();
 }
