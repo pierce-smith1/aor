@@ -13,12 +13,12 @@ Item ForeignTradeSlot::get_item() {
     } else if (gw()->selected_tribe_id() == NOBODY) {
         return Item();
     } else {
-        return gw()->game().tribes().at(gw()->selected_tribe_id()).offer.at(n);
+        return gw()->game().tribes()[gw()->selected_tribe_id()].offer.at(n);
     }
 }
 
 void ForeignTradeSlot::set_item(const Item &item) {
-    gw()->game().tribes().at(gw()->selected_tribe_id()).offer.at(n) = item;
+    gw()->game().tribes()[gw()->selected_tribe_id()].offer.at(n) = item;
     refresh_pixmap();
 }
 
