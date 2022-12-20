@@ -72,7 +72,7 @@ void new_game_prompt() {
 void check_most_recent_build(char *program_name) {
     QNetworkAccessManager *nam = new QNetworkAccessManager;
     QObject::connect(nam, &QNetworkAccessManager::finished, [=](QNetworkReply *reply) {
-        if (reply->rawHeader("AOR-Ignore-Update")[0] == '0') {
+        if (reply->rawHeader("AOR-Ignore-Update") == "0") {
             QFile program = QFile(program_name);
             program.open(QIODevice::ReadOnly);
 
@@ -100,5 +100,8 @@ void check_most_recent_build(char *program_name) {
         }
     });
 
-    nam->get(QNetworkRequest(QUrl("https://doughbyte.com/aut/aor/")));
+    QNetworkReply *reply = nam->get(QNetworkRequest(QUrl("https://doughbyte.com/aut/aor/")));
+    QObject::connect(reply, &QNetworkReply::errorOccurred, [=](QNetworkReply::NetworkError code) {
+        bugcheck(UncaughtUnknownException, code);
+    });
 }
