@@ -140,7 +140,7 @@ void LKGameWindow::notify(NotificationType, const QString &) { }
 
 void LKGameWindow::refresh_ui() {
     m_window.player_name_label->setText(QString("Explorer <b>%1</b>").arg(selected_char().name()));
-    m_window.tribe_name_label->setText(QString("of <b>%1</b>").arg(m_game.tribe_name()));
+    m_window.tribe_name_label->setText(QString("Expedition <b>%1</b>").arg(m_game.tribe_name()));
 
     refresh_slots();
     refresh_ui_buttons();
