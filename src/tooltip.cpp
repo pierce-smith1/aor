@@ -95,12 +95,26 @@ void Tooltip::set(const Item &item, Game &game) {
                 subtext += QString(" <b><font color=green>(Will be traded away)</font></b>");
                 break;
             }
-            case SmithingTool:
-            case ForagingTool:
-            case MiningTool:
-            case Artifact: {
-                subtext += QString(" <b><font color=green>(Equipped by %1)</font></b>").arg(character_name);
-                break;
+        }
+    }
+
+    // Look for this being held/equipped
+    if (item.def()->type & Artifact || item.def()->type & Tool) {
+        for (Character &character : gw()->game().characters()) {
+            bool equipped = std::any_of(
+                begin(character.tools()),
+                end(character.tools()),
+                [=](const auto &pair) {
+                    return pair.second == item.id;
+            }) || std::any_of(
+                begin(character.external_items().at(Artifact)),
+                end(character.external_items().at(Artifact)),
+                [=](ItemId artifact_id) {
+                    return artifact_id == item.id;
+            });
+
+            if (equipped) {
+                subtext += QString("<b><font color=green>(Equipped by %1)</font></b>").arg(character.name());
             }
         }
     }

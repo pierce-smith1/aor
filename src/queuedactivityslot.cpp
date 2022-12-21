@@ -63,7 +63,7 @@ std::optional<TooltipInfo> QueuedActivitySlot::tooltip_info() {
         n == 0
             ? QString("<b>%1</b> is currently doing this.").arg(gw()->selected_char().name())
             : "This action is queued; right click to cancel it.",
-        Icons::activity_icons().at(Eating),
+        Icons::activity_icons_big().at(activity.action()),
         {},
         std::optional<QColor>()
     });

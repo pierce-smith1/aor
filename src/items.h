@@ -244,7 +244,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "maven_mallet", "Maven Mallet",
         "<i>I built this rudimentary tool with the help of a colorful little bird who gave</i><br>"
         "<i>me an annoyingly long-winded series of directions.</i><br>",
-        3 USES, SmithingTool, LEVEL 1,
+        5 USES, SmithingTool, LEVEL 1,
         {
             { CostStone, 10 },
             { CostCrystalline, 10 },
@@ -258,7 +258,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "hashcracker", "Hashcracker",
         "<i>Rhodon is covered in layers of hard Shale-256 - but with a good axe like this,</i><br>"
         "<i>I should be able to brute-force my way through it to find the goodies underneath.</i><br>",
-        4 USES, ForagingTool, LEVEL 1,
+        8 USES, ForagingTool, LEVEL 1,
         {
             { CostStone, 30 },
             { CostCrystalline, 10 },
@@ -276,7 +276,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "metamorphic_destructor", "Metamorphic Destructor",
         "<i>It's very important that ore-bearing rocks are destroyed property, or else you can</i><br>"
         "<i>leak their precious minerals back into the earth.</i><br>",
-        4 USES, MiningTool, LEVEL 2,
+        8 USES, MiningTool, LEVEL 2,
         {
             { CostStone, 10 },
             { CostCrystalline, 30 },
@@ -306,8 +306,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "<i>There are some interesting things up there. I think I found someone's keys.</i><br>",
         1 USES, Consumable, LEVEL 2,
         {
-            { ConsumableEnergyBoost, 30 },
-            { ConsumableSpiritBoost, 10 }
+            { ConsumableEnergyBoost, 40 },
+            { ConsumableSpiritBoost, 20 }
         }
     },
     {
@@ -327,7 +327,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "<i>Careful examination of this clay reveals it is selectively permeable -</i><br>"
         "<i>some particles can get through, but others can't.</i><br>"
         "<i>If I put it up to my face, I can't hear anything, but everyone else can still hear me.</i><br>",
-        1 USES, Material, LEVEL 2,
+        1 USES, Material, LEVEL 3,
         {
             { StoneResource, 50 },
         }
@@ -384,7 +384,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "defragmenter", "Defragmenter",
         "<i>You very rarely see flat, even bands of rock in Rhodon -</i><br>"
         "<i>as the world fills up, it becomes harder and harder to lay the sediment down sequentially.</i><br>",
-        1 USES, MiningTool, LEVEL 3,
+        10 USES, MiningTool, LEVEL 3,
         {
             { ToolEnergyCost, 30 },
             { CostMetallic, 40 },
@@ -401,7 +401,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         CT_ARTIFACT | 0,
         "recovered_journal", "Recovered Journal",
         "<i>It's in an odd language I can't quite read -</i><br>"
-        "<i>but I can gather it tells a sad story of an orphan far from /home.<br><br>",
+        "<i>but I can gather it tells a sad story of an orphan far from /home.<br>",
         0 USES, Artifact, LEVEL 3,
         {
             { PersistentMaxSpiritBoost, 40 }
@@ -410,10 +410,10 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_ARTIFACT | 1,
         "scalped_remains", "Scalped Remains",
-        "<i>Perhaps a marker of a previous failed expedition, this is definitely a Fennahian skull.</i><br>"
-        "<i>However, it remains animated by her soul, supposedly because the spirits of Rhodon haven't</i><br>"
-        "<i>figured out what to do with her yet.</i><br>"
-        "<i>In the meantime, I'll keep her around, as I am eager for company.</i><br>",
+        "<i>Perhaps a memento of a previous failed expedition, this is definitely a Fennahian skull.</i><br>"
+        "<i>It remains animated by her soul - supposedly because the spirits of Rhodon haven't</i><br>"
+        "<i>figured out what to do with it yet.</i><br>"
+        "<i>In the meantime, she keeps good company...</i><br>",
         0 USES, Artifact, LEVEL 3,
         {
             { PersistentMaxEnergyBoost, 40 }

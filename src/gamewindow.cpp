@@ -29,6 +29,7 @@ LKGameWindow::LKGameWindow()
     Game *new_game = Game::new_game();
     m_game = *new_game;
     delete new_game;
+    m_encyclopedia->refresh();
 
     const auto activity_buttons = get_activity_buttons();
     for (const auto &pair : activity_buttons) {

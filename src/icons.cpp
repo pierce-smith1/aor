@@ -7,8 +7,23 @@ const std::map<ItemDomain, QPixmap> &Icons::activity_icons() {
         { Trading, QPixmap(":/assets/img/icons/focussigil2.png") },
         { Smithing, QPixmap(":/assets/img/icons/hammer.png") },
         { Eating, QPixmap(":/assets/img/icons/apple.png") },
-        { Defiling, QPixmap(":/assets/img/icons/apple.png") },
-        { Coupling, QPixmap(":/assets/img/icons/bolt.png") },
+        { Defiling, QPixmap(":/assets/img/icons/spirit.png") },
+        { Coupling, QPixmap(":/assets/img/icons/heart.png") },
+        { None, QPixmap(":/assets/img/icons/blank.png") },
+    };
+
+    return icons;
+};
+
+const std::map<ItemDomain, QPixmap> &Icons::activity_icons_big() {
+    static std::map<ItemDomain, QPixmap> icons = {
+        { Foraging, QPixmap(":/assets/img/icons/leaf_big.png") },
+        { Mining, QPixmap(":/assets/img/icons/rock_big.png") },
+        { Trading, QPixmap(":/assets/img/icons/focussigil_big.png") },
+        { Smithing, QPixmap(":/assets/img/icons/hammer_big.png") },
+        { Eating, QPixmap(":/assets/img/icons/apple_big.png") },
+        { Defiling, QPixmap(":/assets/img/icons/spirit_big.png") },
+        { Coupling, QPixmap(":/assets/img/icons/heart_big.png") },
         { None, QPixmap(":/assets/img/icons/blank.png") },
     };
 
