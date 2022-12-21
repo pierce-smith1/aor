@@ -117,16 +117,23 @@ void CharacterActivity::complete() {
     exhaust_reagents();
     give(items);
 
-    m_action = None;
-    m_ms_total = 0;
-
-    gw()->refresh_ui();
     gw()->game().actions_done()++;
-    gw()->game().character(m_char_id).activities().pop_front();
-    gw()->game().character(m_char_id).activities().front().start();
-    gw()->refresh_slots();
+
+    Character &character = gw()->game().character(m_char_id);
+    character.activities().pop_front();
+
+    CharacterActivity &next = character.activities().front();
+    while (next.action() != None) {
+        if (character.can_perform_action(next.action())) {
+            next.start();
+            break;
+        }
+        character.activities().pop_front();
+        next = character.activities().front();
+    }
 
     gw()->game().check_hatch();
+    gw()->refresh_ui();
 }
 
 std::vector<Item> CharacterActivity::products() {
