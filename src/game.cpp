@@ -158,18 +158,25 @@ CharacterActivity &Game::activity(ActivityId id) {
 }
 
 void Game::refresh_ui_bars(QProgressBar *activity, QProgressBar *spirit, QProgressBar *energy, CharacterId char_id) {
+    auto clamp = [](int min, int value, int max) {
+        return value < min ? min : (value > max ? max : value);
+    };
+
     Character &character = Game::character(char_id);
 
     activity->setMaximum(100);
     activity->setValue(character.activity().percent_complete() * 100);
 
+    // We have to be very particular about clamping values here, since if we
+    // pass a number to QProgressBar::setValue that is < minValue or > maxValue,
+    // nothing happens - leading to UI inconsistencies.
     double spirit_gain = character.spirit_to_gain() * character.activity().percent_complete();
     spirit->setMaximum(character.max_spirit());
-    spirit->setValue(character.spirit_int() + spirit_gain);
+    spirit->setValue(clamp(0, character.spirit() + spirit_gain, character.max_spirit()));
 
     double energy_gain = character.energy_to_gain() * character.activity().percent_complete();
     energy->setMaximum(character.max_energy());
-    energy->setValue(character.energy_int() + energy_gain);
+    energy->setValue(clamp(0, character.energy() + energy_gain, character.max_energy()));
 }
 
 void Game::serialize(QIODevice *dev) {

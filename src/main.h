@@ -14,6 +14,6 @@
 #include "cheatconsole.h"
 #include "encyclopedia.h"
 
-const static QString GAME_VERSION = "0.1.0";
+const static QString GAME_VERSION = "1.0.0";
 
 void new_game_prompt();

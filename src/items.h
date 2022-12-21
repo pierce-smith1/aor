@@ -311,8 +311,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_CONSUMABLE | 4,
         "pipeapple", "Pipeapple",
-        "<i>The pipeapple is a \"fifodesiac\" -<br>"
-        "<i>That is to say, it facilitates the sharing of information, if you know what I mean.</i><br>",
+        "<i>The pipeapple is a \"fifodesiac\" -</i><br>"
+        "<i>That is to say, it allows processes to share information, if you know what I mean.</i><br>",
         1 USES, Consumable, LEVEL 3,
         {
             { LeafyResource, 20 },
