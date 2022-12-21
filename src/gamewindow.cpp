@@ -88,7 +88,7 @@ LKGameWindow::LKGameWindow()
 
     m_encyclopedia->refresh();
 
-    m_window.statusbar->showMessage("aor " + GAME_VERSION);
+    m_window.statusbar->showMessage("beta " + GAME_VERSION);
     m_backup_timer_id = startTimer(BACKUP_INTERVAL_MS);
 }
 

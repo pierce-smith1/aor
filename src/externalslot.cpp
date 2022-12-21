@@ -173,7 +173,7 @@ ItemDomain ToolSlot::get_tool_slot_type() {
 void ToolSlot::insert_tool_slots() {
     gw()->window().smith_layout->addWidget(new ToolSlot(SmithingTool), 0, 0, 1, 5);
     gw()->window().exploring_layout->addWidget(new ToolSlot(ForagingTool), 0, 0);
-    gw()->window().exploring_layout->addWidget(new ToolSlot(MiningTool), 3, 0);
+    gw()->window().exploring_layout->addWidget(new ToolSlot(MiningTool), 2, 0);
 }
 
 PortraitSlot::PortraitSlot()

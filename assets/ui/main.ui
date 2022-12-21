@@ -176,7 +176,7 @@
             <x>0</x>
             <y>0</y>
             <width>783</width>
-            <height>545</height>
+            <height>521</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_7"/>
@@ -404,9 +404,26 @@
          <item row="0" column="0">
           <layout class="QGridLayout" name="exploring_layout">
            <item row="3" column="0">
-            <widget class="QWidget" name="ghost" native="true"/>
+            <widget class="QPushButton" name="mine_button">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>40</height>
+              </size>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Mine &lt;/span&gt;to discover earthly materials you can use to craft new items.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>Mine</string>
+             </property>
+             <property name="icon">
+              <iconset resource="../../images.qrc">
+               <normaloff>:/assets/img/icons/crystals.png</normaloff>:/assets/img/icons/crystals.png</iconset>
+             </property>
+            </widget>
            </item>
-           <item row="2" column="0">
+           <item row="1" column="0">
             <widget class="QPushButton" name="forage_button">
              <property name="minimumSize">
               <size>
@@ -432,28 +449,19 @@
              </property>
             </widget>
            </item>
-           <item row="4" column="0">
-            <widget class="QPushButton" name="mine_button">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>40</height>
-              </size>
-             </property>
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Mine &lt;/span&gt;to discover earthly materials you can use to craft new items.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
+           <item row="0" column="0">
+            <widget class="QPushButton" name="pushButton">
              <property name="text">
-              <string>Mine</string>
-             </property>
-             <property name="icon">
-              <iconset resource="../../images.qrc">
-               <normaloff>:/assets/img/icons/crystals.png</normaloff>:/assets/img/icons/crystals.png</iconset>
+              <string>PushButton</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="0">
-            <widget class="QWidget" name="ghost_2" native="true"/>
+           <item row="2" column="0">
+            <widget class="QPushButton" name="pushButton_2">
+             <property name="text">
+              <string>PushButton</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
