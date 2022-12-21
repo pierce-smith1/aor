@@ -131,10 +131,11 @@ void ItemSlot::mousePressEvent(QMouseEvent *event) {
 
     bool is_inventory_slot = type() == Ordinary;
     bool item_being_used = get_item().intent != None;
+    bool is_current_activity_unrelated = type() != gw()->selected_char().activity().action();
 
     if (event->button() == Qt::RightButton
         && !is_inventory_slot
-        && !gw()->selected_char().activity().ongoing()
+        && is_current_activity_unrelated
     ) {
         drop_external_item();
         return;
