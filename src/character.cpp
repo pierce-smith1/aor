@@ -175,7 +175,7 @@ void Character::add_spirit(int add) {
 }
 
 quint16 Character::egg_find_percent_chance() {
-    return 5;
+    return 15;
 }
 
 bool Character::can_perform_action(ItemDomain domain) {
