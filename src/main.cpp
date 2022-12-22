@@ -23,14 +23,20 @@ int main(int argc, char **argv) {
 #endif
         LKGameWindow::instantiate_singleton();
 
+        bool new_game = false;
         if (!gw()->save_file_exists()) {
             new_game_prompt();
+            new_game = true;
         } else {
             gw()->load();
         }
 
         gw()->show();
         gw()->refresh_ui();
+
+        if (new_game) {
+            welcome_message();
+        }
 
         CheatConsole console(gw());
         if (argc == 2 && strcmp(argv[1], "cheat") == 0) {
@@ -65,4 +71,20 @@ void new_game_prompt() {
     if (new_game_message.exec() != QMessageBox::Yes) {
         exit(1);
     }
+}
+
+void welcome_message() {
+    QMessageBox welcome;
+    welcome.setText(
+        "<b>The sun rises on a new adventure!</b>"
+    );
+    welcome.setInformativeText(
+        "The passage here was not easy.<br>"
+        "I've been sent alone, and I gaze into the sprawling horizon of Rhodon with only the clothes on my back...<br>"
+        "<br>"
+        "Still! I have much work to do, so I musn't get distracted.<br>"
+        "<br>"
+        "...Maybe I should start by <b>foraging for something to eat?</b>"
+    );
+    welcome.exec();
 }

@@ -117,34 +117,34 @@ void Game::check_tutorial(ItemDomain domain) {
     switch (domain) {
         case Consumable: {
             gw()->tutorial(
-                "<b>You just found a consumable!</b><br>"
+                "<b>I just found a consumable!</b><br>"
                 "<br>"
-                "<b>Consumables</b> are used to restore your explorers' energy and health.</b><br>"
-                "When eaten, consumables will <b>reduce the timer of all active injuries by 1.</b><br>"
-                "Most will also refill some amount of <b>energy</b>, though some have other effects as well.<br>"
+                "<b>Consumables</b> are used to restore our explorers' energy and health.</b><br>"
+                "When eaten, consumables will usually refill some amount of <b>energy.</b> They will also <b>reduce the timer of all active injuries by 1 action.</b><br>"
+                "Many will also have a bonus effect on top of this.<br>"
                 "Drag a consumable to an explorer's <b>portrait</b> to have her eat it.</b><br>"
             );
             break;
         } case Material: {
             gw()->tutorial(
-                "<b>You just found a material!</b><br>"
+                "<b>I just found a material!</b><br>"
                 "<br>"
                 "<b>Materials</b> are used to craft new items.</b><br>"
                 "All materials have some amount of value in one of the <b>five resource types</b>.<br>"
                 "Materials can be dragged into an explorer's <b>smithing slots</b> to use them for crafting - the total value of all materials in her smithing slots determines what item she will make.<br>"
                 "Materials can also be dragged to an explorer's <b>portrait</b> to have her <b>defile</b> it, which will destroy the item to restore <b>25 spirit per item level</b>.<br>"
                 "<br>"
-                "Why don't you check the <b>encyclopedia</b> and see if you can smith <b>a new tool</b>?"
+                "Why don't I check the <b>encyclopedia</b> and see if I can smith <b>a new tool</b>?"
             );
             break;
         }
         case SmithingTool: {
             gw()->tutorial(
-                "<b>You just made a smithing tool!</b><br>"
+                "<b>I just made a smithing tool!</b><br>"
                 "<br>"
-                "When equipped, <b>smithing tools</b> increase the amount of resources you can put into <b>smithing slots</b>.<br>"
+                "When equipped, <b>smithing tools</b> increase the amount of resources I can put into <b>smithing slots</b>.<br>"
                 "The maximum amount of resources a smithing tool can support is referred to as its <b>power</b>.<br>"
-                "Regardless of tool, you can always support at least <b>10 of each resource type</b>.<br>"
+                "Regardless of tool, I can always support at least <b>10 of each resource type</b>.<br>"
                 "<br>"
                 "Like all tools, smithing tools can <b>only be used a limited number of times</b> before they break."
             );
@@ -152,11 +152,11 @@ void Game::check_tutorial(ItemDomain domain) {
         }
         case ForagingTool: {
             gw()->tutorial(
-                "<b>You just made a foraging tool!</b><br>"
+                "<b>I just made a foraging tool!</b><br>"
                 "<br>"
-                "When equipped, <b>foraging tools</b> allow you to find new consumables when you forage.<br>"
+                "When equipped, <b>foraging tools</b> allow me to find new consumables when I forage.<br>"
                 "Each foraging tool has a unique pool of items it can discover; some potentially rarer than others.<br>"
-                "While you hold a foraging tool, you also have a chance to find <b>loose eggs</b> that can hatch into new explorers!<br>"
+                "While I hold a foraging tool, I also have a chance to find <b>loose eggs</b> that can <b>hatch into new explorers!</b><br>"
                 "<br>"
                 "Like all tools, foraging tools can <b>only be used a limited number of times</b> before they break."
             );
@@ -164,9 +164,9 @@ void Game::check_tutorial(ItemDomain domain) {
         }
         case MiningTool: {
             gw()->tutorial(
-                "<b>You just made a mining tool!</b><br>"
+                "<b>I just made a mining tool!</b><br>"
                 "<br>"
-                "When equipped, <b>mining tools</b> allow you to find new materials when you mine.<br>"
+                "When equipped, <b>mining tools</b> allow me to find new materials when I mine.<br>"
                 "Each mining tool has a unique pool of items it can discover; some potentially rarer than others.<br>"
                 "<br>"
                 "Like all tools, mining tools can <b>only be used a limited number of times</b> before they break."
@@ -175,7 +175,7 @@ void Game::check_tutorial(ItemDomain domain) {
         }
         case Artifact: {
             gw()->tutorial(
-                "<b>You just found an artifact!</b><br>"
+                "<b>I just found an artifact!</b><br>"
                 "<br>"
                 "Artifacts provide <b>constant bonuses</b> when equipped.<br>"
                 "Each explorer can hold up to 3."

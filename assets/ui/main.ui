@@ -248,7 +248,7 @@
          </size>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the current explorer's &lt;span style=&quot; font-weight:600;&quot;&gt;energy.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Energy is required fofr her to use tools. You can refill it by eating food recovered from &lt;span style=&quot; font-weight:600;&quot;&gt;foraging.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If her energy reaches 0,&lt;span style=&quot; font-weight:600;&quot;&gt; she will begin to die.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the current explorer's &lt;span style=&quot; font-weight:600;&quot;&gt;energy.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Energy is required for her to use tools. You can refill it by eating food recovered from &lt;span style=&quot; font-weight:600;&quot;&gt;foraging.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If her energy reaches 0, she will sustain continous injury until it is raised above 0 again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="maximum">
          <number>100</number>
@@ -336,7 +336,7 @@
          </size>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the current explorer's &lt;span style=&quot; font-weight:600;&quot;&gt;spirit&lt;/span&gt;. &lt;/p&gt;&lt;p&gt;Every action she takes drains a small amount of spirit. She can refill it by &lt;span style=&quot; font-weight:600;&quot;&gt;defiling&lt;/span&gt; an item. Drag any non-consumable to her portrait to have her defile it for &lt;span style=&quot; font-weight:600;&quot;&gt;25 spirit per level &lt;/span&gt;of the defiled item.&lt;/p&gt;&lt;p&gt;If her spirit reaches 0, &lt;span style=&quot; font-weight:600;&quot;&gt;she will begin to die.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the current explorer's &lt;span style=&quot; font-weight:600;&quot;&gt;spirit&lt;/span&gt;. &lt;/p&gt;&lt;p&gt;Every action she takes drains a small amount of spirit. She can refill it by &lt;span style=&quot; font-weight:600;&quot;&gt;defiling&lt;/span&gt; an item. Drag any non-consumable to her portrait to have her defile it for &lt;span style=&quot; font-weight:600;&quot;&gt;25 spirit per level &lt;/span&gt;of the defiled item.&lt;/p&gt;&lt;p&gt;If her spirit reaches 0, she will sustain continuous injury until it is raised above 0 again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="whatsThis">
          <string/>

@@ -382,15 +382,14 @@ bool Character::push_effect(const Item &effect) {
         return !(Item::def_of(code)->type & Effect);
     })) {
         gw()->tutorial(
-            "<b>You just suffered an injury...</b><br>"
+            "<b>I just suffered an injury...</b><br>"
             "<br>"
-            "<b>Injuries</b> inflict your explorers with negative effects.<br>"
-            "They are encountered randomly after taking actions, and are more frequent when using higher level tools."
-            "They may also be triggered by certain events, such as running out of energy or spirit."
+            "<b>Injuries</b> inflict our explorers with negative effects.<br>"
+            "They are encountered randomly after taking actions, and are more frequent when using higher level tools.<br>"
+            "They may also be triggered by certain events, such as running out of energy or spirit.<br>"
             "They heal over time, and can be healed faster by eating <b>consumables</b>.<br>"
             "<br>"
-            "Injuries should not be left to fester; once an explorer fills all her injury slots, she will <b>die</b>,<br>"
-            "and her body will <b>permanently</b> consume one of your explorer slots."
+            "Injuries should not be left to fester; once an explorer fills all her injury slots, she will <b>die</b>. Please don't let this happen."
         );
     }
     gw()->game().history().insert(effect.code);

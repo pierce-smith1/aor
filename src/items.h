@@ -146,14 +146,14 @@ const static std::map<ItemProperty, QString> PROPERTY_DESCRIPTIONS = {
     { ToolEnergyCost, "Requires <b>%1 energy</b> per use." },
     { ConsumableEnergyBoost, "Gives <b>+%1 energy</b>." },
     { ConsumableSpiritBoost, "Gives <b>+%1 spirit</b>." },
-    { ConsumableClearsNumEffects, "Clears up to <b>%1 effect(s)</b> (starting with the rightmost.)" },
+    { ConsumableClearsNumEffects, "Fully clears up to <b>%1 injuries(s)</b> (starting with the rightmost.)" },
     { ConsumableMakesCouplable, "Gives the ability to <b><font color=purple>have a child</font></b> with another explorer." },
-    { PersistentMaxEnergyBoost, "You have <b>+%1 max energy</b>." },
-    { PersistentMaxSpiritBoost, "You have <b>+%1 max spirit</b>." },
-    { PersistentSpeedBonus, "Your actions complete <b>%1x faster</b>." },
-    { PersistentSpeedPenalty, "Your actions complete <b>%1% slower</b>." },
-    { PersistentEnergyPenalty, "Your actions cost an additional <b>%1 energy</b>." },
-    { PersistentSpiritPenalty, "Your actions cost an additional <b>%1 spirit</b>." },
+    { PersistentMaxEnergyBoost, "I have <b>+%1 max energy</b>." },
+    { PersistentMaxSpiritBoost, "I have <b>+%1 max spirit</b>." },
+    { PersistentSpeedBonus, "My actions complete <b>%1x faster</b>." },
+    { PersistentSpeedPenalty, "My actions complete <b>%1% slower</b>." },
+    { PersistentEnergyPenalty, "My actions cost an additional <b>%1 energy</b>." },
+    { PersistentSpiritPenalty, "My actions cost an additional <b>%1 spirit</b>." },
     { HeritageMaxEnergyBoost, "I have <b>+%1 max energy</b>." },
     { HeritageMaxSpiritBoost, "I have <b>+%1 max spirit</b>." },
     { HeritageConsumableEnergyBoost, "I get <b>+%1 bonus energy</b> when I eat something." },
@@ -233,7 +233,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_MATERIAL | 1,
         "oolite", "Oolite",
-        "<i>I've heard small talk that these little egg-shaped stones may</i><br>"
+        "<i>I've heard small talk that these little egg-shaped rocks may</i><br>"
         "<i>have been one the first stones to form in Rhodon.</i><br>"
         "<i>Each one is a little different, but they all fit just as well in my palm.</i><br>",
         1 USES, Material, LEVEL 1,
@@ -443,6 +443,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         5 USES, Effect, LEVEL 1,
         {
             { PersistentSpeedPenalty, 20 },
+            { PersistentSpiritPenalty, 10 },
         }
     },
     {
@@ -450,9 +451,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "weakness", "Weakness",
         "<i>There's a numbness to my whole body -</i><br>"
         "<i>I feel like my soul no longer owns it, and I'm just watching myself stumble around.</i><br>",
-        4 USES, Effect, LEVEL 1,
+        5 USES, Effect, LEVEL 1,
         {
-            { PersistentEnergyPenalty, 5 },
+            { PersistentEnergyPenalty, 10 },
         }
     },
     {

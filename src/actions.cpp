@@ -249,7 +249,7 @@ void CharacterActivity::exhaust_character() {
         }
 
         if (m_action == Eating) {
-            effect.uses_left -= 2;
+            effect.uses_left -= effect.uses_left == 1 ? 1 : 2;
         } else {
             effect.uses_left -= 1;
         }
@@ -270,42 +270,39 @@ void CharacterActivity::exhaust_character() {
 }
 
 void CharacterActivity::exhaust_item(ItemId id) {
-    if (id != EMPTY_ID) {
-        Item &item = gw()->game().inventory().get_item_ref(id);
-        if (item.uses_left > 0) {
-            item.uses_left -= 1;
-            if (item.uses_left == 0) {
-                if (item.code & CT_TOOL) {
-                    gw()->notify(Warning, QString("%1's %2 broke!")
-                        .arg(gw()->game().character(m_char_id).name())
-                        .arg(item.def()->display_name)
-                    );
+    if (id == EMPTY_ID) {
+        return;
+    }
 
-                    character().tools().at(m_action) = EMPTY_ID;
-                }
+    Item &item = gw()->game().inventory().get_item_ref(id);
 
-                gw()->game().inventory().remove_item(id);
-            } else {
-                if (!(item.intent & Tool)) {
-                    item.intent = None;
-                }
+    if (item.uses_left > 0) {
+        item.uses_left -= 1;
+        if (item.uses_left == 0 && item.code & CT_TOOL) {
+            character().tools().at(m_action) = EMPTY_ID;
+            gw()->game().inventory().remove_item(id);
+        } else if (item.uses_left == 0) {
+            gw()->game().inventory().remove_item(id);
+        } else if (!(item.intent & Tool)) {
+            item.intent = None;
+        }
+    }
+
+    if (m_action == Smithing) {
+        for (ItemId &mid : character().external_items().at(Material)) {
+            if (id == mid) {
+                mid = EMPTY_ID;
             }
         }
-
-        if (m_action == Smithing) {
-            for (ItemId &mid : character().external_items().at(Material)) {
-                if (id == mid) {
-                    mid = EMPTY_ID;
-                }
-            }
-        } else if (m_action == Trading) {
-            for (ItemId &oid : character().external_items().at(Offering)) {
-                if (id == oid) {
-                    oid = EMPTY_ID;
-                }
+    } else if (m_action == Trading) {
+        for (ItemId &oid : character().external_items().at(Offering)) {
+            if (id == oid) {
+                oid = EMPTY_ID;
             }
         }
     }
+
+    item.owning_action = NO_ACTION;
 }
 
 void CharacterActivity::give(const std::vector<Item> &items) {
@@ -344,7 +341,7 @@ void CharacterActivity::give_bonuses() {
 void CharacterActivity::give_injuries() {
     bool welchian = false;
 
-    int injury_chance = 5 + (gw()->game().inventory().get_item(character().tool_id(m_action)).def()->item_level * 6);
+    int injury_chance = 3 + (gw()->game().inventory().get_item(character().tool_id(m_action)).def()->item_level * 6);
     int injury_dampen = character().heritage_properties()[HeritageInjuryResilience];
     injury_chance -= injury_dampen;
 
@@ -359,6 +356,7 @@ void CharacterActivity::give_injuries() {
 
     if (welchian) {
         character().push_effect(Item("welchian_fever"));
+        return;
     }
 
     std::vector<std::pair<ItemCode, double>> possible_weighted_injuries;

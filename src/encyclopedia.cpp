@@ -93,7 +93,7 @@ std::optional<TooltipInfo> EncyclopediaSlot::tooltip_info() {
         return std::optional<TooltipInfo>({
             "???",
             "Undiscovered",
-            "You havn't discovered this item yet.",
+            "You haven't discovered this item yet.",
             QPixmap(":assets/img/items/sil/missing.png"),
             Item::def_of(item_code())->properties
         });

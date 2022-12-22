@@ -17,3 +17,4 @@
 const static QString GAME_VERSION = "1.0.0";
 
 void new_game_prompt();
+void welcome_message();
