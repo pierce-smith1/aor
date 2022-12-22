@@ -310,7 +310,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         1 USES, Consumable, LEVEL 2,
         {
             { ConsumableEnergyBoost, 40 },
-            { ConsumableSpiritBoost, 20 },
         }
     },
     {
