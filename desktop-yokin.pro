@@ -3,11 +3,12 @@
 ######################################################################
 
 TEMPLATE = app
-TARGET = desktop-yokin
+TARGET = aor
 INCLUDEPATH += .
 CONFIG += debug_and_release
 CONFIG += static
 CONFIG += c++17
+RC_ICONS = assets/icon.ico
 
 RESOURCES += images.qrc
 FORMS += assets/ui/main.ui
