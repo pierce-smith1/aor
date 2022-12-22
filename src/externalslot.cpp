@@ -3,6 +3,7 @@
 #include "foreigntradeslot.h"
 #include "smithingresultslot.h"
 #include "die.h"
+#include "icons.h"
 
 ExternalSlot::ExternalSlot(ItemDomain type, int n)
     : ItemSlot(), item_slot_type(type), n(n)
@@ -196,11 +197,26 @@ void PortraitSlot::set_item(const Item &item) {
 }
 
 void PortraitSlot::refresh_pixmap() {
-    m_item_label->setPixmap(activity_pixmap());
-    setStyleSheet("background-color: "
-        + Colors::blend(gw()->selected_char().heritage()).name() +
-        "; border-radius: 5px;"
-    );
+    Character &character = gw()->selected_char();
+    ItemDomain current_activity = character.activity().action();
+    if (character.dead()) {
+        m_item_label->setPixmap(QPixmap(":assets/img/lk/dead.png"));
+        setStyleSheet("border-radius: 5px;");
+    } else if (current_activity == Coupling) {
+        m_item_label->setPixmap(Icons::activity_portraits().at(current_activity));
+        QString ss = (QString("background: qlineargradient(x1: 0.385, y1: 0.48, x2: 0.3875, y2: 0.482,")
+            + "stop: 0 " + Colors::blend(character.heritage()).name() + ","
+            + "stop: 1 " + Colors::blend(gw()->game().character(character.partner()).heritage()).name() + ");"
+            + "border-radius: 5px;"
+        );
+        setStyleSheet(ss);
+    } else {
+        m_item_label->setPixmap(Icons::activity_portraits().at(current_activity));
+        setStyleSheet("background-color: "
+            + Colors::blend(gw()->selected_char().heritage()).name() +
+            "; border-radius: 5px;"
+        );
+    }
 }
 
 QPixmap PortraitSlot::activity_pixmap() {

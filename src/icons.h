@@ -9,5 +9,6 @@
 namespace Icons {
     const std::map<ItemDomain, QPixmap> &activity_icons();
     const std::map<ItemDomain, QPixmap> &activity_icons_big();
+    const std::map<ItemDomain, QPixmap> &activity_portraits();
     const std::map<ItemProperty, QPixmap> &resource_icons();
 }

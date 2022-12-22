@@ -58,6 +58,7 @@ public:
     void refresh_ui_bars();
     void refresh_ui_buttons();
     void refresh_trade_ui();
+    void tutorial(const QString &text);
 
     const std::map<ItemDomain, QPushButton *> get_activity_buttons();
     const std::vector<ItemSlot *> &item_slots();

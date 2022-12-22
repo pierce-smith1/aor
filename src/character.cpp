@@ -274,6 +274,10 @@ int Character::spirit_to_gain() {
         gain -= base_spirit_cost();
     }
 
+    gain -= std::accumulate(begin(m_effects), end(m_effects), 0, [](int a, const Item &item) {
+        return a + item.def()->properties[PersistentSpiritPenalty];
+    });
+
     return gain;
 }
 
@@ -373,6 +377,23 @@ bool Character::push_effect(const Item &effect) {
     if (effect.id == EMPTY_ID) {
         return false;
     }
+
+    if (std::all_of(begin(gw()->game().history()), end(gw()->game().history()), [=](ItemCode code) {
+        return !(Item::def_of(code)->type & Effect);
+    })) {
+        gw()->tutorial(
+            "<b>You just suffered an injury...</b><br>"
+            "<br>"
+            "<b>Injuries</b> inflict your explorers with negative effects.<br>"
+            "They are encountered randomly after taking actions, and are more frequent when using higher level tools."
+            "They may also be triggered by certain events, such as running out of energy or spirit."
+            "They heal over time, and can be healed faster by eating <b>consumables</b>.<br>"
+            "<br>"
+            "Injuries should not be left to fester; once an explorer fills all her injury slots, she will <b>die</b>,<br>"
+            "and her body will <b>permanently</b> consume one of your explorer slots."
+        );
+    }
+    gw()->game().history().insert(effect.code);
 
     int current_effects = std::count_if(begin(m_effects), end(m_effects), [](const Item &item) {
         return item.id != EMPTY_ID;

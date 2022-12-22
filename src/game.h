@@ -45,6 +45,7 @@ public:
     bool add_character(const QString &name, const std::multiset<Color> &heritage);
     bool add_item(const Item &item);
     void check_hatch();
+    void check_tutorial(ItemDomain domain);
     int trade_level();
     int foreign_trade_level(GameId tribe_id);
     ItemProperties total_resources();

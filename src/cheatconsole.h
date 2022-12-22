@@ -93,8 +93,6 @@ const static std::vector<CheatCommand> COMMANDS = {
             OOB_CHECK(y, x);
 
             game->game().inventory().put_item(Item(args[0]), y, x);
-
-            qDebug("done");
         }
     },
     {
@@ -103,8 +101,6 @@ const static std::vector<CheatCommand> COMMANDS = {
         0,
         [](LKGameWindow *game, const QStringList &) {
             game->save();
-
-            qDebug("done");
         }
     },
     {
@@ -113,8 +109,6 @@ const static std::vector<CheatCommand> COMMANDS = {
         0,
         [](LKGameWindow *game, const QStringList &) {
             game->load();
-
-            qDebug("done");
         }
     },
     {
@@ -129,8 +123,6 @@ const static std::vector<CheatCommand> COMMANDS = {
             }
 
             game->selected_char().name() = new_name;
-
-            qDebug("done");
         }
     },
     {
@@ -151,8 +143,6 @@ const static std::vector<CheatCommand> COMMANDS = {
             }
 
             game->selected_char().energy() = energy;
-
-            qDebug("done");
         }
     },
     {
@@ -173,8 +163,6 @@ const static std::vector<CheatCommand> COMMANDS = {
             }
 
             game->selected_char().spirit() = spirit;
-
-            qDebug("done");
         }
     },
     {
@@ -190,8 +178,6 @@ const static std::vector<CheatCommand> COMMANDS = {
             QS_TO_INT(ms, args[0]);
 
             game->selected_char().activity().ms_left() = ms;
-
-            qDebug("done");
         }
     },
     {
@@ -203,8 +189,6 @@ const static std::vector<CheatCommand> COMMANDS = {
             QS_TO_INT(code, args[1]);
 
             game->selected_char().effects()[n] = Item(code);
-
-            qDebug("done");
         }
     },
     {
@@ -243,6 +227,21 @@ const static std::vector<CheatCommand> COMMANDS = {
             QS_TO_INT(fast, args[0]);
 
             game->game().fast_actions() = fast;
+        }
+    },
+    {
+        "actions",
+        "Change the game's action counter to $0; if $0 is '?', show the current actions instead",
+        1,
+        [](LKGameWindow *game, const QStringList &args) {
+            if (args[0] == "?") {
+                qDebug("Action counter at (%lld)", game->game().actions_done());
+                return;
+            }
+
+            QS_TO_INT(actions, args[0]);
+
+            game->game().actions_done() = actions;
         }
     }
 };

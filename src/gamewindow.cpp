@@ -147,6 +147,14 @@ void LKGameWindow::refresh_ui() {
     refresh_ui_buttons();
     refresh_ui_bars();
     refresh_trade_ui();
+
+    bool ruin = std::all_of(begin(m_game.characters()), end(m_game.characters()), [](Character &character) {
+        return character.dead() || character.id() == NOBODY;
+    });
+
+    if (ruin) {
+        statusBar()->showMessage("Quiet at last.");
+    }
 }
 
 void LKGameWindow::refresh_slots() {
@@ -224,6 +232,13 @@ void LKGameWindow::refresh_trade_ui() {
             window().trade_notification_label->setText(QString("%1 is carrying out this trade...").arg(character.name()));
         }
     }
+}
+
+void LKGameWindow::tutorial(const QString &text) {
+    QMessageBox tut;
+    tut.setText(text);
+    tut.setIcon(QMessageBox::Information);
+    tut.exec();
 }
 
 bool LKGameWindow::trade_ongoing(GameId tribe) {

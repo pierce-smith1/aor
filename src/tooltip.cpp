@@ -67,9 +67,12 @@ void Tooltip::set(const Item &item, Game &game) {
         character_name = game.activity(item.owning_action).character().name();
     }
 
+    QString description;
+    QString subtext;
+
     widget.item_name->setText(QString("<b>%1</b>").arg(this_def->display_name));
-    QString description = this_def->description;
-    QString subtext = QString("Level %1 ").arg(this_def->item_level);
+    description += this_def->description;
+    subtext += QString("Level %1 ").arg(this_def->item_level);
 
     subtext += Item::type_to_string(this_def->type);
 
@@ -114,7 +117,7 @@ void Tooltip::set(const Item &item, Game &game) {
             });
 
             if (equipped) {
-                subtext += QString("<b><font color=green>(Equipped by %1)</font></b>").arg(character.name());
+                subtext += QString(" <b><font color=green>(Equipped by %1)</font></b>").arg(character.name());
             }
         }
     }

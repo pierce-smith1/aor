@@ -30,6 +30,21 @@ const std::map<ItemDomain, QPixmap> &Icons::activity_icons_big() {
     return icons;
 };
 
+const std::map<ItemDomain, QPixmap> &Icons::activity_portraits() {
+    static std::map<ItemDomain, QPixmap> icons = {
+        { Foraging, QPixmap(":/assets/img/lk/foraging.png") },
+        { Mining, QPixmap(":/assets/img/lk/mining.png") },
+        { Trading, QPixmap(":/assets/img/lk/trading.png") },
+        { Smithing, QPixmap(":/assets/img/lk/smithing.png") },
+        { Eating, QPixmap(":/assets/img/lk/eating.png") },
+        { Defiling, QPixmap(":/assets/img/lk/defiling.png") },
+        { Coupling, QPixmap(":/assets/img/lk/coupling.png") },
+        { None, QPixmap(":/assets/img/lk/idle.png") },
+    };
+
+    return icons;
+};
+
 const std::map<ItemProperty, QPixmap> &Icons::resource_icons() {
     static std::map<ItemProperty, QPixmap> icons = {
         { StoneResource, QPixmap(":/assets/img/icons/stone.png") },

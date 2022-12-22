@@ -248,7 +248,12 @@ void CharacterActivity::exhaust_character() {
             continue;
         }
 
-        effect.uses_left -= 1;
+        if (m_action == Eating) {
+            effect.uses_left -= 2;
+        } else {
+            effect.uses_left -= 1;
+        }
+
         if (effect.uses_left == 0) {
             effect = Item();
         }
@@ -337,12 +342,23 @@ void CharacterActivity::give_bonuses() {
 }
 
 void CharacterActivity::give_injuries() {
+    bool welchian = false;
+
     int injury_chance = 5 + (gw()->game().inventory().get_item(character().tool_id(m_action)).def()->item_level * 6);
     int injury_dampen = character().heritage_properties()[HeritageInjuryResilience];
     injury_chance -= injury_dampen;
 
+    if (gw()->game().actions_done() > 200) {
+        injury_chance += (gw()->game().actions_done() - 200);
+        welchian = true;
+    }
+
     if (!Generators::percent_chance(injury_chance)) {
         return;
+    }
+
+    if (welchian) {
+        character().push_effect(Item("welchian_fever"));
     }
 
     std::vector<std::pair<ItemCode, double>> possible_weighted_injuries;

@@ -102,6 +102,7 @@ enum ItemProperty : quint16 {
     PersistentSpeedBonus,
     PersistentSpeedPenalty,
     PersistentEnergyPenalty,
+    PersistentSpiritPenalty,
     InjurySmithing,
     InjuryForaging,
     InjuryMining,
@@ -152,6 +153,7 @@ const static std::map<ItemProperty, QString> PROPERTY_DESCRIPTIONS = {
     { PersistentSpeedBonus, "Your actions complete <b>%1x faster</b>." },
     { PersistentSpeedPenalty, "Your actions complete <b>%1% slower</b>." },
     { PersistentEnergyPenalty, "Your actions cost an additional <b>%1 energy</b>." },
+    { PersistentSpiritPenalty, "Your actions cost an additional <b>%1 spirit</b>." },
     { HeritageMaxEnergyBoost, "I have <b>+%1 max energy</b>." },
     { HeritageMaxSpiritBoost, "I have <b>+%1 max spirit</b>." },
     { HeritageConsumableEnergyBoost, "I get <b>+%1 bonus energy</b> when I eat something." },
@@ -265,7 +267,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
             { ToolEnergyCost, 10 },
             { ToolCanDiscover1, CT_CONSUMABLE | 2 },
             { ToolCanDiscover2, CT_CONSUMABLE | 3 },
-            { ToolCanDiscover2, CT_CONSUMABLE | 4 },
+            { ToolCanDiscover3, CT_CONSUMABLE | 4 },
             { ToolDiscoverWeight1, 3 },
             { ToolDiscoverWeight2, 3 },
             { ToolDiscoverWeight3, 1 },
@@ -296,7 +298,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "<i>They've started growing at camp. I ask them to leave but they pretend they're not listening.</i><br>",
         1 USES, Consumable, LEVEL 2,
         {
-            { ConsumableClearsNumEffects, 1 }
+            { ConsumableClearsNumEffects, 1 },
+            { ConsumableEnergyBoost, 20 },
         }
     },
     {
@@ -307,14 +310,14 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         1 USES, Consumable, LEVEL 2,
         {
             { ConsumableEnergyBoost, 40 },
-            { ConsumableSpiritBoost, 20 }
+            { ConsumableSpiritBoost, 20 },
         }
     },
     {
         CT_CONSUMABLE | 4,
         "pipeapple", "Pipeapple",
         "<i>The pipeapple is a \"fifodesiac\" -</i><br>"
-        "<i>That is to say, it allows processes to share information, if you know what I mean.</i><br>",
+        "<i>That is to say, it allows us to share information, if you know what I mean.</i><br>",
         1 USES, Consumable, LEVEL 3,
         {
             { LeafyResource, 20 },
@@ -326,7 +329,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "fireclay", "Fireclay",
         "<i>Careful examination of this clay reveals it is selectively permeable -</i><br>"
         "<i>some particles can get through, but others can't.</i><br>"
-        "<i>If I put it up to my face, I can't hear anything, but everyone else can still hear me.</i><br>",
+        "<i>It's completely transparent from one side...</i><br>",
         1 USES, Material, LEVEL 3,
         {
             { StoneResource, 50 },
@@ -424,9 +427,10 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "disconnected_socket", "Disconnected Socket",
         "<i>I took quite a nasty fall and dislocated my shoulder.</i><br>"
         "<i>The doctor said doing a handshake would reconnect it, but I keep being refused.</i><br>",
-        5 USES, Effect, LEVEL 1,
+        7 USES, Effect, LEVEL 1,
         {
             { PersistentSpeedPenalty, 20 },
+            { PersistentEnergyPenalty, 10 },
             { InjuryMining, 1 },
             { InjuryForaging, 1 },
             { InjuryTrading, 1 },
@@ -435,11 +439,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_EFFECT | 1,
         "starving", "Starving",
-        "<i>I've gone without food for too long -</i><br>"
-        "<i>sometimes I am reminded of spaghetti nights back home, where there weren't enough</i><br>"
-        "<i>forks to go around and you had to just sit and think about how hungry you were while</i><br>"
-        "<i>everyone else ate.</i><br>",
-        3 USES, Effect, LEVEL 1,
+        "<i>Is this what it means to be a \"Rockmuncher?\"</i><br>",
+        5 USES, Effect, LEVEL 1,
         {
             { PersistentSpeedPenalty, 20 },
         }
@@ -448,10 +449,19 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         CT_EFFECT | 2,
         "weakness", "Weakness",
         "<i>There's a numbness to my whole body -</i><br>"
-        "<i>I feel like my soul no longer owns it, and so I'm just watching myself stumble around.</i><br>",
-        3 USES, Effect, LEVEL 1,
+        "<i>I feel like my soul no longer owns it, and I'm just watching myself stumble around.</i><br>",
+        4 USES, Effect, LEVEL 1,
         {
-            { PersistentEnergyPenalty, 10 },
+            { PersistentEnergyPenalty, 5 },
+        }
+    },
+    {
+        CT_EFFECT | 3,
+        "welchian_fever", "Welchian Fever",
+        "<i>I can feel it staring at me... it won't stop staring...</i><br>",
+        10 USES, Effect, LEVEL 1,
+        {
+            { PersistentSpiritPenalty, 20 },
         }
     },
     {
