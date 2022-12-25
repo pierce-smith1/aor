@@ -196,11 +196,7 @@ bool Character::can_perform_action(ItemDomain domain) {
         }
         case Smithing: {
             Item tool = gw()->game().inventory().get_item(tool_id(domain));
-            bool smithing_already_queued = std::any_of(begin(m_activities) + 1, end(m_activities), [](CharacterActivity &a) {
-                return a.action() == Smithing;
-            });
             return smithing_result() != 0
-                && !smithing_already_queued
                 && energy() >= tool.def()->properties[ToolEnergyCost];
         }
         case Foraging:

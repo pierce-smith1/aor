@@ -168,8 +168,17 @@ void LKGameWindow::refresh_ui_bars() {
 }
 
 void LKGameWindow::refresh_ui_buttons() {
+    bool smithing_already_queued = std::any_of(
+        begin(selected_char().activities()),
+        end(selected_char().activities()),
+        [](CharacterActivity &a) {
+            return a.action() == Smithing;
+    });
+
     for (ItemDomain domain : { Smithing, Foraging, Mining }) {
-        if (selected_char().can_perform_action(domain)) {
+        if (selected_char().can_perform_action(domain) && domain == Smithing && !smithing_already_queued) {
+            get_activity_buttons().at(domain)->setEnabled(true);
+        } else if (selected_char().can_perform_action(domain)) {
             get_activity_buttons().at(domain)->setEnabled(true);
         } else {
             get_activity_buttons().at(domain)->setEnabled(false);

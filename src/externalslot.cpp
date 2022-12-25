@@ -118,10 +118,12 @@ void ExternalSlot::dropEvent(QDropEvent *event) {
     Item source_item = source_slot->get_item();
     Item this_item = get_item();
 
-    set_item(source_item);
-    if (source_slot->type() != Ordinary) {
+    if (source_slot->type() == Ordinary && this_item.id != EMPTY_ID) {
+        drop_external_item();
+    } else if (source_slot->type() != Ordinary) {
         source_slot->set_item(this_item);
     }
+    set_item(source_item);
 
     gw()->game().inventory().get_item_ref(source_item.id).intent = type();
 
