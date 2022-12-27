@@ -414,7 +414,6 @@ void CharacterActivity::give_injuries() {
     }
 
     character().push_effect(Item(Generators::sample_with_weights(possible_weighted_injuries)));
-    gw()->notify(Warning, QString("%1 suffered an injury...").arg(character().name()));
 }
 
 void CharacterActivity::serialize(QIODevice *dev) const {
