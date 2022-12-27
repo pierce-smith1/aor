@@ -37,7 +37,7 @@ ItemProperties Colors::heritage_properties(Color c, int magnitude) {
         case Blueberry: { return { { HeritageMaxSpiritBoost, 20 * factor } }; }
         case Plum: { return { { HeritageSmithProductUsageBoost, 1 * factor } }; }
         case Cucumber: { return { { HeritageConsumableEnergyBoost, 5 * factor } }; }
-        case Lime: { return { { HeritageMaterialValueBonus, 7 * factor } }; }
+        case Lime: { return { { HeritageItemDoubleChance, 5 * factor } }; }
     }
 
     return {};

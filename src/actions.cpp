@@ -114,6 +114,15 @@ void CharacterActivity::complete() {
     give_bonuses();
     give_injuries();
     std::vector<Item> items = products();
+
+    int item_double_chance = std::accumulate(begin(character().heritage()), end(character().heritage()), 0, [](int a, Color c) {
+        return a + Colors::heritage_properties(c)[HeritageItemDoubleChance];
+    });
+    if (Generators::percent_chance(item_double_chance)) {
+        std::vector<Item> items_copy = items;
+        items.insert(end(items), begin(items_copy), end(items_copy));
+    }
+
     exhaust_reagents();
     give(items);
 

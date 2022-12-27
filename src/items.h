@@ -118,6 +118,7 @@ enum ItemProperty : quint16 {
     HeritageInjuryResilience,
     HeritageMaterialValueBonus,
     HeritageActivitySpeedBonus,
+    HeritageItemDoubleChance,
     InstanceEggParent1 = 0x1000,
     InstanceEggParent2,
     InstanceEggFoundActionstamp,
@@ -161,6 +162,7 @@ const static std::map<ItemProperty, QString> PROPERTY_DESCRIPTIONS = {
     { HeritageInjuryResilience, "I have a <b>-%1% chance to suffer an injury</b> after taking an action." },
     { HeritageMaterialValueBonus, "Materials are <b>worth %1% more</b> when I use them." },
     { HeritageActivitySpeedBonus, "My actions take <b>%1% less time</b>." },
+    { HeritageItemDoubleChance, "I have a <b>%1% chance</b> to <b>double</b> items recieved from actions." },
 };
 
 // This basically just wraps a std::map<ItemPropety, int>,
@@ -276,7 +278,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_TOOL | 2,
         "metamorphic_destructor", "Metamorphic Destructor",
-        "<i>It's very important that ore-bearing rocks are destroyed property, or else you can</i><br>"
+        "<i>It's very important that ore-bearing rocks are destroyed properly, or else you can</i><br>"
         "<i>leak their precious minerals back into the earth.</i><br>",
         8 USES, MiningTool, LEVEL 2,
         {
@@ -316,7 +318,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         CT_CONSUMABLE | 4,
         "pipeapple", "Pipeapple",
         "<i>The pipeapple is a \"fifodesiac\" -</i><br>"
-        "<i>That is to say, it allows us to share information, if you know what I mean.</i><br>",
+        "<i>that is to say, it allows us to share information, if you know what I mean.</i><br>",
         1 USES, Consumable, LEVEL 3,
         {
             { LeafyResource, 20 },
@@ -338,7 +340,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         CT_MATERIAL | 2,
         "cobolt_bar", "Cobolt Bar",
         "<i>Ancient writings reveal that entire cities used to be built of this charming metal,</i><br>"
-        "<i>But no one seems to know what it is anymore.</i><br>",
+        "<i>but no one seems to know what it is anymore.</i><br>",
         1 USES, Material, LEVEL 2,
         {
             { MetallicResource, 25 }
@@ -458,7 +460,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
     {
         CT_EFFECT | 3,
         "welchian_fever", "Welchian Fever",
-        "<i>I can feel it staring at me... it won't stop staring...</i><br>",
+        "<i>I get the horrible feeling <b>everything is about to end...</b></i>",
         10 USES, Effect, LEVEL 1,
         {
             { PersistentSpiritPenalty, 20 },
