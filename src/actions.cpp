@@ -31,7 +31,7 @@ void CharacterActivity::start() {
 
         gw()->notify(Discovery, QString("%1 has begun %2.")
             .arg(character().name())
-            .arg(domain_to_action_string(m_action)).toCaseFolded()
+            .arg(domain_to_action_string(m_action).toCaseFolded())
         );
     }
 }
@@ -326,14 +326,26 @@ void CharacterActivity::exhaust_item(ItemId id) {
 void CharacterActivity::give(const std::vector<Item> &items) {
     for (const Item &item : items) {
         if (!gw()->game().add_item(item)) {
-            gw()->notify(Warning, QString("%1 discovered a(n) %2, but the inventory was too full to accept it!")
+            gw()->notify(Warning, QString("%1 discovered %3 %2, but the inventory was too full to accept it!")
                 .arg(gw()->game().character(m_char_id).name())
                 .arg(item.def()->display_name)
+                .arg(item.def()->display_name.toCaseFolded().startsWith('a')
+                    || item.def()->display_name.toCaseFolded().startsWith('e')
+                    || item.def()->display_name.toCaseFolded().startsWith('i')
+                    || item.def()->display_name.toCaseFolded().startsWith('o')
+                    || item.def()->display_name.toCaseFolded().startsWith('u') ? "an" : "a"
+                )
             );
         } else {
-            gw()->notify(Discovery, QString("%1 discovered a(n) %2!")
+            gw()->notify(Discovery, QString("%1 discovered %3 %2!")
                 .arg(gw()->game().character(m_char_id).name())
                 .arg(item.def()->display_name)
+                .arg(item.def()->display_name.toCaseFolded().startsWith('a')
+                    || item.def()->display_name.toCaseFolded().startsWith('e')
+                    || item.def()->display_name.toCaseFolded().startsWith('i')
+                    || item.def()->display_name.toCaseFolded().startsWith('o')
+                    || item.def()->display_name.toCaseFolded().startsWith('u') ? "an" : "a"
+                )
             );
         }
     }

@@ -379,8 +379,8 @@ bool Character::push_effect(const Item &effect) {
         return false;
     }
 
-    if (std::all_of(begin(gw()->game().history()), end(gw()->game().history()), [=](ItemCode code) {
-        return !(Item::def_of(code)->type & Effect);
+    if (std::any_of(begin(gw()->game().history()), end(gw()->game().history()), [=](ItemCode code) {
+        return Item::def_of(code)->type & Effect;
     })) {
         gw()->tutorial(
             "<b>I just suffered an injury...</b><br>"
@@ -409,6 +409,7 @@ bool Character::push_effect(const Item &effect) {
     for (int i = 0; i < EFFECT_SLOTS; i++) {
         if (m_effects[i].id == EMPTY_ID) {
             m_effects[i] = effect;
+            gw()->notify(Warning, QString("%1 suffered an injury...").arg(name()));
             return true;
         }
     }
