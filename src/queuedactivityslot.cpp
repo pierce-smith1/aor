@@ -51,8 +51,16 @@ std::optional<TooltipInfo> QueuedActivitySlot::tooltip_info() {
     CharacterActivity &activity = gw()->selected_char().activities()[n];
     QString item_name;
     if (activity.action() == Eating || activity.action() == Defiling) {
-        item_name = QString(" a %1")
-            .arg(gw()->game().inventory().get_item(activity.owned_items()[0]).def()->display_name);
+        Item item = gw()->game().inventory().get_item(activity.owned_items()[0]);
+        bool name_starts_with_vowel = item.def()->display_name.toCaseFolded().startsWith('a')
+            || item.def()->display_name.toCaseFolded().startsWith('e')
+            || item.def()->display_name.toCaseFolded().startsWith('i')
+            || item.def()->display_name.toCaseFolded().startsWith('o')
+            || item.def()->display_name.toCaseFolded().startsWith('u');
+
+        item_name = QString(" %1 %2")
+            .arg(name_starts_with_vowel ? "an" : "a")
+            .arg(item.def()->display_name);
     }
 
     return std::optional<TooltipInfo>({

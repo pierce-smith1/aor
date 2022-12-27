@@ -21,10 +21,10 @@ LKGameWindow::LKGameWindow()
     : m_item_tooltip(new Tooltip()),
       m_connection(),
       m_save_file(SAVE_FILE_NAME),
-      m_encyclopedia(new Encyclopedia())
+      m_encyclopedia(new Encyclopedia)
 {
     m_window.setupUi(this);
-    m_initialized = true;
+    m_event_log.setupUi(new QDialog(this));
 
     Game *new_game = Game::new_game();
     m_game = *new_game;
@@ -65,6 +65,10 @@ LKGameWindow::LKGameWindow()
         m_encyclopedia->show();
     });
 
+    connect(m_window.log_action, &QAction::triggered, [=]() {
+        ((QWidget *) m_event_log.events_list->parent())->show();
+    });
+
     ItemSlot::insert_inventory_slots();
     ExternalSlot::insert_external_slots();
     ToolSlot::insert_tool_slots();
@@ -72,8 +76,6 @@ LKGameWindow::LKGameWindow()
     PortraitSlot::insert_portrait_slot();
     ExplorerButton::insert_explorer_buttons();
     QueuedActivitySlot::insert_queued_activity_slots();
-
-    notify(Discovery, "The Sun breaks on a new adventure.");
 
     QPalette activity_palette;
     activity_palette.setColor(QPalette::Highlight, Colors::qcolor(Lime));
@@ -137,7 +139,9 @@ void LKGameWindow::register_slot(ItemSlot *slot) {
     m_slots.push_back(slot);
 }
 
-void LKGameWindow::notify(NotificationType, const QString &) { }
+void LKGameWindow::notify(NotificationType type, const QString &msg) {
+    m_event_log.events_list->addItem(new GameNotification(type, msg));
+}
 
 void LKGameWindow::refresh_ui() {
     m_window.player_name_label->setText(QString("Explorer <b>%1</b>").arg(selected_char().name()));

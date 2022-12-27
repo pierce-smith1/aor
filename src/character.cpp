@@ -400,6 +400,9 @@ bool Character::push_effect(const Item &effect) {
     });
 
     if (current_effects == EFFECT_SLOTS - 1) {
+        gw()->notify(Warning, QString("%1 has been lost to the world.")
+            .arg(m_name)
+        );
         m_dead = true;
     }
 

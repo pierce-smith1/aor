@@ -15,7 +15,7 @@ DoughbyteConnection::DoughbyteConnection()
     });
 
     QObject::connect(&m_socket, &QTcpSocket::disconnected, [=]() {
-        qDebug("disconnected from trade server, oh no!!");
+        gw()->notify(Warning, "Connection to the trade server was lost - trading will no longer be available.");
         m_is_connected = false;
     });
 

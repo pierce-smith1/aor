@@ -11,6 +11,7 @@ class LKGameWindow;
 
 #include "items.h"
 #include "../ui_main.h"
+#include "../ui_log.h"
 #include "gamenotification.h"
 #include "character.h"
 #include "game.h"
@@ -86,6 +87,7 @@ private:
     EncryptedFile m_save_file;
     Encyclopedia *m_encyclopedia;
     int m_backup_timer_id;
+    Ui::EventLog m_event_log;
 
     friend LKGameWindow *gw();
 };

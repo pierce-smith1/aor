@@ -147,7 +147,7 @@ const static std::map<ItemProperty, QString> PROPERTY_DESCRIPTIONS = {
     { ToolEnergyCost, "Requires <b>%1 energy</b> per use." },
     { ConsumableEnergyBoost, "Gives <b>+%1 energy</b>." },
     { ConsumableSpiritBoost, "Gives <b>+%1 spirit</b>." },
-    { ConsumableClearsNumEffects, "Fully clears up to <b>%1 injuries(s)</b> (starting with the rightmost.)" },
+    { ConsumableClearsNumEffects, "Fully clears up to <b>%1 injury(ies)</b>, starting with the rightmost." },
     { ConsumableMakesCouplable, "Gives the ability to <b><font color=purple>have a child</font></b> with another explorer." },
     { PersistentMaxEnergyBoost, "I have <b>+%1 max energy</b>." },
     { PersistentMaxSpiritBoost, "I have <b>+%1 max spirit</b>." },

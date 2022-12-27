@@ -645,9 +645,10 @@
    </property>
    <widget class="QMenu" name="menuEncyclopedia">
     <property name="title">
-     <string>Encyclopedia</string>
+     <string>Handbook</string>
     </property>
     <addaction name="encyclopedia_action"/>
+    <addaction name="log_action"/>
    </widget>
    <addaction name="menuEncyclopedia"/>
   </widget>
@@ -661,7 +662,12 @@
   </widget>
   <action name="encyclopedia_action">
    <property name="text">
-    <string>Open Encyclopedia</string>
+    <string>Encyclopedia</string>
+   </property>
+  </action>
+  <action name="log_action">
+   <property name="text">
+    <string>Event Log</string>
    </property>
   </action>
  </widget>

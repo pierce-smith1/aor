@@ -15,6 +15,7 @@ FORMS += assets/ui/main.ui
 FORMS += assets/ui/cheat.ui
 FORMS += assets/ui/tooltip.ui
 FORMS += assets/ui/encyclopedia.ui
+FORMS += assets/ui/log.ui
 
 QT += gui
 QT += widgets

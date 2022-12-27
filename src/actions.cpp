@@ -28,6 +28,11 @@ CharacterActivity::CharacterActivity(
 void CharacterActivity::start() {
     if (m_action != None) {
         m_timer_id = gw()->startTimer(ACTIVITY_TICK_RATE_MS);
+
+        gw()->notify(Discovery, QString("%1 has begun %2.")
+            .arg(character().name())
+            .arg(domain_to_action_string(m_action)).toCaseFolded()
+        );
     }
 }
 
@@ -99,6 +104,10 @@ Character &CharacterActivity::character() {
 }
 
 void CharacterActivity::complete() {
+    gw()->notify(ActionComplete, QString("%1 finished %2.")
+        .arg(character().name())
+        .arg(domain_to_action_string(m_action).toCaseFolded())
+    );
     gw()->killTimer(m_timer_id);
 
     if (m_action == Trading) {
