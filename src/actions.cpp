@@ -345,8 +345,8 @@ void CharacterActivity::give_injuries() {
     int injury_dampen = character().heritage_properties()[HeritageInjuryResilience];
     injury_chance -= injury_dampen;
 
-    if (gw()->game().actions_done() > 200) {
-        injury_chance += (gw()->game().actions_done() - 200);
+    if (gw()->game().actions_done() > 800) {
+        injury_chance += ((gw()->game().actions_done() - 800) / 2);
         welchian = true;
     }
 

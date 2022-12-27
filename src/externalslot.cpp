@@ -102,6 +102,14 @@ void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
 
             break;
         }
+        case SmithingTool:
+        case ForagingTool:
+        case MiningTool: {
+            if (gw()->selected_char().activity().action() != type() && (dropped_type & item_slot_type)) {
+                event->acceptProposedAction();
+            }
+            break;
+        }
         default: {
             if (dropped_type & item_slot_type) {
                 event->acceptProposedAction();
