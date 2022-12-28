@@ -379,7 +379,7 @@ bool Character::push_effect(const Item &effect) {
         return false;
     }
 
-    if (std::any_of(begin(gw()->game().history()), end(gw()->game().history()), [=](ItemCode code) {
+    if (!std::any_of(begin(gw()->game().history()), end(gw()->game().history()), [=](ItemCode code) {
         return Item::def_of(code)->type & Effect;
     })) {
         gw()->tutorial(
