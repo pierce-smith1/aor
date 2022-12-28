@@ -69,7 +69,7 @@ private:
     GameId m_game_id;
     QString m_tribe_name;
     ItemHistory m_history;
-    quint64 m_actions_done;
+    quint64 m_actions_done = 0;
 
     // Transient
     ForeignTribes m_tribes;
