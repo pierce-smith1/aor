@@ -6,9 +6,9 @@
 #include <QTextStream>
 #include <QMessageBox>
 
-enum FatalErrorType : int {
-    ItemCodeNonexistant = 1,
+enum FatalErrorType {
     UncaughtUnknownException,
+    ItemCodeNonexistant,
     ProductsForUnknownDomain,
     InjuriesForUnknownDomain,
     AssessmentForUnknownDomain,
@@ -37,8 +37,7 @@ enum FatalErrorType : int {
 
 QString bugcheck_error_string(FatalErrorType type);
 
-inline QString format(QTextStream &s)
-{
+inline QString format(QTextStream &s) {
     QString string = s.readAll();
     return string.left(string.size() - 2);
 }

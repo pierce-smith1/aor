@@ -9,7 +9,8 @@ b2.0.0 todo
 [ ] clear queues on injury
 
 (dev) Several core systems have been re-written in anticipation of future content.
-This is highly experimental, and I anticipate _many_ new bugs will be present
+They are now probably very unstable and I anticipate _many_ new bugs will be present
+(game) A new UI layout that creates space for future controls is being tried
 (game) Changed the mechanics of material slotting; previously, you were _unable_
 to slot materials if they caused a particular resource to exceeded your smithing
 tool's max capacity. Now, you are _able_ to slot materials regardless of your
@@ -20,7 +21,7 @@ the Mallet. This should help materials be more flexible and generally valuable, 
 previously very high-value materials couldn't be used _at all_ with lower-level tools
 (game) Changed how Fennahian names are generated to make them more distinct from
 canon doughbyte species
-(game) When getting injured, explorers will now clear all non-eating and non-defiling
+(game) After being injured, explorers will now clear all non-eating and non-defiling
 actions from their queues to avoid them killing themselves
 (qol) Encryption has been (temporarily?) removed from save files to ease
 debugging a bit
