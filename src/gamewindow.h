@@ -84,7 +84,7 @@ private:
     GameId m_selected_tribe_id = NOBODY;
     std::vector<ItemSlot *> m_slots;
     DoughbyteConnection m_connection;
-    EncryptedFile m_save_file;
+    QFile m_save_file;
     Encyclopedia *m_encyclopedia;
     int m_backup_timer_id;
     Ui::EventLog m_event_log;

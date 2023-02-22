@@ -67,6 +67,8 @@ public:
     bool clear_last_effect();
     bool push_effect(const Item &effect);
 
+    void call_hooks(HookType type, const HookPayload &payload, quint16 int_domain, const std::vector<Item> &extra_items = {});
+
     ItemId tool_id(ItemDomain domain);
     ToolIds &tools();
     ExternalItemIds &external_items();
@@ -76,6 +78,8 @@ public:
     static Character *deserialize(QIODevice *dev);
 
 private:
+    Inventory &inventory();
+
     quint16 m_id;
     QString m_name;
     Heritage m_heritage;

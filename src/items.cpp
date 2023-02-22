@@ -5,25 +5,6 @@
 
 Item Item::empty_item = Item(0);
 
-ItemProperties::ItemProperties(std::initializer_list<std::pair<const ItemProperty, quint16>> map)
-    : map(map) { }
-
-quint16 ItemProperties::operator[](ItemProperty prop) const {
-    try {
-        return map.at(prop);
-    } catch (std::out_of_range &e) {
-        return 0;
-    }
-}
-
-std::map<ItemProperty, quint16>::const_iterator ItemProperties::begin() const {
-    return map.begin();
-}
-
-std::map<ItemProperty, quint16>::const_iterator ItemProperties::end() const {
-    return map.end();
-}
-
 ItemDefinitionPtr Item::def_of(ItemCode code) {
     auto result = std::find_if(
         begin(ITEM_DEFINITIONS),
@@ -130,6 +111,10 @@ QString Item::instance_properties_to_string() const {
     return string;
 }
 
+void Item::call_hooks(HookType type, const HookPayload &payload) const {
+    def_of(code)->properties.call_hooks(type, payload, def()->type);
+}
+
 QPixmap Item::pixmap_of(ItemCode id) {
     return pixmap_of(*def_of(id));
 }
@@ -225,8 +210,12 @@ QString Item::properties_to_string(const ItemProperties &props) {
     QString string;
 
     for (const auto &pair : props.map) {
-        if (PROPERTY_DESCRIPTIONS.find(pair.first) != end(PROPERTY_DESCRIPTIONS)) {
-            string += PROPERTY_DESCRIPTIONS.at(pair.first).arg(pair.second);
+        if (pair.first == ItemLevel) {
+            continue;
+        }
+
+        if (property_definitions().find(pair.first) != end(property_definitions())) {
+            string += property_definitions().at(pair.first).description.arg(pair.second);
         }
         string += "<br>";
     }

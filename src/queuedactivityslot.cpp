@@ -51,7 +51,7 @@ std::optional<TooltipInfo> QueuedActivitySlot::tooltip_info() {
     CharacterActivity &activity = gw()->selected_char().activities()[n];
     QString item_name;
     if (activity.action() == Eating || activity.action() == Defiling) {
-        Item item = gw()->game().inventory().get_item(activity.owned_items()[0]);
+        Item item = gw()->game().inventory().get_item(activity.owned_item_ids()[0]);
         bool name_starts_with_vowel = item.def()->display_name.toCaseFolded().startsWith('a')
             || item.def()->display_name.toCaseFolded().startsWith('e')
             || item.def()->display_name.toCaseFolded().startsWith('i')
@@ -81,7 +81,7 @@ void QueuedActivitySlot::mousePressEvent(QMouseEvent *event) {
     Activities &activities = gw()->selected_char().activities();
     if (event->button() == Qt::RightButton && n > 0 && !no_activity()) {
         CharacterActivity &removed_activity = activities[n];
-        for (ItemId id : removed_activity.owned_items()) {
+        for (ItemId id : removed_activity.owned_item_ids()) {
             gw()->game().inventory().get_item_ref(id).intent = None;
             gw()->game().inventory().get_item_ref(id).owning_action = NO_ACTION;
         }

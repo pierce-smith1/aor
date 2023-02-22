@@ -12,6 +12,8 @@
 #include <QFile>
 #include <QPixmap>
 
+#include "itemproperties.h"
+
 #define USES
 #define LEVEL
 
@@ -56,7 +58,8 @@ enum ItemDomain : ItemType {
     Defiling        = 1 << 12,
     Coupling        = 1 << 13, Explorer = 1 << 13, Egg = 1 << 13,
     Untradeable     = 1 << 14,
-    Tool            = SmithingTool | ForagingTool | MiningTool
+    Tool            = SmithingTool | ForagingTool | MiningTool,
+    All             = 0xffff
 };
 
 const static int CT_EMPTY = 0;
@@ -68,117 +71,6 @@ const static int CT_EFFECT = 1 << 12;
 const static int CT_RUNE = 1 << 13;
 const static int CT_OTHER = 1 << 14;
 
-enum ItemProperty : quint16 {
-    ToolEnergyCost,
-    // WARNING: Item generation behavior in actions.cpp requires that there
-    // are exactly 9 ToolCanDiscovers, exactly 9 ToolDiscoverWeights, and
-    // that the ToolDiscoverWeights comes directly after the ToolCanDiscovers!
-    // If you don't like that, fix it in actions.cpp.
-    ToolCanDiscover1,
-    ToolCanDiscover2,
-    ToolCanDiscover3,
-    ToolCanDiscover4,
-    ToolCanDiscover5,
-    ToolCanDiscover6,
-    ToolCanDiscover7,
-    ToolCanDiscover8,
-    ToolCanDiscover9,
-    ToolDiscoverWeight1,
-    ToolDiscoverWeight2,
-    ToolDiscoverWeight3,
-    ToolDiscoverWeight4,
-    ToolDiscoverWeight5,
-    ToolDiscoverWeight6,
-    ToolDiscoverWeight7,
-    ToolDiscoverWeight8,
-    ToolDiscoverWeight9,
-    ConsumableEnergyBoost,
-    ConsumableSpiritBoost,
-    ConsumableGivesEffect,
-    ConsumableClearsNumEffects,
-    ConsumableMakesCouplable,
-    PersistentMaxEnergyBoost,
-    PersistentMaxSpiritBoost,
-    PersistentSpeedBonus,
-    PersistentSpeedPenalty,
-    PersistentEnergyPenalty,
-    PersistentSpiritPenalty,
-    InjurySmithing,
-    InjuryForaging,
-    InjuryMining,
-    InjuryTradinge,
-    InjuryEating,
-    InjuryDefiling,
-    InjuryTrading,
-    InjuryCoupling, // COCK INJURED
-    HeritageMaxEnergyBoost,
-    HeritageMaxSpiritBoost,
-    HeritageConsumableEnergyBoost,
-    HeritageSmithProductUsageBoost,
-    HeritageInjuryResilience,
-    HeritageMaterialValueBonus,
-    HeritageActivitySpeedBonus,
-    HeritageItemDoubleChance,
-    InstanceEggParent1 = 0x1000,
-    InstanceEggParent2,
-    InstanceEggFoundActionstamp,
-    InstanceEggFoundFlavor,
-    Cost = 0x2000,
-    CostStone = 0x2001,
-    CostMetallic = 0x2002,
-    CostCrystalline = 0x2003,
-    CostRuinc = 0x2004,
-    CostLeafy = 0x2005,
-    ToolMaximum = 0x4000,
-    ToolMaximumStone = 0x4001,
-    ToolMaximumMetallic = 0x4002,
-    ToolMaximumCrystalline = 0x4003,
-    ToolMaximumRunic = 0x4004,
-    ToolMaximumLeafy = 0x4005,
-    Resource = 0x8000,
-    StoneResource = 0x8001,
-    MetallicResource = 0x8002,
-    CrystallineResource = 0x8003,
-    RunicResource = 0x8004,
-    LeafyResource = 0x8005,
-};
-
-const static std::map<ItemProperty, QString> PROPERTY_DESCRIPTIONS = {
-    { ToolEnergyCost, "Requires <b>%1 energy</b> per use." },
-    { ConsumableEnergyBoost, "Gives <b>+%1 energy</b>." },
-    { ConsumableSpiritBoost, "Gives <b>+%1 spirit</b>." },
-    { ConsumableClearsNumEffects, "Fully clears up to <b>%1 injury(ies)</b>, starting with the rightmost." },
-    { ConsumableMakesCouplable, "Gives the ability to <b><font color=purple>have a child</font></b> with another explorer." },
-    { PersistentMaxEnergyBoost, "I have <b>+%1 max energy</b>." },
-    { PersistentMaxSpiritBoost, "I have <b>+%1 max spirit</b>." },
-    { PersistentSpeedBonus, "My actions complete <b>%1x faster</b>." },
-    { PersistentSpeedPenalty, "My actions complete <b>%1% slower</b>." },
-    { PersistentEnergyPenalty, "My actions cost an additional <b>%1 energy</b>." },
-    { PersistentSpiritPenalty, "My actions cost an additional <b>%1 spirit</b>." },
-    { HeritageMaxEnergyBoost, "I have <b>+%1 max energy</b>." },
-    { HeritageMaxSpiritBoost, "I have <b>+%1 max spirit</b>." },
-    { HeritageConsumableEnergyBoost, "I get <b>+%1 bonus energy</b> when I eat something." },
-    { HeritageSmithProductUsageBoost, "Items that I craft have <b>+%1 use(s)</b>." },
-    { HeritageInjuryResilience, "I have a <b>-%1% chance to suffer an injury</b> after taking an action." },
-    { HeritageMaterialValueBonus, "Materials are <b>worth %1% more</b> when I use them." },
-    { HeritageActivitySpeedBonus, "My actions take <b>%1% less time</b>." },
-    { HeritageItemDoubleChance, "I have a <b>%1% chance</b> to <b>double</b> items recieved from actions." },
-};
-
-// This basically just wraps a std::map<ItemPropety, int>,
-// with the crucial change that operator[] is const while retaining the
-// behavior of returning zero-initialized values for non-existant keys.
-class ItemProperties {
-public:
-    ItemProperties() = default;
-    ItemProperties(std::initializer_list<std::pair<const ItemProperty, quint16>> map);
-    quint16 operator[](ItemProperty prop) const;
-    std::map<ItemProperty, quint16>::const_iterator begin() const;
-    std::map<ItemProperty, quint16>::const_iterator end() const;
-
-    std::map<ItemProperty, quint16> map;
-};
-
 struct ItemDefinition {
     ItemCode code;
     QString internal_name;
@@ -186,7 +78,6 @@ struct ItemDefinition {
     QString description;
     unsigned char default_uses_left;
     ItemType type;
-    int item_level;
     ItemProperties properties;
 };
 
@@ -197,15 +88,16 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         CT_EMPTY,
         "empty", "Empty",
         "Empty slot.",
-        0 USES, Ordinary, LEVEL 0,
+        0 USES, Ordinary,
         {}
     },
     {
         CT_CONSUMABLE | 0,
         "globfruit", "Globfruit",
         "<i>It's unusually sticky, but I really like it.</i><br>",
-        1 USES, Consumable, LEVEL 1,
+        1 USES, Consumable,
         {
+            { ItemLevel, 1 },
             { ConsumableEnergyBoost, 20 },
             { LeafyResource, 5 },
         }
@@ -215,8 +107,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "byteberry", "Byteberry",
         "<i>These little fruits grow in octuplets on the leaves of tries.</i><br>"
         "<i>Each individual berry is either in a ripe or unripened state, so you have to eat carefully.</i><br>",
-        1 USES, Consumable, LEVEL 1,
+        1 USES, Consumable,
         {
+            { ItemLevel, 1 },
             { ConsumableEnergyBoost, 10 },
             { ConsumableSpiritBoost, 10 },
             { LeafyResource, 5 },
@@ -227,8 +120,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "obsilicon", "Obsilicon",
         "<i>I see little flashes of light now and again under its glassy surface -</i><br>"
         "<i>I wonder if it was cooled from the same primordial magma that forged this place.</i><br>",
-        1 USES, Material, LEVEL 1,
+        1 USES, Material,
         {
+            { ItemLevel, 1 },
             { CrystallineResource, 10 },
         }
     },
@@ -238,8 +132,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "<i>I've heard small talk that these little egg-shaped rocks may</i><br>"
         "<i>have been one the first stones to form in Rhodon.</i><br>"
         "<i>Each one is a little different, but they all fit just as well in my palm.</i><br>",
-        1 USES, Material, LEVEL 1,
+        1 USES, Material,
         {
+            { ItemLevel, 1 },
             { StoneResource, 10 }
         }
     },
@@ -248,8 +143,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "maven_mallet", "Maven Mallet",
         "<i>I built this rudimentary tool with the help of a colorful little bird who gave</i><br>"
         "<i>me an annoyingly long-winded series of directions.</i><br>",
-        5 USES, SmithingTool, LEVEL 1,
+        5 USES, SmithingTool,
         {
+            { ItemLevel, 1 },
             { CostStone, 10 },
             { CostCrystalline, 10 },
             { ToolEnergyCost, 20 },
@@ -262,8 +158,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "hashcracker", "Hashcracker",
         "<i>Rhodon is covered in layers of hard Shale-256 - but with a good axe like this,</i><br>"
         "<i>I should be able to brute-force my way through it to find the goodies underneath.</i><br>",
-        8 USES, ForagingTool, LEVEL 1,
+        8 USES, ForagingTool,
         {
+            { ItemLevel, 2 },
             { CostStone, 30 },
             { CostCrystalline, 10 },
             { ToolEnergyCost, 10 },
@@ -280,8 +177,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "metamorphic_destructor", "Metamorphic Destructor",
         "<i>It's very important that ore-bearing rocks are destroyed properly, or else you can</i><br>"
         "<i>leak their precious minerals back into the earth.</i><br>",
-        8 USES, MiningTool, LEVEL 2,
+        8 USES, MiningTool,
         {
+            { ItemLevel, 2 },
             { CostStone, 10 },
             { CostCrystalline, 30 },
             { ToolEnergyCost, 10 },
@@ -298,8 +196,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "norton_ghost_pepper", "Norton Ghost Pepper",
         "<i>This pepper grows all over the place, but only very few of them are edible.</i><br>"
         "<i>They've started growing at camp. I ask them to leave but they pretend they're not listening.</i><br>",
-        1 USES, Consumable, LEVEL 2,
+        1 USES, Consumable,
         {
+            { ItemLevel, 2 },
             { ConsumableClearsNumEffects, 1 },
             { ConsumableEnergyBoost, 20 },
         }
@@ -309,8 +208,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "bleeding_wildheart", "Bleeding Wildheart",
         "<i>If you're ever climbing a tree and you think you're near the top, just keep going.</i><br>"
         "<i>There are some interesting things up there. I think I found someone's keys.</i><br>",
-        1 USES, Consumable, LEVEL 2,
+        1 USES, Consumable,
         {
+            { ItemLevel, 2 },
             { ConsumableEnergyBoost, 40 },
         }
     },
@@ -319,8 +219,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "pipeapple", "Pipeapple",
         "<i>The pipeapple is a \"fifodesiac\" -</i><br>"
         "<i>that is to say, it allows us to share information, if you know what I mean.</i><br>",
-        1 USES, Consumable, LEVEL 3,
+        1 USES, Consumable,
         {
+            { ItemLevel, 3 },
             { LeafyResource, 20 },
             { ConsumableMakesCouplable, 1 }
         }
@@ -331,8 +232,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "<i>Careful examination of this clay reveals it is selectively permeable -</i><br>"
         "<i>some particles can get through, but others can't.</i><br>"
         "<i>It's completely transparent from one side...</i><br>",
-        1 USES, Material, LEVEL 3,
+        1 USES, Material,
         {
+            { ItemLevel, 3 },
             { StoneResource, 50 },
         }
     },
@@ -341,8 +243,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "cobolt_bar", "Cobolt Bar",
         "<i>Ancient writings reveal that entire cities used to be built of this charming metal,</i><br>"
         "<i>but no one seems to know what it is anymore.</i><br>",
-        1 USES, Material, LEVEL 2,
+        1 USES, Material,
         {
+            { ItemLevel, 2 },
             { MetallicResource, 25 }
         }
     },
@@ -352,8 +255,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "<i>I used to have to carve my notes on these awful spinning schists -</i><br>"
         "<i>powered by rune magic or something else sinister, they were slow, loud, and broke easily.</i><br>"
         "<i>This smaller, more stable stone is a crucial improvement.</i><br>",
-        1 USES, Material, LEVEL 2,
+        1 USES, Material,
         {
+            { ItemLevel, 2 },
             { StoneResource, 5 },
             { RunicResource, 10 }
         }
@@ -364,8 +268,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "<i>Every once in a while, stillness grips the whole of Rhodon as it falls into night.</i><br>"
         "<i>Sometimes this happens very suddenly. I get awful headaches and nausea from it.</i><br>"
         "<i>And I can hear things changing as the world re-roots itself...</i><br>",
-        1 USES, Material, LEVEL 2,
+        1 USES, Material,
         {
+            { ItemLevel, 2 },
             { CrystallineResource, 10 },
             { MetallicResource, 5 },
         }
@@ -374,8 +279,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         CT_TOOL | 3,
         "seaquake", "Seaquake",
         "<i>It makes a very satisfying clang.</i><br>",
-        4 USES, SmithingTool, LEVEL 3,
+        4 USES, SmithingTool,
         {
+            { ItemLevel, 3 },
             { ToolEnergyCost, 30 },
             { CostMetallic, 10 },
             { CostCrystalline, 30 },
@@ -388,8 +294,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "defragmenter", "Defragmenter",
         "<i>You very rarely see flat, even bands of rock in Rhodon -</i><br>"
         "<i>as the world fills up, it becomes harder and harder to lay the sediment down sequentially.</i><br>",
-        10 USES, MiningTool, LEVEL 3,
+        10 USES, MiningTool,
         {
+            { ItemLevel, 3 },
             { ToolEnergyCost, 30 },
             { CostMetallic, 40 },
             { CostRuinc, 15 },
@@ -406,8 +313,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "recovered_journal", "Recovered Journal",
         "<i>It's in an odd language I can't quite read -</i><br>"
         "<i>but I can gather it tells a sad story of an orphan far from /home.<br>",
-        0 USES, Artifact, LEVEL 3,
+        0 USES, Artifact,
         {
+            { ItemLevel, 3 },
             { PersistentMaxSpiritBoost, 40 }
         }
     },
@@ -418,8 +326,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "<i>It remains animated by her soul - supposedly because the spirits of Rhodon haven't</i><br>"
         "<i>figured out what to do with it yet.</i><br>"
         "<i>In the meantime, she keeps good company...</i><br>",
-        0 USES, Artifact, LEVEL 3,
+        0 USES, Artifact,
         {
+            { ItemLevel, 3 },
             { PersistentMaxEnergyBoost, 40 }
         }
     },
@@ -428,7 +337,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "disconnected_socket", "Disconnected Socket",
         "<i>I took quite a nasty fall and dislocated my shoulder.</i><br>"
         "<i>The doctor said doing a handshake would reconnect it, but I keep being refused.</i><br>",
-        7 USES, Effect, LEVEL 1,
+        7 USES, Effect,
         {
             { PersistentSpeedPenalty, 20 },
             { PersistentEnergyPenalty, 10 },
@@ -441,7 +350,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         CT_EFFECT | 1,
         "starving", "Starving",
         "<i>Is this what it means to be a \"Rockmuncher?\"</i><br>",
-        5 USES, Effect, LEVEL 1,
+        5 USES, Effect,
         {
             { PersistentSpeedPenalty, 20 },
             { PersistentSpiritPenalty, 10 },
@@ -452,7 +361,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "weakness", "Weakness",
         "<i>There's a numbness to my whole body -</i><br>"
         "<i>I feel like my soul no longer owns it, and I'm just watching myself stumble around.</i><br>",
-        5 USES, Effect, LEVEL 1,
+        5 USES, Effect,
         {
             { PersistentEnergyPenalty, 10 },
         }
@@ -461,7 +370,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         CT_EFFECT | 3,
         "welchian_fever", "Welchian Fever",
         "<i>I get the horrible feeling <b>everything is about to end...</b></i>",
-        10 USES, Effect, LEVEL 1,
+        10 USES, Effect,
         {
             { PersistentSpiritPenalty, 20 },
         }
@@ -470,8 +379,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         CT_OTHER | 0,
         "fennahian_egg", "Fennahian Egg",
         "<i>I could make an omelette out of it, but maybe it's best to just wait for it to hatch.</i><br>",
-        1 USES, Consumable | Untradeable, LEVEL 1,
+        1 USES, Consumable | Untradeable,
         {
+            { ItemLevel, 3 },
             { ConsumableEnergyBoost, 50 }
         }
     }
@@ -496,6 +406,8 @@ struct Item {
 
     ItemDefinitionPtr def() const;
     QString instance_properties_to_string() const;
+
+    void call_hooks(HookType type, const HookPayload &payload) const;
 
     static ItemDefinitionPtr def_of(ItemCode id);
     static ItemDefinitionPtr def_of(const QString &name);

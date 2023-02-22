@@ -34,7 +34,8 @@ public:
     ItemDomain &action();
     qint64 &ms_left();
     qint64 &ms_total();
-    const std::vector<ItemId> &owned_items();
+    const std::vector<ItemId> &owned_item_ids();
+    const std::vector<Item> owned_items();
     int timer_id();
     bool &started();
     Character &character();

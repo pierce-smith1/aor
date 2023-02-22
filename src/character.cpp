@@ -66,7 +66,7 @@ void Character::queue_activity(ItemDomain domain, const std::vector<ItemId> &ite
             return a + effect.def()->properties[PersistentSpeedPenalty];
         }) / 100.0;
 
-        int tool_level = gw()->game().inventory().get_item(m_tool_ids[domain]).def()->item_level;
+        int tool_level = inventory().get_item(m_tool_ids[domain]).def()->properties[ItemLevel];
 
         activity_ms *= tool_level == 0 ? 1 : tool_level;
         activity_ms -= activity_ms * heritage_boost;
@@ -76,7 +76,7 @@ void Character::queue_activity(ItemDomain domain, const std::vector<ItemId> &ite
     CharacterActivity new_activity = CharacterActivity(m_id, domain, items, activity_ms, activity_ms);
     m_activities.push_back(new_activity);
     for (ItemId id : items) {
-        gw()->game().inventory().get_item_ref(id).owning_action = new_activity.id();
+        inventory().get_item_ref(id).owning_action = new_activity.id();
     }
 
     // If this was the first activity added, get it started!
@@ -124,14 +124,7 @@ quint16 &Character::spirit() {
 int Character::max_energy() {
     int energy = BASE_MAX_ENERGY;
 
-    const auto &artifacts = external_items().at(Artifact);
-    int artifact_boost = std::accumulate(begin(artifacts), end(artifacts), 0, [](int a, ItemId b) {
-        return a + gw()->game().inventory().get_item(b).def()->properties[PersistentMaxEnergyBoost];
-    });
-    energy += artifact_boost;
-
-    int heritage_boost = heritage_properties()[HeritageMaxEnergyBoost];
-    energy += heritage_boost;
+    call_hooks(HookCalcMaxEnergy, { &energy }, Artifact | Effect);
 
     return energy;
 }
@@ -139,14 +132,7 @@ int Character::max_energy() {
 int Character::max_spirit() {
     int spirit = BASE_MAX_SPIRIT;
 
-    const auto &artifacts = external_items().at(Artifact);
-    int artifact_boost = std::accumulate(begin(artifacts), end(artifacts), 0, [this](int a, ItemId b) {
-        return a + gw()->game().inventory().get_item(b).def()->properties[PersistentMaxSpiritBoost];
-    });
-    spirit += artifact_boost;
-
-    int heritage_boost = heritage_properties()[HeritageMaxSpiritBoost];
-    spirit += heritage_boost;
+    call_hooks(HookCalcMaxSpirit, { &spirit }, Artifact | Effect);
 
     return spirit;
 }
@@ -188,46 +174,47 @@ bool Character::can_perform_action(ItemDomain domain) {
         return false;
     }
 
+    bool can_do = true;
+
     switch (domain) {
         case None:
         case Eating:
         case Defiling: {
-            return true;
+            break;
         }
         case Smithing: {
-            Item tool = gw()->game().inventory().get_item(tool_id(domain));
-            return smithing_result() != 0
-                && energy() >= tool.def()->properties[ToolEnergyCost];
+            can_do = smithing_result() != 0;
+            call_hooks(HookCanDoActionCheck, { &can_do, &m_energy }, SmithingTool);
+            break;
         }
         case Foraging:
         case Mining: {
-            Item tool = gw()->game().inventory().get_item(tool_id(domain));
-            return energy() >= tool.def()->properties[ToolEnergyCost];
+            call_hooks(HookCanDoActionCheck, { &can_do, &m_energy }, domain);
+            break;
         }
         default: {
             bugcheck(AssessmentForUnknownDomain, m_id, domain);
             return false;
         }
     }
+
+    return can_do;
 }
 
 int Character::energy_to_gain() {
-    int gain;
     CharacterActivity &activity = m_activities.front();
+    qint32 gain = 0;
+
     switch (activity.action()) {
         case Eating: {
-            std::vector<ItemId> inputs = activity.owned_items();
-            gain = std::accumulate(begin(inputs), end(inputs), 0, [](int a, ItemId b) {
-                return a + gw()->game().inventory().get_item(b).def()->properties[ConsumableEnergyBoost];
-            });
+            call_hooks(HookCalcEnergyGain, { &gain }, Artifact | Effect, activity.owned_items());
             gain += heritage_properties()[HeritageConsumableEnergyBoost];
             break;
         }
         case Smithing:
         case Foraging:
         case Mining: {
-            Item tool = gw()->game().inventory().get_item(tool_id(activity.action()));
-            gain = -tool.def()->properties[ToolEnergyCost];
+            call_hooks(HookCalcEnergyGain, { &gain }, activity.action());
             break;
         }
         case Coupling: {
@@ -240,50 +227,24 @@ int Character::energy_to_gain() {
         }
     }
 
-    gain -= std::accumulate(begin(m_effects), end(m_effects), 0, [](int a, const Item &item) {
-        return a + item.def()->properties[PersistentEnergyPenalty];
-    });
-
     return gain;
 }
 
 int Character::spirit_to_gain() {
-    int gain;
     CharacterActivity &activity = m_activities.front();
-    switch (activity.action()) {
-        case Eating: {
-            std::vector<ItemId> inputs = activity.owned_items();
-            gain = std::accumulate(begin(inputs), end(inputs), 0, [](int a, ItemId b) {
-                return a + gw()->game().inventory().get_item(b).def()->properties[ConsumableSpiritBoost];
-            });
-            break;
-        }
-        case Defiling: {
-            std::vector<ItemId> inputs = activity.owned_items();
-            gain = std::accumulate(begin(inputs), end(inputs), 0, [](int a, ItemId b) {
-                return a + gw()->game().inventory().get_item(b).def()->item_level * 25;
-            });
-            break;
-        }
-        default: {
-            gain = 0;
-            break;
-        }
-    }
+    qint32 gain = 0;
 
-    if (activity.action() != Eating && activity.action() != Defiling) {
+    if (activity.action() == Eating || activity.action() == Defiling) {
+        call_hooks(HookCalcSpiritGain, { &gain }, Artifact | Effect, activity.owned_items());
+    } else {
         gain -= base_spirit_cost();
     }
-
-    gain -= std::accumulate(begin(m_effects), end(m_effects), 0, [](int a, const Item &item) {
-        return a + item.def()->properties[PersistentSpiritPenalty];
-    });
 
     return gain;
 }
 
 std::vector<ItemCode> Character::smithable_items() {
-    ItemDefinitionPtr smithing_def = gw()->game().inventory().get_item(tool_id(SmithingTool)).def();
+    ItemDefinitionPtr smithing_def = inventory().get_item(tool_id(SmithingTool)).def();
     double heritage_resource_boost = heritage_properties()[HeritageMaterialValueBonus] / 100.0;
 
     std::vector<ItemCode> smithable_codes;
@@ -316,7 +277,7 @@ std::vector<ItemCode> Character::smithable_items() {
                 end(external_items().at(Material)),
                 0,
                 [=](int a, ItemId b) {
-                    int item_resource = gw()->game().inventory().get_item(b).def()->properties[resource_prop];
+                    int item_resource = inventory().get_item(b).def()->properties[resource_prop];
                     item_resource += (item_resource * heritage_resource_boost);
                     return item_resource + a;
                 }
@@ -367,7 +328,7 @@ ItemProperties Character::total_material_resources() {
 
     for (ItemId material_id : m_external_item_ids[Material]) {
         Item::for_each_resource_type([&](ItemProperty, ItemProperty, ItemProperty resource_prop) {
-            resources.map[resource_prop] += gw()->game().inventory().get_item(material_id).def()->properties[resource_prop];
+            resources.map[resource_prop] += inventory().get_item(material_id).def()->properties[resource_prop];
         });
     }
 
@@ -415,6 +376,32 @@ bool Character::push_effect(const Item &effect) {
     }
 
     return false;
+}
+
+void Character::call_hooks(HookType type, const HookPayload &payload, quint16 int_domain, const std::vector<Item> &extra_items) {
+    ItemDomain domain = (ItemDomain) int_domain;
+
+    if (domain & Tool) {
+        inventory().get_item(m_tool_ids[domain]).call_hooks(type, payload);
+    }
+
+    if (domain & Artifact) {
+        for (ItemId id : m_external_item_ids[Artifact]) {
+            inventory().get_item(id).call_hooks(type, payload);
+        }
+    }
+
+    if (domain & Effect) {
+        for (const Item &effect : m_effects) {
+            effect.call_hooks(type, payload);
+        }
+    }
+
+    for (const Item &item : extra_items) {
+        item.call_hooks(type, payload);
+    }
+
+    heritage_properties().call_hooks(type, payload);
 }
 
 bool Character::clear_last_effect() {
@@ -515,4 +502,8 @@ Character *Character::deserialize(QIODevice *dev) {
     c->m_tool_ids[MiningTool] = IO::read_long(dev);
 
     return c;
+}
+
+Inventory &Character::inventory() {
+    return gw()->game().inventory();
 }

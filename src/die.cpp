@@ -26,6 +26,8 @@ QString bugcheck_error_string(FatalErrorType type) {
         case ActivityByIdLookupMiss: { return "ACTIVITY_BY_ID_LOOKUP_MISS"; }
         case NoStringForActionDomain: { return "NO_STRING_FOR_ACTION_DOMAIN"; }
         case NoDescriptionForActionDomain: { return "NO_DESCRIPTION_FOR_ACTION_DOMAIN"; }
+        case IncorrectHookPayload: { return "INCORRECT_HOOK_PAYLOAD"; }
+        case CallForUnknownHookType: { return "CALL_FOR_UNKNOWN_HOOK_TYPE"; }
     }
 
     return "TOTAL_RUIN";

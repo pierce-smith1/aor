@@ -9,6 +9,7 @@
 #include "inventory.h"
 #include "generators.h"
 #include "io.h"
+#include "hooks.h"
 
 const static int MAX_EXPLORERS = 11;
 

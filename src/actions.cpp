@@ -52,8 +52,16 @@ qint64 &CharacterActivity::ms_total() {
     return m_ms_total;
 }
 
-const std::vector<ItemId> &CharacterActivity::owned_items() {
+const std::vector<ItemId> &CharacterActivity::owned_item_ids() {
     return m_owned_items;
+}
+
+const std::vector<Item> CharacterActivity::owned_items() {
+    std::vector<Item> items;
+    for (ItemId id : m_owned_items) {
+        items.push_back(gw()->game().inventory().get_item(id));
+    }
+    return items;
 }
 
 int CharacterActivity::timer_id() {
@@ -93,10 +101,8 @@ QString CharacterActivity::domain_to_action_string(ItemDomain domain) {
         case Trading: { return "Trading"; }
         case Defiling: { return "Defiling"; }
         case Coupling: { return "Coupling"; }
-        default: { bugcheck(NoStringForActionDomain, domain); }
+        default: { bugcheck(NoStringForActionDomain, domain); return ""; }
     }
-
-    return "";
 }
 
 Character &CharacterActivity::character() {
@@ -159,16 +165,16 @@ std::vector<Item> CharacterActivity::products() {
         case Smithing: {
             ItemCode smithing_result = character().smithing_result();
 
-            if (smithing_result != 0) {
-                Item result = Item(smithing_result);
-
-                int heritage_use_boost = character().heritage_properties()[HeritageSmithProductUsageBoost];
-                result.uses_left += heritage_use_boost;
-
-                return { result };
-            } else {
+            if (smithing_result == 0) {
                 return {};
             }
+
+            Item result = Item(smithing_result);
+
+            int heritage_use_boost = character().heritage_properties()[HeritageSmithProductUsageBoost];
+            result.uses_left += heritage_use_boost;
+
+            return { result };
         }
         case Foraging:
         case Mining: {
@@ -371,7 +377,7 @@ void CharacterActivity::give_bonuses() {
 void CharacterActivity::give_injuries() {
     bool welchian = false;
 
-    int injury_chance = 3 + (gw()->game().inventory().get_item(character().tool_id(m_action)).def()->item_level * 6);
+    int injury_chance = 3 + (gw()->game().inventory().get_item(character().tool_id(m_action)).def()->properties[ItemLevel] * 6);
     int injury_dampen = character().heritage_properties()[HeritageInjuryResilience];
     injury_chance -= injury_dampen;
 

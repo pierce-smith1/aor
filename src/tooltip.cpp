@@ -72,7 +72,7 @@ void Tooltip::set(const Item &item, Game &game) {
 
     widget.item_name->setText(QString("<b>%1</b>").arg(this_def->display_name));
     description += this_def->description;
-    subtext += QString("Level %1 ").arg(this_def->item_level);
+    subtext += QString("Level %1 ").arg(this_def->properties[ItemLevel]);
 
     subtext += Item::type_to_string(this_def->type);
 

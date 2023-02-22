@@ -190,14 +190,14 @@ void Game::check_tutorial(ItemDomain domain) {
 
 int Game::trade_level() {
     return std::accumulate(begin(m_trade_offer), end(m_trade_offer), 0, [this](int a, ItemId id) {
-        return a + m_inventory.get_item(id).def()->item_level;
+        return a + m_inventory.get_item(id).def()->properties[ItemLevel];
     });
 }
 
 int Game::foreign_trade_level(GameId tribe_id) {
     auto &offer = m_tribes.at(tribe_id).offer;
     return std::accumulate(begin(offer), end(offer), 0, [](int a, const Item &item) {
-        return a + item.def()->item_level;
+        return a + item.def()->properties[ItemLevel];
     });
 }
 
@@ -242,7 +242,7 @@ CharacterActivity &Game::activity(ActivityId id) {
 }
 
 void Game::refresh_ui_bars(QProgressBar *activity, QProgressBar *spirit, QProgressBar *energy, CharacterId char_id) {
-    auto clamp = [](int min, int value, int max) {
+    auto clamp = [](int min, int value, int max) -> int {
         return value < min ? min : (value > max ? max : value);
     };
 

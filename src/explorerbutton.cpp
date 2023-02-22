@@ -229,7 +229,7 @@ QString ExplorerButton::character_description() {
     ItemProperties heritage_props = Colors::blend_heritage(character.heritage());
 
     for (const auto &pair : heritage_props) {
-        string += PROPERTY_DESCRIPTIONS.at(pair.first).arg(pair.second) + "<br>";
+        string += property_definitions().at(pair.first).description.arg(pair.second) + "<br>";
     }
 
     return string.left(string.size() - 4);
