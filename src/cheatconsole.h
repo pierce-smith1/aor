@@ -220,6 +220,14 @@ const static std::vector<CheatCommand> COMMANDS = {
         }
     },
     {
+        "baby",
+        "Create a random explorer",
+        0,
+        [](LKGameWindow *game, const QStringList &) {
+            game->game().add_character(Generators::yokin_name(), { Generators::color() });
+        }
+    },
+    {
         "fast",
         "If $0 is 0, turn off accelerated actions; otherwise turn it on",
         1,

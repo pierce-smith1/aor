@@ -41,7 +41,7 @@ namespace Generators {
         return weights.back().first;
     }
 
-    QString yokin_name(int length = 5);
+    QString yokin_name();
     QString tribe_name();
     ItemId item_id();
     Color color();

@@ -63,8 +63,8 @@ template <typename... T> void bugcheck(FatalErrorType error, T... args) {
     bugcheck.setStyleSheet("font-family: monospace");
     bugcheck.setIcon(QMessageBox::Critical);
     bugcheck.setText(
-        "An internal assertion failed. <b>This is a bug; please report me.</b><br>"
-        "Please back up your save file now; it will likely be useful for debugging."
+        "An internal assertion failed. <b>This is a bug; please report it.</b><br>"
+        "Your save file may be useful for debugging, so consider backing it up before you restart the game."
     );
     bugcheck.setInformativeText(QString(
         "<b>%1</b><br><br> (%2)"

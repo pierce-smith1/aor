@@ -3,7 +3,26 @@ b2.0.0 todo
 [x] implement heritage hooks
 [ ] rework smithing material behavior
 [ ] refactor tutorial system
-[ ] rework name generation
+[x] rework name generation
 [ ] make ui space
 [ ] fix level display on effects
 [ ] clear queues on injury
+
+(dev) Several core systems have been re-written in anticipation of future content.
+This is highly experimental, and I anticipate _many_ new bugs will be present
+(game) Changed the mechanics of material slotting; previously, you were _unable_
+to slot materials if they caused a particular resource to exceeded your smithing
+tool's max capacity. Now, you are _able_ to slot materials regardless of your
+tool's capacity, however you can still only craft items that your tool allows. This
+makes it possible to, for instance, use a Cobolt Bar with a Maven Mallet to craft
+a Seaquake, while still ensuring it isn't possible to craft a Deframgenter with
+the Mallet. This should help materials be more flexible and generally valuable, as
+previously very high-value materials couldn't be used _at all_ with lower-level tools
+(game) Changed how Fennahian names are generated to make them more distinct from
+canon doughbyte species
+(game) When getting injured, explorers will now clear all non-eating and non-defiling
+actions from their queues to avoid them killing themselves
+(qol) Encryption has been (temporarily?) removed from save files to ease
+debugging a bit
+(qol) The bugcheck dialog has been reworked to make it more clear an
+unintentional bug has occured

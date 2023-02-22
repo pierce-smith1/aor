@@ -6,38 +6,38 @@ QRandomGenerator *Generators::rng() {
     return rng;
 }
 
-QString Generators::yokin_name(int length) {
+QString Generators::yokin_name() {
+    qint32 length = 3;
+    while (percent_chance(75 - ((length - 3) * 15))) {
+        length++;
+    }
+
     const static std::vector<Cluster> consonant_clusters = {
-        {"N", 1.0},
-        {"M", 1.4},
-        {"G", 1.0},
-        {"K", 1.0},
-        {"L", 1.0},
-        {"LL", 1.0},
-        {"LH", 1.0},
-        {"V", 1.0},
+        {"TH", 1.5},
         {"R", 1.0},
-        {"T", 1.0},
-        {"D", 1.0},
+        {"RH", 1.0},
+        {"N", 1.0},
+        {"L", 0.8},
+        {"K", 0.9},
+        {"KH", 0.9},
+        {"D", 1.2},
         {"SH", 1.0},
-        {"ZS", 1.0},
-        {"Z", 1.0},
-        {"S", 1.0},
-        {"J", 0.5},
-        {"DZ", 0.8},
-        {"XX", 0.2},
+        {"C", 1.2},
+        {"ST", 1.2},
+        {"CH", 0.9},
+        {"SS", 0.5},
+        {"NT", 0.5},
+        {"ND", 0.9},
+        {"M", 1.0}
     };
 
     const static std::vector<Cluster> vowel_clusters = {
-        {"A", 0.8},
-        {"E", 0.8},
-        {"I", 0.3},
-        {"AE", 1.5},
-        {"EA", 1.0},
-        {"AI", 1.0},
-        {"Y", 0.5},
-        {"O", 0.2},
-        {"II", 0.2},
+        {"A", 1.5},
+        {"E", 1.5},
+        {"I", 1.0},
+        {"Y", 0.2},
+        {"O", 1.1},
+        {"U", 0.2},
     };
 
     bool consonant = rng()->generate() % 2 == 0;
@@ -50,7 +50,7 @@ QString Generators::yokin_name(int length) {
         consonant = !consonant;
     }
 
-    return name.left(length);
+    return name.front() + name.mid(1, length - 1).toCaseFolded();
 }
 
 QString Generators::tribe_name() {
