@@ -22,6 +22,8 @@ const static int BASE_MAX_ENERGY = 50;
 const static int BASE_MAX_SPIRIT = 50;
 const static int BASE_MAX_RESOURCE = 10;
 
+const static quint16 BASE_HOOK_DOMAINS = Artifact | Effect | Explorer;
+
 using Heritage = std::multiset<Color>;
 using ExternalItemIds = std::map<ItemDomain, std::array<ItemId, MAX_ARRAY_SIZE>>;
 using Effects = std::array<Item, EFFECT_SLOTS>;
@@ -67,7 +69,7 @@ public:
     bool clear_last_effect();
     bool push_effect(const Item &effect);
 
-    void call_hooks(HookType type, const HookPayload &payload, quint16 int_domain, const std::vector<Item> &extra_items = {});
+    void call_hooks(HookType type, const HookPayload &payload, quint16 int_domain = BASE_HOOK_DOMAINS, const std::vector<Item> &extra_items = {});
 
     ItemId tool_id(ItemDomain domain);
     ToolIds &tools();

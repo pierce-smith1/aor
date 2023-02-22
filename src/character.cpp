@@ -61,16 +61,7 @@ void Character::queue_activity(ItemDomain domain, const std::vector<ItemId> &ite
     // Don't do any sort of time adjustment if we're coupling - both participants
     // should finish at the same time.
     if (domain != Coupling) {
-        double heritage_boost = heritage_properties()[HeritageActivitySpeedBonus] / 100.0;
-        double injury_penalty = std::accumulate(begin(m_effects), end(m_effects), 0, [](int a, const Item &effect) {
-            return a + effect.def()->properties[PersistentSpeedPenalty];
-        }) / 100.0;
-
-        int tool_level = inventory().get_item(m_tool_ids[domain]).def()->properties[ItemLevel];
-
-        activity_ms *= tool_level == 0 ? 1 : tool_level;
-        activity_ms -= activity_ms * heritage_boost;
-        activity_ms += activity_ms * injury_penalty;
+        call_hooks(HookCalcActivityTime, { &activity_ms }, BASE_HOOK_DOMAINS | domain);
     }
 
     CharacterActivity new_activity = CharacterActivity(m_id, domain, items, activity_ms, activity_ms);
@@ -123,17 +114,13 @@ quint16 &Character::spirit() {
 
 int Character::max_energy() {
     int energy = BASE_MAX_ENERGY;
-
-    call_hooks(HookCalcMaxEnergy, { &energy }, Artifact | Effect);
-
+    call_hooks(HookCalcMaxEnergy, { &energy });
     return energy;
 }
 
 int Character::max_spirit() {
     int spirit = BASE_MAX_SPIRIT;
-
-    call_hooks(HookCalcMaxSpirit, { &spirit }, Artifact | Effect);
-
+    call_hooks(HookCalcMaxSpirit, { &spirit });
     return spirit;
 }
 
@@ -205,16 +192,11 @@ int Character::energy_to_gain() {
     CharacterActivity &activity = m_activities.front();
     qint32 gain = 0;
 
+    call_hooks(HookCalcEnergyGain, { &gain }, BASE_HOOK_DOMAINS | activity.action(), activity.owned_items());
+
     switch (activity.action()) {
         case Eating: {
-            call_hooks(HookCalcEnergyGain, { &gain }, Artifact | Effect, activity.owned_items());
-            gain += heritage_properties()[HeritageConsumableEnergyBoost];
-            break;
-        }
-        case Smithing:
-        case Foraging:
-        case Mining: {
-            call_hooks(HookCalcEnergyGain, { &gain }, activity.action());
+            call_hooks(HookCalcBonusConsumableEnergy, { &gain });
             break;
         }
         case Coupling: {
@@ -222,7 +204,6 @@ int Character::energy_to_gain() {
             break;
         }
         default: {
-            gain = 0;
             break;
         }
     }
@@ -235,7 +216,7 @@ int Character::spirit_to_gain() {
     qint32 gain = 0;
 
     if (activity.action() == Eating || activity.action() == Defiling) {
-        call_hooks(HookCalcSpiritGain, { &gain }, Artifact | Effect, activity.owned_items());
+        call_hooks(HookCalcSpiritGain, { &gain }, BASE_HOOK_DOMAINS, activity.owned_items());
     } else {
         gain -= base_spirit_cost();
     }
@@ -244,8 +225,10 @@ int Character::spirit_to_gain() {
 }
 
 std::vector<ItemCode> Character::smithable_items() {
+    qreal material_bonus = 0.0;
+    call_hooks(HookCalcMaterialBonus, { &material_bonus });
+
     ItemDefinitionPtr smithing_def = inventory().get_item(tool_id(SmithingTool)).def();
-    double heritage_resource_boost = heritage_properties()[HeritageMaterialValueBonus] / 100.0;
 
     std::vector<ItemCode> smithable_codes;
     for (const ItemDefinition &def : ITEM_DEFINITIONS) {
@@ -278,7 +261,7 @@ std::vector<ItemCode> Character::smithable_items() {
                 0,
                 [=](int a, ItemId b) {
                     int item_resource = inventory().get_item(b).def()->properties[resource_prop];
-                    item_resource += (item_resource * heritage_resource_boost);
+                    item_resource += (item_resource * material_bonus);
                     return item_resource + a;
                 }
             );
@@ -382,7 +365,7 @@ void Character::call_hooks(HookType type, const HookPayload &payload, quint16 in
     ItemDomain domain = (ItemDomain) int_domain;
 
     if (domain & Tool) {
-        inventory().get_item(m_tool_ids[domain]).call_hooks(type, payload);
+        inventory().get_item(m_tool_ids[(ItemDomain) (domain & Tool)]).call_hooks(type, payload);
     }
 
     if (domain & Artifact) {
@@ -397,11 +380,13 @@ void Character::call_hooks(HookType type, const HookPayload &payload, quint16 in
         }
     }
 
+    if (domain & Explorer) {
+        heritage_properties().call_hooks(type, payload);
+    }
+
     for (const Item &item : extra_items) {
         item.call_hooks(type, payload);
     }
-
-    heritage_properties().call_hooks(type, payload);
 }
 
 bool Character::clear_last_effect() {

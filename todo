@@ -1,8 +1,9 @@
 b2.0.0 todo
 
-[ ] implement heritage hooks
+[x] implement heritage hooks
 [ ] rework smithing material behavior
 [ ] refactor tutorial system
 [ ] rework name generation
 [ ] make ui space
 [ ] fix level display on effects
+[ ] clear queues on injury

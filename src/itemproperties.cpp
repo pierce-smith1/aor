@@ -1,5 +1,6 @@
 #include "itemproperties.h"
 #include "items.h"
+#include "character.h"
 
 #define HOOK_0 [](const HookPayload &, quint16 prop_value) {}
 
@@ -21,8 +22,6 @@
     t3 * n3 = extract_payload<t3 *>(payload, 2); \
     t4 * n4 = extract_payload<t4 *>(payload, 3);
 
-#define HOOK_END }
-
 const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
     const static std::map<ItemProperty, PropertyDefinition> PROPERTY_DESCRIPTIONS = {
         { ItemLevel, {
@@ -30,6 +29,16 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
             {{ HookCalcSpiritGain, HOOK_1(qint32, spirit_gain)
                 if (item_domain & Material) {
                     *spirit_gain += prop_value * 25;
+                }
+            }},
+            { HookCalcActivityTime, HOOK_1(qint64, activity_ms)
+                if (item_domain & Tool) {
+                    *activity_ms *= prop_value == 0 ? 1 : prop_value;
+                }
+            }},
+            { HookCalcInjuryChance, HOOK_1(qint32, injury_percent_chance)
+                if (item_domain & Tool) {
+                    *injury_percent_chance += 3 + (prop_value * 6);
                 }
             }}}
         }},
@@ -56,11 +65,17 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
         }},
         { ConsumableClearsNumEffects, {
             "Fully clears up to <b>%1 injury(ies)</b>, starting with the rightmost.",
-            {}
+            {{ HookPostEat, HOOK_1(Character, character)
+                for (quint16 i = 0; i < prop_value; i++) {
+                    character->clear_last_effect();
+                }
+            }}}
         }},
         { ConsumableMakesCouplable, {
             "Gives the ability to <b><font color=purple>have a child</font></b> with another explorer.",
-            {}
+            {{ HookPostEat, HOOK_1(Character, character)
+                character->can_couple() = true;
+            }}}
         }},
         { PersistentMaxEnergyBoost, {
             "I have <b>+%1 max energy</b>.",
@@ -76,11 +91,15 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
         }},
         { PersistentSpeedBonus, {
             "My actions complete <b>%1x faster</b>.",
-            {}
+            {{ HookCalcActivityTime, HOOK_1(qint64, activity_ms)
+                *activity_ms -= *activity_ms * (prop_value / 100.0);
+            }}}
         }},
         { PersistentSpeedPenalty, {
             "My actions complete <b>%1% slower</b>.",
-            {}
+            {{ HookCalcActivityTime, HOOK_1(qint64, activity_ms)
+                *activity_ms += *activity_ms * (prop_value / 100.0);
+            }}}
         }},
         { PersistentEnergyPenalty, {
             "My actions cost an additional <b>%1 energy</b>." ,
@@ -96,35 +115,51 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
         }},
         { HeritageMaxEnergyBoost, {
             "I have <b>+%1 max energy</b>.",
-            {}
+            {{ HookCalcMaxEnergy, HOOK_1(qint32, energy_gain)
+                *energy_gain += prop_value;
+            }}}
         }},
         { HeritageMaxSpiritBoost, {
             "I have <b>+%1 max spirit</b>.",
-            {}
+            {{ HookCalcMaxSpirit, HOOK_1(qint32, energy_gain)
+                *energy_gain += prop_value;
+            }}}
         }},
         { HeritageConsumableEnergyBoost, {
             "I get <b>+%1 bonus energy</b> when I eat something.",
-            {}
+            {{ HookCalcBonusConsumableEnergy, HOOK_1(qint32, energy_gain)
+                *energy_gain += prop_value;
+            }}}
         }},
         { HeritageSmithProductUsageBoost, {
             "Items that I craft have <b>+%1 use(s)</b>.",
-            {}
+            {{ HookCalcBonusProductUse, HOOK_1(qint32, use_bonus)
+                *use_bonus += prop_value;
+            }}}
         }},
         { HeritageInjuryResilience, {
             "I have a <b>-%1% chance to suffer an injury</b> after taking an action.",
-            {}
+            {{ HookCalcInjuryChance, HOOK_1(qint32, injury_percent_chance)
+                *injury_percent_chance -= prop_value;
+            }}}
         }},
         { HeritageMaterialValueBonus, {
             "Materials are <b>worth %1% more</b> when I use them.",
-            {}
+            {{ HookCalcMaterialBonus, HOOK_1(qreal, material_bonus)
+                *material_bonus += prop_value / 100.0;
+            }}}
         }},
         { HeritageActivitySpeedBonus, {
             "My actions take <b>%1% less time</b>.",
-            {}
+            {{ HookCalcActivityTime, HOOK_1(qint64, activity_ms)
+                *activity_ms -= *activity_ms * (prop_value / 100.0);
+            }}}
         }},
         { HeritageItemDoubleChance, {
             "I have a <b>%1% chance</b> to <b>double</b> items recieved from actions.",
-            {}
+            {{ HookCalcItemDoubleChance, HOOK_1(qint32, item_double_chance)
+                *item_double_chance += prop_value;
+            }}}
         }},
     };
 

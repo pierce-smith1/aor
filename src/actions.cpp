@@ -130,9 +130,9 @@ void CharacterActivity::complete() {
     give_injuries();
     std::vector<Item> items = products();
 
-    int item_double_chance = std::accumulate(begin(character().heritage()), end(character().heritage()), 0, [](int a, Color c) {
-        return a + Colors::heritage_properties(c)[HeritageItemDoubleChance];
-    });
+    quint32 item_double_chance = 0;
+    character().call_hooks(HookCalcItemDoubleChance, { &item_double_chance });
+
     if (Generators::percent_chance(item_double_chance)) {
         std::vector<Item> items_copy = items;
         items.insert(end(items), begin(items_copy), end(items_copy));
@@ -171,8 +171,9 @@ std::vector<Item> CharacterActivity::products() {
 
             Item result = Item(smithing_result);
 
-            int heritage_use_boost = character().heritage_properties()[HeritageSmithProductUsageBoost];
-            result.uses_left += heritage_use_boost;
+            qint32 use_bonus = 0;
+            character().call_hooks(HookCalcBonusProductUse, { &use_bonus });
+            result.uses_left += use_bonus;
 
             return { result };
         }
@@ -361,15 +362,7 @@ void CharacterActivity::give_bonuses() {
     if (m_action == Eating) {
         for (const ItemId id : m_owned_items) {
             Item item = gw()->game().inventory().get_item(id);
-            const ItemProperties &props = item.def()->properties;
-
-            for (int i = 0; i < props[ConsumableClearsNumEffects]; i++) {
-                character().clear_last_effect();
-            }
-
-            if (props[ConsumableMakesCouplable]) {
-                character().can_couple() = true;
-            }
+            character().call_hooks(HookPostEat, { &character() }, BASE_HOOK_DOMAINS, { item });
         }
     }
 }
@@ -377,16 +370,15 @@ void CharacterActivity::give_bonuses() {
 void CharacterActivity::give_injuries() {
     bool welchian = false;
 
-    int injury_chance = 3 + (gw()->game().inventory().get_item(character().tool_id(m_action)).def()->properties[ItemLevel] * 6);
-    int injury_dampen = character().heritage_properties()[HeritageInjuryResilience];
-    injury_chance -= injury_dampen;
+    qint32 injury_percent_chance = 0;
+    character().call_hooks(HookCalcInjuryChance, { &injury_percent_chance }, BASE_HOOK_DOMAINS | m_action);
 
     if (gw()->game().actions_done() > 800) {
-        injury_chance += ((gw()->game().actions_done() - 800) / 2);
+        injury_percent_chance += ((gw()->game().actions_done() - 800) / 2);
         welchian = true;
     }
 
-    if (!Generators::percent_chance(injury_chance)) {
+    if (!Generators::percent_chance(injury_percent_chance)) {
         return;
     }
 
