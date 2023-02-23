@@ -4,6 +4,7 @@
 #include "externalslot.h"
 #include "effectslot.h"
 #include "queuedactivityslot.h"
+#include "skillslot.h"
 #include "encyclopedia.h"
 #include "explorerbutton.h"
 #include "die.h"
@@ -75,6 +76,10 @@ LKGameWindow::LKGameWindow()
         m_about_box->show();
     });
 
+    connect(m_window.multiwindow_action, &QAction::triggered, [=]() {
+        enter_multiwindow_mode();
+    });
+
     ItemSlot::insert_inventory_slots();
     ExternalSlot::insert_external_slots();
     ToolSlot::insert_tool_slots();
@@ -82,6 +87,7 @@ LKGameWindow::LKGameWindow()
     PortraitSlot::insert_portrait_slot();
     ExplorerButton::insert_explorer_buttons();
     QueuedActivitySlot::insert_queued_activity_slots();
+    SkillSlot::insert_skill_slots();
 
     QPalette activity_palette;
     activity_palette.setColor(QPalette::Highlight, Colors::qcolor(Lime));
@@ -97,7 +103,6 @@ LKGameWindow::LKGameWindow()
 
     m_encyclopedia->refresh();
 
-    m_window.statusbar->showMessage("beta " + GAME_VERSION);
     m_backup_timer_id = startTimer(BACKUP_INTERVAL_MS);
 }
 
@@ -157,14 +162,6 @@ void LKGameWindow::refresh_ui() {
     refresh_ui_buttons();
     refresh_ui_bars();
     refresh_trade_ui();
-
-    bool ruin = std::all_of(begin(m_game.characters()), end(m_game.characters()), [](Character &character) {
-        return character.dead() || character.id() == NOBODY;
-    });
-
-    if (ruin) {
-        statusBar()->showMessage("Quiet at last.");
-    }
 }
 
 void LKGameWindow::refresh_slots() {
@@ -330,6 +327,24 @@ void LKGameWindow::load() {
 
 bool LKGameWindow::save_file_exists() {
     return QFile::exists(SAVE_FILE_NAME);
+}
+
+void LKGameWindow::enter_multiwindow_mode() {
+    std::vector<QWidget *> widgets_to_split = {
+        findChild<QWidget *>("activities_widget"),
+        findChild<QWidget *>("inventory_widget"),
+        findChild<QWidget *>("explorer_widget")
+    };
+
+    for (QWidget *widget : widgets_to_split) {
+        QDialog *window = new QDialog();
+        QLayout *layout = new QVBoxLayout();
+        layout->addWidget(widget);
+        window->setLayout(layout);
+        window->show();
+    }
+
+    hide();
 }
 
 void LKGameWindow::timerEvent(QTimerEvent *event) {

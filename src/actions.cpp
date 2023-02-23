@@ -130,7 +130,7 @@ void CharacterActivity::complete() {
     give_injuries();
     std::vector<Item> items = products();
 
-    quint32 item_double_chance = 0;
+    qint32 item_double_chance = 0;
     character().call_hooks(HookCalcItemDoubleChance, { &item_double_chance });
 
     if (Generators::percent_chance(item_double_chance)) {

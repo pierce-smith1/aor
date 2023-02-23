@@ -71,7 +71,10 @@ ItemDomain ExplorerButton::type() {
 
 void ExplorerButton::insert_explorer_buttons() {
     for (int i = 0; i < MAX_EXPLORERS; i++) {
-        gw()->window().explorer_slots->layout()->addWidget(new ExplorerButton(i));
+        int col = i % EXPLORER_COLS;
+        int row = i / EXPLORER_COLS;
+        QGridLayout *layout = (QGridLayout *) gw()->window().explorer_slots->layout();
+        layout->addWidget(new ExplorerButton(i), row, col);
     }
 }
 

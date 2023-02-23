@@ -212,7 +212,9 @@ public class TradeServer {
     public final static byte MT_MYINFO = 'i';
     public final static byte MT_EXECUTETRADE = 'e';
 
-    public TradeServer() throws IOException { }
+    public final DataOutputStream REPLAY_FILE = new DataOutputStream(new FileOutputStream("replay"));
+
+    public TradeServer() throws IOException, FileNotFoundException { }
 
     public static void main(String[] args) throws IOException {
         TradeServer server = new TradeServer();
@@ -255,6 +257,9 @@ public class TradeServer {
                         }
                     }
                 }
+                synchronized (REPLAY_FILE) {
+                    REPLAY_FILE.flush();
+                }
             }
 
             public void write(int b) throws IOException {
@@ -265,6 +270,9 @@ public class TradeServer {
                             out.write(b);
                         }
                     }
+                }
+                synchronized (REPLAY_FILE) {
+                    REPLAY_FILE.write(b);
                 }
             }
         });

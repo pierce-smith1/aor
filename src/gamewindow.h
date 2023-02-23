@@ -70,6 +70,8 @@ public:
     void load();
     bool save_file_exists();
 
+    void enter_multiwindow_mode();
+
 protected:
     void timerEvent(QTimerEvent *event) override;
     void closeEvent(QCloseEvent *event) override;

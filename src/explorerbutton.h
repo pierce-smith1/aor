@@ -14,6 +14,8 @@ class LKGameWindow;
 #include "icons.h"
 #include "itemslot.h"
 
+const static int EXPLORER_COLS = 3;
+
 class ExplorerButton : public ItemSlot {
     Q_OBJECT
 
