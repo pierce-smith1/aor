@@ -30,7 +30,7 @@ std::optional<TooltipInfo> AboutSlot::tooltip_info() {
         "<i>https://doughbyte.com</i>",
         Item::pixmap_of("welchian_rune"),
         {},
-        {}
+        std::optional<Color>()
     });
 }
 
