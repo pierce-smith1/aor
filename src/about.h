@@ -13,6 +13,7 @@ class AboutSlot : public ItemSlot {
 public:
     virtual void refresh_pixmap() override;
     virtual std::optional<TooltipInfo> tooltip_info() override;
+    virtual bool do_hovering() override;
 
 protected:
     virtual void mousePressEvent(QMouseEvent *event) override;
