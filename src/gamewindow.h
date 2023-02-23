@@ -22,6 +22,7 @@ class ItemSlot;
 class RecipieBox;
 class Encyclopedia;
 class Tooltip;
+class AboutBox;
 
 using ActivityTimers = std::map<CharacterId, int>;
 
@@ -84,10 +85,11 @@ private:
     GameId m_selected_tribe_id = NOBODY;
     std::vector<ItemSlot *> m_slots;
     DoughbyteConnection m_connection;
-    QFile m_save_file;
+    EncryptedFile m_save_file;
     Encyclopedia *m_encyclopedia;
     int m_backup_timer_id;
     Ui::EventLog m_event_log;
+    AboutBox *m_about_box;
 
     friend LKGameWindow *gw();
 };

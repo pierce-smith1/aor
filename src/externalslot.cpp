@@ -81,24 +81,7 @@ void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
                 break;
             }
 
-            bool tool_supports = true;
-            ItemProperties current_resources = gw()->selected_char().total_material_resources();
-            Item tool = gw()->game().inventory().get_item(gw()->selected_char().tool_id(Smithing));
-            Item::for_each_resource_type([&](ItemProperty, ItemProperty max_prop, ItemProperty resource_prop) {
-                int resource_ceiling = current_resources[resource_prop] + dropped_item.def()->properties[resource_prop];
-                int tool_max = tool.def()->properties[max_prop];
-                if (tool_max == 0) {
-                    tool_max = BASE_MAX_RESOURCE;
-                }
-
-                if (resource_ceiling > tool_max) {
-                    tool_supports = false;
-                }
-            });
-
-            if (tool_supports) {
-                event->acceptProposedAction();
-            }
+            event->acceptProposedAction();
 
             break;
         }
@@ -244,11 +227,9 @@ void PortraitSlot::insert_portrait_slot() {
     layout->addWidget(new PortraitSlot(), 3, 1);
 }
 
-void PortraitSlot::enterEvent(QEvent *) { }
-
-void PortraitSlot::mouseMoveEvent(QMouseEvent *) { }
-
-void PortraitSlot::mousePressEvent(QMouseEvent *) { }
+void PortraitSlot::enterEvent(QEvent *) {}
+void PortraitSlot::mouseMoveEvent(QMouseEvent *) {}
+void PortraitSlot::mousePressEvent(QMouseEvent *) {}
 
 void PortraitSlot::dropEvent(QDropEvent *event) {
     QString source_slot_name = event->mimeData()->text();

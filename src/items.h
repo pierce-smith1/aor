@@ -339,6 +339,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "<i>The doctor said doing a handshake would reconnect it, but I keep being refused.</i><br>",
         7 USES, Effect,
         {
+            { ItemLevel, 1 },
             { PersistentSpeedPenalty, 20 },
             { PersistentEnergyPenalty, 10 },
             { InjuryMining, 1 },
@@ -352,6 +353,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "<i>Is this what it means to be a \"Rockmuncher?\"</i><br>",
         5 USES, Effect,
         {
+            { ItemLevel, 1 },
             { PersistentSpeedPenalty, 20 },
             { PersistentSpiritPenalty, 10 },
         }
@@ -363,6 +365,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "<i>I feel like my soul no longer owns it, and I'm just watching myself stumble around.</i><br>",
         5 USES, Effect,
         {
+            { ItemLevel, 1 },
             { PersistentEnergyPenalty, 10 },
         }
     },
@@ -372,6 +375,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         "<i>I get the horrible feeling <b>everything is about to end...</b></i>",
         10 USES, Effect,
         {
+            { ItemLevel, 5 },
             { PersistentSpiritPenalty, 20 },
         }
     },
@@ -384,6 +388,13 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
             { ItemLevel, 3 },
             { ConsumableEnergyBoost, 50 }
         }
+    },
+    {
+        CT_OTHER | 1,
+        "welchian_rune", "Welchian Rune",
+        "<i> ??? </i>",
+        0 USES, Untradeable,
+        {}
     }
 };
 

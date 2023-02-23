@@ -66,7 +66,7 @@ template <typename... T> void bugcheck(FatalErrorType error, T... args) {
         "Your save file may be useful for debugging, so consider backing it up before you restart the game."
     );
     bugcheck.setInformativeText(QString(
-        "<b>%1</b><br><br> (%2)"
+        "<b>%1</b> (%2)"
     ).arg(bugcheck_error_string(error)).arg(format(args...)));
     bugcheck.exec();
     exit(error);

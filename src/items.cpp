@@ -201,6 +201,7 @@ QString Item::type_to_string(ItemType type) {
     if (type & Blessing) { string += "Blessing, "; }
     if (type & Artifact) { string += "Artifact, "; }
     if (type & Rune) { string += "Curse, "; }
+    if (type & Effect) { string += "Injury, "; }
 
     // Chop off the last comma and space
     return string.left(string.length() - 2);

@@ -8,6 +8,7 @@
 #include "explorerbutton.h"
 #include "die.h"
 #include "main.h"
+#include "about.h"
 
 LKGameWindow *LKGameWindow::the_game_window;
 
@@ -21,7 +22,8 @@ LKGameWindow::LKGameWindow()
     : m_item_tooltip(new Tooltip()),
       m_connection(),
       m_save_file(SAVE_FILE_NAME),
-      m_encyclopedia(new Encyclopedia)
+      m_encyclopedia(new Encyclopedia),
+      m_about_box(new AboutBox)
 {
     m_window.setupUi(this);
     m_event_log.setupUi(new QDialog(this));
@@ -67,6 +69,10 @@ LKGameWindow::LKGameWindow()
 
     connect(m_window.log_action, &QAction::triggered, [=]() {
         ((QWidget *) m_event_log.events_list->parent())->show();
+    });
+
+    connect(m_window.about_action, &QAction::triggered, [=]() {
+        m_about_box->show();
     });
 
     ItemSlot::insert_inventory_slots();

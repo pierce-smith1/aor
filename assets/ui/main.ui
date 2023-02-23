@@ -717,6 +717,8 @@
     </property>
     <addaction name="encyclopedia_action"/>
     <addaction name="log_action"/>
+    <addaction name="separator"/>
+    <addaction name="about_action"/>
    </widget>
    <addaction name="menuEncyclopedia"/>
   </widget>
@@ -738,11 +740,14 @@
     <string>Event Log</string>
    </property>
   </action>
+  <action name="about_action">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="../../images.qrc"/>
-  <include location="../../images.qrc"/>
-  <include location="../../../../images.qrc"/>
  </resources>
  <connections/>
 </ui>

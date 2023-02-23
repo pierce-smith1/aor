@@ -12,7 +12,6 @@
 #include <QMimeData>
 #include <QGraphicsOpacityEffect>
 
-#include "gamewindow.h"
 #include "tooltip.h"
 
 const static int INVALID_COORD = -1;
