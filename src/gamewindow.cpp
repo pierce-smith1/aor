@@ -342,8 +342,8 @@ void LKGameWindow::enter_multiwindow_mode() {
         window->setCentralWidget(widget);
         window->setMenuBar(new MenuBar(this));
         window->show();
-        window->setMinimumSize(QSize(window->size().width(), window->size().height())); // evil hack to prevent resizing
-        window->setMaximumSize(QSize(window->size().width(), window->size().height()));
+        //window->setMinimumSize(QSize(window->size().width(), window->size().height())); // evil hack to prevent resizing
+        //window->setMaximumSize(QSize(window->size().width(), window->size().height()));
 
         m_multiwindows.push_back(window);
     }

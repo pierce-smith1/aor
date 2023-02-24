@@ -83,26 +83,32 @@
       </property>
       <layout class="QGridLayout" name="gridLayout_11">
        <property name="leftMargin">
-        <number>0</number>
+        <number>6</number>
        </property>
        <property name="topMargin">
-        <number>0</number>
+        <number>6</number>
        </property>
        <property name="rightMargin">
-        <number>0</number>
+        <number>6</number>
        </property>
        <property name="bottomMargin">
-        <number>0</number>
+        <number>6</number>
        </property>
        <property name="spacing">
         <number>0</number>
        </property>
        <item row="1" column="0">
         <widget class="QGroupBox" name="inventory_widget">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimumSize">
           <size>
-           <width>900</width>
-           <height>500</height>
+           <width>0</width>
+           <height>0</height>
           </size>
          </property>
          <property name="maximumSize">
@@ -140,8 +146,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>880</width>
-               <height>454</height>
+               <width>937</width>
+               <height>400</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_7"/>
@@ -451,7 +457,7 @@
             </property>
             <property name="maximumSize">
              <size>
-              <width>70</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
             </property>
@@ -774,7 +780,7 @@
            <widget class="QGroupBox" name="crawling_box">
             <property name="minimumSize">
              <size>
-              <width>700</width>
+              <width>600</width>
               <height>0</height>
              </size>
             </property>
