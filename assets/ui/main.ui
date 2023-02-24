@@ -51,6 +51,18 @@
    <layout class="QGridLayout" name="gridLayout_2">
     <item row="1" column="0" rowspan="3" colspan="3">
      <widget class="QGroupBox" name="inventory_widget">
+      <property name="minimumSize">
+       <size>
+        <width>900</width>
+        <height>500</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>400</width>
+        <height>500</height>
+       </size>
+      </property>
       <property name="title">
        <string>Inventory</string>
       </property>
@@ -80,8 +92,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>905</width>
-            <height>408</height>
+            <width>880</width>
+            <height>454</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_7"/>
@@ -106,7 +118,7 @@
           <enum>QTabWidget::West</enum>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>2</number>
          </property>
          <property name="documentMode">
           <bool>false</bool>
@@ -398,7 +410,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox">
+        <widget class="QGroupBox" name="crawling_box">
          <property name="minimumSize">
           <size>
            <width>700</width>
@@ -436,9 +448,24 @@
       </layout>
      </widget>
     </item>
-    <item row="2" column="3">
+    <item row="1" column="3" rowspan="3">
      <widget class="QWidget" name="explorer_widget" native="true">
       <layout class="QGridLayout" name="explorer_layout">
+       <property name="leftMargin">
+        <number>6</number>
+       </property>
+       <property name="topMargin">
+        <number>6</number>
+       </property>
+       <property name="rightMargin">
+        <number>6</number>
+       </property>
+       <property name="bottomMargin">
+        <number>6</number>
+       </property>
+       <property name="spacing">
+        <number>0</number>
+       </property>
        <item row="2" column="0">
         <layout class="QGridLayout" name="gridLayout_5">
          <item row="2" column="0">
@@ -641,7 +668,7 @@
            <number>12</number>
           </property>
           <property name="verticalSpacing">
-           <number>6</number>
+           <number>0</number>
           </property>
           <item row="2" column="1">
            <widget class="QLabel" name="tribe_name_label">
@@ -699,6 +726,9 @@
              <property name="sizeConstraint">
               <enum>QLayout::SetDefaultConstraint</enum>
              </property>
+             <property name="leftMargin">
+              <number>6</number>
+             </property>
             </layout>
            </widget>
           </item>
@@ -717,7 +747,7 @@
           </sizepolicy>
          </property>
          <property name="title">
-          <string>Skills</string>
+          <string/>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout"/>
         </widget>
@@ -726,33 +756,6 @@
      </widget>
     </item>
    </layout>
-  </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1300</width>
-     <height>30</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="menuEncyclopedia">
-    <property name="title">
-     <string>Handbook</string>
-    </property>
-    <addaction name="encyclopedia_action"/>
-    <addaction name="log_action"/>
-    <addaction name="separator"/>
-    <addaction name="about_action"/>
-   </widget>
-   <widget class="QMenu" name="menuSettings">
-    <property name="title">
-     <string>Settings</string>
-    </property>
-    <addaction name="multiwindow_action"/>
-   </widget>
-   <addaction name="menuEncyclopedia"/>
-   <addaction name="menuSettings"/>
   </widget>
   <action name="encyclopedia_action">
    <property name="text">

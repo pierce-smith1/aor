@@ -65,12 +65,14 @@ public:
     const std::map<ItemDomain, QPushButton *> get_activity_buttons();
     const std::vector<ItemSlot *> &item_slots();
     const std::vector<ItemSlot *> item_slots(ItemDomain domain);
+    ItemSlot *get_slot(const QString &name);
 
     void save();
     void load();
     bool save_file_exists();
 
     void enter_multiwindow_mode();
+    void exit_multiwindow_mode();
 
 protected:
     void timerEvent(QTimerEvent *event) override;
@@ -92,8 +94,15 @@ private:
     int m_backup_timer_id;
     Ui::EventLog m_event_log;
     AboutBox *m_about_box;
+    std::vector<QMainWindow *> m_multiwindows;
 
     friend LKGameWindow *gw();
+    friend class MenuBar;
 };
 
 LKGameWindow *gw();
+
+class GameMultiWindow : public QMainWindow {
+protected:
+    void closeEvent(QCloseEvent *event) override;
+};

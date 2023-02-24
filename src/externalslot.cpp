@@ -55,7 +55,7 @@ void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
     }
 
     QString source_slot_name = event->mimeData()->text();
-    ItemSlot *source_slot = gw()->findChild<ItemSlot *>(source_slot_name);
+    ItemSlot *source_slot = gw()->get_slot(source_slot_name);
     Item dropped_item = source_slot->get_item();
     ItemType dropped_type = dropped_item.def()->type;
 
@@ -104,7 +104,7 @@ void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
 
 void ExternalSlot::dropEvent(QDropEvent *event) {
     QString source_slot_name = event->mimeData()->text();
-    ItemSlot *source_slot = gw()->findChild<ItemSlot *>(source_slot_name);
+    ItemSlot *source_slot = gw()->get_slot(source_slot_name);
 
     Item source_item = source_slot->get_item();
     Item this_item = get_item();
@@ -233,7 +233,7 @@ void PortraitSlot::mousePressEvent(QMouseEvent *) {}
 
 void PortraitSlot::dropEvent(QDropEvent *event) {
     QString source_slot_name = event->mimeData()->text();
-    ItemSlot *source_slot = gw()->findChild<ItemSlot *>(source_slot_name);
+    ItemSlot *source_slot = gw()->get_slot(source_slot_name);
     Item item = source_slot->get_item();
 
     if (source_slot->type() != Ordinary) {

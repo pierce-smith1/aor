@@ -10,6 +10,7 @@
 #include "die.h"
 #include "main.h"
 #include "about.h"
+#include "menu.h"
 
 LKGameWindow *LKGameWindow::the_game_window;
 
@@ -28,6 +29,8 @@ LKGameWindow::LKGameWindow()
 {
     m_window.setupUi(this);
     m_event_log.setupUi(new QDialog(this));
+
+    setMenuBar(new MenuBar(this));
 
     Game *new_game = Game::new_game();
     m_game = *new_game;
@@ -62,22 +65,6 @@ LKGameWindow::LKGameWindow()
     connect(m_window.trade_partner_combobox, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index) {
         m_selected_tribe_id = m_window.trade_partner_combobox->itemData(index).toLongLong(nullptr);
         refresh_ui();
-    });
-
-    connect(m_window.encyclopedia_action, &QAction::triggered, [=]() {
-        m_encyclopedia->show();
-    });
-
-    connect(m_window.log_action, &QAction::triggered, [=]() {
-        ((QWidget *) m_event_log.events_list->parent())->show();
-    });
-
-    connect(m_window.about_action, &QAction::triggered, [=]() {
-        m_about_box->show();
-    });
-
-    connect(m_window.multiwindow_action, &QAction::triggered, [=]() {
-        enter_multiwindow_mode();
     });
 
     ItemSlot::insert_inventory_slots();
@@ -273,6 +260,18 @@ const std::vector<ItemSlot *> &LKGameWindow::item_slots() {
     return m_slots;
 }
 
+ItemSlot *LKGameWindow::get_slot(const QString &name) {
+    auto result = std::find_if(begin(m_slots), end(m_slots), [&name](ItemSlot *slot) {
+        return slot->objectName() == name;
+    });
+
+    if (result == end(m_slots)) {
+        bugcheck(ItemSlotByNameLookupMiss, name);
+    }
+
+    return *result;
+}
+
 const std::vector<ItemSlot *> LKGameWindow::item_slots(ItemDomain domain) {
     std::vector<ItemSlot *> slots_of_type;
 
@@ -337,14 +336,35 @@ void LKGameWindow::enter_multiwindow_mode() {
     };
 
     for (QWidget *widget : widgets_to_split) {
-        QDialog *window = new QDialog();
-        QLayout *layout = new QVBoxLayout();
-        layout->addWidget(widget);
-        window->setLayout(layout);
+        GameMultiWindow *window = new GameMultiWindow();
+        window->setWindowTitle("Aegis of Rhodon");
+
+        window->setCentralWidget(widget);
+        window->setMenuBar(new MenuBar(this));
         window->show();
+        window->setMinimumSize(QSize(window->size().width(), window->size().height()));
+        window->setMaximumSize(QSize(window->size().width(), window->size().height()));
+
+        m_multiwindows.push_back(window);
     }
 
     hide();
+}
+
+void LKGameWindow::exit_multiwindow_mode() {
+    QGridLayout *central_layout = (QGridLayout *) m_window.centralwidget->layout();
+    central_layout->addWidget(m_multiwindows[0]->centralWidget(), 0, 0, 1, 4); // BRITTLE AS SHIT OH MAN
+    central_layout->addWidget(m_multiwindows[1]->centralWidget(), 1, 0, 3, 3); // These are pulled directly from ui_main.h
+    central_layout->addWidget(m_multiwindows[2]->centralWidget(), 2, 3, 1, 1);
+
+    for (QWidget *window : m_multiwindows) {
+        window->hide();
+        window->deleteLater();
+    }
+
+    m_multiwindows.clear();
+
+    show();
 }
 
 void LKGameWindow::timerEvent(QTimerEvent *event) {
@@ -364,10 +384,27 @@ void LKGameWindow::timerEvent(QTimerEvent *event) {
 }
 
 void LKGameWindow::closeEvent(QCloseEvent *event) {
-    save();
-    event->accept();
+    QMessageBox prompt;
+    prompt.setText("Are you sure you want to quit?");
+    prompt.setInformativeText("Your game will be saved.");
+    prompt.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+    prompt.setIcon(QMessageBox::Question);
+    if (prompt.exec() == QMessageBox::Yes) {
+        save();
+        event->accept();
+    } else {
+        event->ignore();
+    }
 }
 
 LKGameWindow *gw() {
     return LKGameWindow::the_game_window;
+}
+
+void GameMultiWindow::closeEvent(QCloseEvent *event) {
+    if (gw()->close()) {
+        QCoreApplication::quit();
+    } else {
+        event->ignore();
+    }
 }

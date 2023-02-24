@@ -28,6 +28,7 @@ QString bugcheck_error_string(FatalErrorType type) {
         case NoDescriptionForActionDomain: { return "NO_DESCRIPTION_FOR_ACTION_DOMAIN"; }
         case IncorrectHookPayload: { return "INCORRECT_HOOK_PAYLOAD"; }
         case CallForUnknownHookType: { return "CALL_FOR_UNKNOWN_HOOK_TYPE"; }
+        case ItemSlotByNameLookupMiss: { return "ITEM_SLOT_BY_NAME_LOOKUP_MISS"; }
     }
 
     return "TOTAL_RUIN";

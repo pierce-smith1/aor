@@ -163,7 +163,7 @@ void ItemSlot::dragEnterEvent(QDragEnterEvent *event) {
     }
 
     QString source_slot_name = event->mimeData()->text();
-    ItemSlot *source_slot = gw()->findChild<ItemSlot *>(source_slot_name);
+    ItemSlot *source_slot = gw()->get_slot(source_slot_name);
 
     if (source_slot->type() == Explorer) {
         return;
@@ -174,7 +174,7 @@ void ItemSlot::dragEnterEvent(QDragEnterEvent *event) {
 
 void ItemSlot::dropEvent(QDropEvent *event) {
     QString source_slot_name = event->mimeData()->text();
-    ItemSlot *source_slot = gw()->findChild<ItemSlot *>(source_slot_name);
+    ItemSlot *source_slot = gw()->get_slot(source_slot_name);
 
     if (source_slot->type() == Ordinary) {
         // Dragging between inventory slots swaps the items in each slot.

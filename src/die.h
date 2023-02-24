@@ -33,6 +33,7 @@ enum FatalErrorType {
     NoDescriptionForActionDomain,
     IncorrectHookPayload,
     CallForUnknownHookType,
+    ItemSlotByNameLookupMiss,
 };
 
 QString bugcheck_error_string(FatalErrorType type);

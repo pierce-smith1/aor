@@ -10,6 +10,7 @@ int main(int argc, char **argv) {
 #endif
 
     QApplication app(argc, argv);
+    app.setWindowIcon(QIcon(":/assets/img/items/welchian_rune.png"));
 
     app.setStyleSheet(
         "*[slot=\"true\"] { border: 1px solid #bbb; border-radius: 3px; background-color: white; }"
