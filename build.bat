@@ -17,6 +17,10 @@ for %%I in (%CD%\assets\img\icons\*.png) do (
 for %%I in (%CD%\assets\img\lk\*.png) do (
     echo ^<file^>assets/img/lk/%%~nxI^</file^> >> images.qrc
 )
+for %%I in (%CD%\assets\img\style\*.png) do (
+    echo ^<file^>assets/img/style/%%~nxI^</file^> >> images.qrc
+)
+
 echo ^</qresource^>^</RCC^> >> images.qrc
 
 qmake

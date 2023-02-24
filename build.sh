@@ -40,8 +40,12 @@ generate_qrc() {
         echo "<file>$frame</file>" >> .images.qrc
     done
 
-    for frame in assets/img/icons/*.png; do
-        echo "<file>$frame</file>" >> .images.qrc
+    for icon in assets/img/icons/*.png; do
+        echo "<file>$icon</file>" >> .images.qrc
+    done
+
+    for image in assets/img/style/*.png; do
+        echo "<file>$image</file>" >> .images.qrc
     done
 
     echo "</qresource></RCC>" >> .images.qrc
