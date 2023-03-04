@@ -10,6 +10,7 @@
 #include "generators.h"
 #include "io.h"
 #include "hooks.h"
+#include "map.h"
 
 const static int MAX_EXPLORERS = 11;
 
@@ -71,6 +72,7 @@ private:
     QString m_tribe_name;
     ItemHistory m_history;
     quint64 m_actions_done = 0;
+    WorldMap m_map;
 
     // Transient
     ForeignTribes m_tribes;

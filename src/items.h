@@ -13,6 +13,7 @@
 #include <QPixmap>
 
 #include "itemproperties.h"
+#include "itemmark.h"
 
 #define USES
 #define LEVEL
@@ -83,7 +84,7 @@ struct ItemDefinition {
 
 using ItemDefinitionPtr = std::vector<ItemDefinition>::const_iterator;
 
-const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
+const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_markers({
     {
         CT_EMPTY,
         "empty", "Empty",
@@ -164,9 +165,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
             { CostStone, 30 },
             { CostCrystalline, 10 },
             { ToolEnergyCost, 10 },
-            { ToolCanDiscover1, CT_CONSUMABLE | 2 },
-            { ToolCanDiscover2, CT_CONSUMABLE | 3 },
-            { ToolCanDiscover3, CT_CONSUMABLE | 4 },
+            { ToolCanDiscover1, ItemMark::marker("norton_ghost_pepper") },
+            { ToolCanDiscover2, ItemMark::marker("bleeding_wildheart") },
+            { ToolCanDiscover3, ItemMark::marker("pipeapple") },
             { ToolDiscoverWeight1, 3 },
             { ToolDiscoverWeight2, 3 },
             { ToolDiscoverWeight3, 1 },
@@ -183,9 +184,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
             { CostStone, 10 },
             { CostCrystalline, 30 },
             { ToolEnergyCost, 10 },
-            { ToolCanDiscover1, CT_MATERIAL | 2 },
-            { ToolCanDiscover2, CT_MATERIAL | 3 },
-            { ToolCanDiscover3, CT_MATERIAL | 4 },
+            { ToolCanDiscover1, ItemMark::marker("cobolt_bar") },
+            { ToolCanDiscover2, ItemMark::marker("scandiskium") },
+            { ToolCanDiscover3, ItemMark::marker("solid_slate") },
             { ToolDiscoverWeight1, 2 },
             { ToolDiscoverWeight2, 2 },
             { ToolDiscoverWeight3, 3 },
@@ -300,9 +301,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
             { ToolEnergyCost, 30 },
             { CostMetallic, 40 },
             { CostRuinc, 15 },
-            { ToolCanDiscover1, CT_ARTIFACT | 0 },
-            { ToolCanDiscover2, CT_ARTIFACT | 1 },
-            { ToolCanDiscover3, CT_MATERIAL | 5 },
+            { ToolCanDiscover1, ItemMark::marker("scalped_remains") },
+            { ToolCanDiscover2, ItemMark::marker("recovered_journal") },
+            { ToolCanDiscover3, ItemMark::marker("fireclay") },
             { ToolDiscoverWeight1, 1 },
             { ToolDiscoverWeight2, 1 },
             { ToolDiscoverWeight3, 1 },
@@ -396,7 +397,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = {
         0 USES, Untradeable,
         {}
     }
-};
+});
 
 struct Item {
     ItemCode code = 0;
