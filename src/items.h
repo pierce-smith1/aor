@@ -47,7 +47,7 @@ enum ItemDomain : ItemType {
     ForagingTool    = 1 << 3, Foraging = 1 << 3,
     MiningTool      = 1 << 4, Mining   = 1 << 4,
     Offering        = 1 << 5, Trading  = 1 << 5,
-    Blessing        = 1 << 6,
+    Skill           = 1 << 6,
     Artifact        = 1 << 7,
     Effect          = 1 << 8,
     Rune            = 1 << 9,
@@ -68,6 +68,7 @@ const static int CT_ARTIFACT = 1 << 11;
 const static int CT_EFFECT = 1 << 12;
 const static int CT_RUNE = 1 << 13;
 const static int CT_OTHER = 1 << 14;
+const static int CT_SKILL = 1 << 15;
 
 struct ItemDefinition {
     ItemCode code;
