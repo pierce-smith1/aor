@@ -251,6 +251,16 @@ const static std::vector<CheatCommand> COMMANDS = {
 
             game->game().actions_done() = actions;
         }
+    },
+    {
+        "noexhaust",
+        "If $0 is 0, turn off no exhaustion; otherwise turn it on",
+        1,
+        [](LKGameWindow *game, const QStringList &args) {
+            QS_TO_INT(noexhaust, args[0]);
+
+            game->game().no_exhaustion() = noexhaust;
+        }
     }
 };
 

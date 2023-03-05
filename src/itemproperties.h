@@ -20,6 +20,8 @@ enum ItemProperty : quint16 {
     PersistentSpeedPenalty,
     PersistentEnergyPenalty,
     PersistentSpiritPenalty,
+    PersistentRandomConsumableProducts,
+    PersistentDiscoveryNotRandom,
     InjurySmithing,
     InjuryForaging,
     InjuryMining,

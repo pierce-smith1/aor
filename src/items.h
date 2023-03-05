@@ -14,6 +14,7 @@
 
 #include "itemproperties.h"
 #include "itemmark.h"
+#include "id.h"
 
 #define USES
 #define LEVEL
@@ -28,10 +29,6 @@ const static int ARTIFACT_SLOTS = 3;
 const static int EFFECT_SLOTS = 4;
 
 using ItemCode = quint16;
-using ItemId = quint64;
-using CharacterId = quint16;
-using GameId = quint64;
-using ActivityId = quint64;
 
 const static ItemId EMPTY_ID = 0;
 const static ItemId INVALID_ID = 0xffffffffffffffff;
@@ -228,6 +225,47 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         }
     },
     {
+        CT_CONSUMABLE | 5,
+        "fungified_token", "Fungified Token",
+        "<i>It seems to be an ancient currency, overgrown with an intoxicating fungus.</i><br>"
+        "<i>Surely this would have made it useless. If only they had some sort of non-fungifiable token...</i><br>",
+        1 USES, Consumable,
+        {
+            { ItemLevel, 4 },
+            { LeafyResource, 10 },
+            { ConsumableEnergyBoost, 20 },
+            { ConsumableGivesEffect, ItemMark::marker("obsessive_checksum_disorder") }
+        }
+    },
+    {
+        CT_CONSUMABLE | 6,
+        "polymore", "Polymore",
+        "<i>Also known as \"curly bracket fungi\", it naturally lives on the bark of syntax trees;</i><br>"
+        "<i>However it loves to grow on paper, and it will even rearrange the words on the page to fit its modular organization scheme.</i><br>"
+        "<i>I wish it would go away.</i><br>",
+        1 USES, Consumable,
+        {
+            { ItemLevel, 4 },
+            { LeafyResource, 10 },
+            { RunicResource, 20 },
+            { ConsumableEnergyBoost, 20 },
+            { ConsumableGivesEffect, ItemMark::marker("dynamic_digestion") }
+        }
+    },
+    {
+        CT_CONSUMABLE | 7,
+        "copycap", "Copycap",
+        "<i>The roots of this fungus seem to grasp an object and form a complete copy of it elsewhere.</i><br>"
+        "<i>It will happily destroy whatever's in its way to complete this ritual.</i><br>",
+        1 USES, Consumable,
+        {
+            { ItemLevel, 4 },
+            { LeafyResource, 10 },
+            { RunicResource, 20 },
+            { ConsumableGivesEffect, ItemMark::marker("double_vision") }
+        }
+    },
+    {
         CT_MATERIAL | 5,
         "fireclay", "Fireclay",
         "<i>Careful examination of this clay reveals it is selectively permeable -</i><br>"
@@ -310,6 +348,26 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         }
     },
     {
+        CT_TOOL | 5,
+        "spacefiller", "Spacefiller",
+        "<i>The lightless crevices of Rhodon's damp caverns are filled with all sorts of odd fungi.</i><br>"
+        "<i>This mushroom-stabbing spear will help give us a taste of what we're missing!</i><br>",
+        5 USES, ForagingTool,
+        {
+            { ItemLevel, 3 },
+            { ToolEnergyCost, 50 },
+            { CostLeafy, 10 },
+            { CostMetallic, 30 },
+            { CostCrystalline, 30 },
+            { ToolCanDiscover1, ItemMark::marker("fungified_token") },
+            { ToolCanDiscover2, ItemMark::marker("polymore") },
+            { ToolCanDiscover3, ItemMark::marker("copycap") },
+            { ToolDiscoverWeight1, 1 },
+            { ToolDiscoverWeight2, 1 },
+            { ToolDiscoverWeight3, 1 }
+        }
+    },
+    {
         CT_ARTIFACT | 0,
         "recovered_journal", "Recovered Journal",
         "<i>It's in an odd language I can't quite read -</i><br>"
@@ -378,6 +436,39 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         {
             { ItemLevel, 5 },
             { PersistentSpiritPenalty, 20 },
+        }
+    },
+    {
+        CT_EFFECT | 4,
+        "obsessive_checksum_disorder", "Obsessive Checksum Disorder",
+        "<i>Did you touch this? Did you touch it??? DID YOU TOUCH IT?!?</i><br>",
+        5 USES, Effect,
+        {
+            { ItemLevel, 2 },
+            { PersistentEnergyPenalty, 20 },
+            { PersistentDiscoveryNotRandom, 1 }
+        }
+    },
+    {
+        CT_EFFECT | 5,
+        "dynamic_digestion", "Dynamic Digestion",
+        "<i>Damn, I'm starving. I could eat ANYTHING.</i><br>",
+        2 USES, Effect,
+        {
+            { ItemLevel, 2 },
+            { PersistentSpiritPenalty, 30 },
+            { PersistentEnergyPenalty, 10 },
+            { PersistentRandomConsumableProducts, 1 }
+        }
+    },
+    {
+        CT_EFFECT | 6,
+        "double_vision", "Double Vision",
+        "<i>I can see all 1.7976931348623157 × 10^308 meters of reality!</i><br>",
+        3 USES, Effect,
+        {
+            { ItemLevel, 2 },
+            { HeritageItemDoubleChance, 100 }
         }
     },
     {

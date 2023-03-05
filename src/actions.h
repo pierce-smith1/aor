@@ -59,6 +59,7 @@ private:
     void give(const std::vector<Item> &items);
     void give_bonuses();
     void give_injuries();
+    void clear_injuries();
 
     ActivityId m_id;
     ItemDomain m_action;

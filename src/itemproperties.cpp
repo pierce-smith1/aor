@@ -1,6 +1,7 @@
 #include "itemproperties.h"
 #include "items.h"
 #include "character.h"
+#include "choicedialog.h"
 
 #define HOOK_0 [](const HookPayload &, quint16 prop_value) {}
 
@@ -113,6 +114,52 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
                 *spirit_gain -= prop_value;
             }}}
         }},
+        { PersistentRandomConsumableProducts, {
+            "Whenever I eat a consumable, it is <b>replaced with a random item of the same level.</b>",
+            {{ HookDecideProducts, HOOK_2(std::vector<WeightedVector<Item>>, discoverables, Character, character)
+                if (character->activity().action() != Eating) {
+                    return;
+                }
+
+                for (const Item &consumable : character->activity().owned_items()) {
+                    quint16 level = consumable.def()->properties[ItemLevel];
+
+                    if (level == 0) {
+                        return;
+                    }
+
+                    std::vector<ItemDefinition> defs_of_level;
+                    auto defs_inserter = std::inserter(defs_of_level, defs_of_level.end());
+                    std::copy_if(ITEM_DEFINITIONS.begin(), ITEM_DEFINITIONS.end(), defs_inserter, [&](const ItemDefinition &def) {
+                        return def.properties[ItemLevel] == level && (def.type & (Consumable | Material | Tool | Artifact));
+                    });
+
+                    std::vector<Item> items_of_level;
+                    auto items_inserter = std::inserter(items_of_level, items_of_level.end());
+                    std::transform(defs_of_level.begin(), defs_of_level.end(), items_inserter, [&](const ItemDefinition &def) {
+                        return Item(def);
+                    });
+
+                    discoverables->push_back(Generators::with_trivial_weights(items_of_level));
+                }
+            }}}
+        }},
+        { PersistentDiscoveryNotRandom, {
+            "<b>I decide what items I recieve from my actions</b>.",
+            {{ HookPostDecideProducts, HOOK_2(std::vector<WeightedVector<Item>>, discoverables, Character, character)
+                for (WeightedVector<Item> &choices : *discoverables) {
+                    if (choices.size() < 2) {
+                        continue;
+                    }
+
+                    ChoiceDialog choice_dialog(choices);
+
+                    auto choice = choices[choice_dialog.exec()];
+                    choices.clear();
+                    choices.push_back(choice);
+                }
+            }}}
+        }},
         { HeritageMaxEnergyBoost, {
             "I have <b>+%1 max energy</b>.",
             {{ HookCalcMaxEnergy, HOOK_1(qint32, energy_gain)
@@ -159,6 +206,12 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
             "I have a <b>%1% chance</b> to <b>double</b> items recieved from actions.",
             {{ HookCalcItemDoubleChance, HOOK_1(qint32, item_double_chance)
                 *item_double_chance += prop_value;
+            }}}
+        }},
+        { ConsumableGivesEffect, {
+            "<b>This doesn't look very good for me...</b>",
+            {{ HookPostEat, HOOK_1(Character, character)
+                character->push_effect(Item(prop_value));
             }}}
         }},
     };

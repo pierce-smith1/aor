@@ -101,8 +101,10 @@ QString CharacterActivity::domain_to_action_string(ItemDomain domain) {
         case Trading: { return "Trading"; }
         case Defiling: { return "Defiling"; }
         case Coupling: { return "Coupling"; }
-        default: { bugcheck(NoStringForActionDomain, domain); return ""; }
+        default: { bugcheck(NoStringForActionDomain, domain); }
     }
+
+    return "";
 }
 
 Character &CharacterActivity::character() {
@@ -138,8 +140,9 @@ void CharacterActivity::complete() {
         items.insert(end(items), begin(items_copy), end(items_copy));
     }
 
-    exhaust_reagents();
     give(items);
+    exhaust_reagents();
+    clear_injuries();
 
     gw()->game().actions_done()++;
 
@@ -161,12 +164,14 @@ void CharacterActivity::complete() {
 }
 
 std::vector<Item> CharacterActivity::products() {
+    std::vector<WeightedVector<Item>> discoverable_set;
+
     switch (m_action) {
         case Smithing: {
             ItemCode smithing_result = character().smithing_result();
 
             if (smithing_result == 0) {
-                return {};
+                break;
             }
 
             Item result = Item(smithing_result);
@@ -175,7 +180,8 @@ std::vector<Item> CharacterActivity::products() {
             character().call_hooks(HookCalcBonusProductUse, { &use_bonus });
             result.uses_left += use_bonus;
 
-            return { result };
+            discoverable_set.push_back({{ result, 1.0 }});
+            break;
         }
         case Foraging:
         case Mining: {
@@ -184,30 +190,34 @@ std::vector<Item> CharacterActivity::products() {
 
             if (tool.id == EMPTY_ID) {
                 if (m_action == Foraging) {
-                    return { Item(Generators::sample_with_weights<ItemCode>({ { CT_CONSUMABLE | 0, 1 }, { CT_CONSUMABLE | 1, 1 } })) };
+                    discoverable_set.push_back({{ Item("globfruit"), 1.0 }, { Item("byteberry"), 1.0 }});
                 } else if (m_action == Mining) {
-                    return { Item(Generators::sample_with_weights<ItemCode>({ { CT_MATERIAL | 0, 1 }, { CT_MATERIAL | 1, 1 } })) };
+                    discoverable_set.push_back({{ Item("oolite"), 1.0 }, { Item("obsilicon"), 1.0 }});
                 }
+                break;
             }
 
-            std::vector<std::pair<ItemCode, double>> weighted_discoverables;
+            WeightedVector<Item> possible_items;
+
             Item::for_each_tool_discover([&](ItemProperty product_prop, ItemProperty weight_prop) {
-                if (product_prop != 0) {
-                    weighted_discoverables.push_back({ tool_props[product_prop], tool_props[weight_prop] });
+                if (tool_props[weight_prop] != 0) {
+                    possible_items.push_back({ Item(tool_props[product_prop]), tool_props[weight_prop] });
                 }
             });
 
-            std::vector<Item> final_items = { Item(Generators::sample_with_weights<ItemCode>(weighted_discoverables)) };
+            discoverable_set.push_back(possible_items);
 
             if (m_action == Foraging && Generators::percent_chance(character().egg_find_percent_chance())) {
-                final_items.push_back(Item::make_egg());
+                discoverable_set.push_back({{ Item::make_egg(), 1.0 }});
             }
 
-            return final_items;
+            break;
         }
-        case Eating:
+        case Eating: {
+            break;
+        }
         case Defiling: {
-            return {};
+            break;
         }
         case Coupling: {
             auto &characters = gw()->game().characters();
@@ -216,31 +226,45 @@ std::vector<Item> CharacterActivity::products() {
             // To avoid making two eggs, the first one that finishes their
             // coupling action resets their partner's partner member.
             // (That happens later in this very function.)
-            // Here, we check to see if our partner has already made an egg.
+            // Here, we check to see if our partner has already made an egg
+            // and break if so.
             auto partner = std::find_if(begin(characters), end(characters), [&](Character &other) {
                 return other.partner() == character().id();
             });
 
             if (partner == end(characters)) {
-                return {};
+                break;
             }
 
-            std::vector<Item> egg = { Item::make_egg(m_char_id, partner->id()) };
+            discoverable_set.push_back({{ Item::make_egg(m_char_id, partner->id()), 1.0 }});
 
             partner->partner() = NOBODY;
             character().partner() = NOBODY;
 
-            return egg;
+            break;
         }
         case Trading: {
-            auto &offer = gw()->game().accepted_offer();
-            return std::vector(begin(offer), end(offer));
+            for (const Item &item : gw()->game().accepted_offer()) {
+                discoverable_set.push_back({{ item, 1.0 }});
+            }
+            break;
         }
         default: {
             bugcheck(ProductsForUnknownDomain, m_char_id, m_action);
             return {};
         }
     }
+
+    character().call_hooks(HookDecideProducts, { &discoverable_set, &character() });
+    character().call_hooks(HookPostDecideProducts, { &discoverable_set, &character() });
+
+    std::vector<Item> final_items;
+
+    for (const WeightedVector<Item> &weighted_discoverables : discoverable_set) {
+        final_items.push_back(Generators::sample_with_weights<Item>(weighted_discoverables));
+    }
+
+    return final_items;
 }
 
 void CharacterActivity::exhaust_reagents() {
@@ -279,9 +303,7 @@ void CharacterActivity::exhaust_character() {
             effect.uses_left -= 1;
         }
 
-        if (effect.uses_left == 0) {
-            effect = Item();
-        }
+        // We do NOT clear the effect here, since we may need it later
     }
 
     if (character().energy() == 0) {
@@ -332,29 +354,7 @@ void CharacterActivity::exhaust_item(ItemId id) {
 
 void CharacterActivity::give(const std::vector<Item> &items) {
     for (const Item &item : items) {
-        if (!gw()->game().add_item(item)) {
-            gw()->notify(Warning, QString("%1 discovered %3 %2, but the inventory was too full to accept it!")
-                .arg(gw()->game().character(m_char_id).name())
-                .arg(item.def()->display_name)
-                .arg(item.def()->display_name.toCaseFolded().startsWith('a')
-                    || item.def()->display_name.toCaseFolded().startsWith('e')
-                    || item.def()->display_name.toCaseFolded().startsWith('i')
-                    || item.def()->display_name.toCaseFolded().startsWith('o')
-                    || item.def()->display_name.toCaseFolded().startsWith('u') ? "an" : "a"
-                )
-            );
-        } else {
-            gw()->notify(Discovery, QString("%1 discovered %3 %2!")
-                .arg(gw()->game().character(m_char_id).name())
-                .arg(item.def()->display_name)
-                .arg(item.def()->display_name.toCaseFolded().startsWith('a')
-                    || item.def()->display_name.toCaseFolded().startsWith('e')
-                    || item.def()->display_name.toCaseFolded().startsWith('i')
-                    || item.def()->display_name.toCaseFolded().startsWith('o')
-                    || item.def()->display_name.toCaseFolded().startsWith('u') ? "an" : "a"
-                )
-            );
-        }
+        character().discover(item);
     }
 }
 
@@ -411,7 +411,16 @@ void CharacterActivity::give_injuries() {
         return;
     }
 
-    character().push_effect(Item(Generators::sample_with_weights(possible_weighted_injuries)));
+    Item final_effect = Item(Generators::sample_with_weights(possible_weighted_injuries));
+    character().push_effect(final_effect);
+}
+
+void CharacterActivity::clear_injuries() {
+    for (Item &effect : character().effects()) {
+        if (effect.uses_left == 0) {
+            effect = Item();
+        }
+    }
 }
 
 void CharacterActivity::serialize(QIODevice *dev) const {

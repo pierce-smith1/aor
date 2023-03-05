@@ -189,6 +189,10 @@ bool Character::can_perform_action(ItemDomain domain) {
 }
 
 int Character::energy_to_gain() {
+    if (gw()->game().no_exhaustion()) {
+        return 0;
+    }
+
     CharacterActivity &activity = m_activities.front();
     qint32 gain = 0;
 
@@ -212,6 +216,10 @@ int Character::energy_to_gain() {
 }
 
 int Character::spirit_to_gain() {
+    if (gw()->game().no_exhaustion()) {
+        return 0;
+    }
+
     CharacterActivity &activity = m_activities.front();
     qint32 gain = 0;
 
@@ -359,6 +367,34 @@ bool Character::push_effect(const Item &effect) {
     }
 
     return false;
+}
+
+bool Character::discover(const Item &item) {
+    if (!gw()->game().add_item(item)) {
+        gw()->notify(Warning, QString("%1 discovered %3 %2, but the inventory was too full to accept it!")
+            .arg(name())
+            .arg(item.def()->display_name)
+            .arg(item.def()->display_name.toCaseFolded().startsWith('a')
+                || item.def()->display_name.toCaseFolded().startsWith('e')
+                || item.def()->display_name.toCaseFolded().startsWith('i')
+                || item.def()->display_name.toCaseFolded().startsWith('o')
+                || item.def()->display_name.toCaseFolded().startsWith('u') ? "an" : "a"
+            )
+        );
+        return false;
+    } else {
+        gw()->notify(Discovery, QString("%1 discovered %3 %2!")
+            .arg(name())
+            .arg(item.def()->display_name)
+            .arg(item.def()->display_name.toCaseFolded().startsWith('a')
+                || item.def()->display_name.toCaseFolded().startsWith('e')
+                || item.def()->display_name.toCaseFolded().startsWith('i')
+                || item.def()->display_name.toCaseFolded().startsWith('o')
+                || item.def()->display_name.toCaseFolded().startsWith('u') ? "an" : "a"
+            )
+        );
+        return true;
+    }
 }
 
 void Character::call_hooks(HookType type, const HookPayload &payload, quint16 int_domain, const std::vector<Item> &extra_items) {

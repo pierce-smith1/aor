@@ -6,6 +6,10 @@
 
 #include "die.h"
 
+// WARNING: verbatim from generators.h, which we can't directly include
+template <typename T> using WeightedVector = std::vector<std::pair<T, double>>;
+
+class Item;
 class Character;
 
 using HookPayload = std::array<std::variant<
@@ -17,6 +21,7 @@ using HookPayload = std::array<std::variant<
     quint16 *,
     qint16 *,
     QString *,
+    std::vector<WeightedVector<Item>> *,
     Character *>, 4>;
 using Hook = std::function<void(const HookPayload &, quint16, quint16)>;
 
@@ -42,4 +47,6 @@ enum HookType : quint16 {
     HookCalcItemDoubleChance,
     HookCalcBonusProductUse,
     HookCalcInjuryChance,
+    HookDecideProducts,
+    HookPostDecideProducts,
 };

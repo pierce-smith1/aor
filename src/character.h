@@ -68,6 +68,7 @@ public:
 
     bool clear_last_effect();
     bool push_effect(const Item &effect);
+    bool discover(const Item &item);
 
     void call_hooks(HookType type, const HookPayload &payload, quint16 int_domain = BASE_HOOK_DOMAINS, const std::vector<Item> &extra_items = {});
 

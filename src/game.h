@@ -43,6 +43,7 @@ public:
     ItemHistory &history();
     quint64 &actions_done();
     bool &fast_actions();
+    bool &no_exhaustion();
 
     bool add_character(const QString &name, const std::multiset<Color> &heritage);
     bool add_item(const Item &item);
@@ -77,4 +78,5 @@ private:
     // Transient
     ForeignTribes m_tribes;
     bool m_fast_actions = false;
+    bool m_no_exhaustion = false;
 };

@@ -3,10 +3,11 @@
 #include <map>
 #include <vector>
 #include <cmath>
+#include <set>
 
 #include <QColor>
 
-#include "items.h"
+#include "itemproperties.h"
 
 const static int CHERRY_ENERGY_MULTIPLIER = 20;
 const static int BLUERASPBERRY_spirit_MULTIPLIER = 20;

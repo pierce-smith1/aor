@@ -53,6 +53,10 @@ bool &Game::fast_actions() {
     return m_fast_actions;
 }
 
+bool &Game::no_exhaustion() {
+    return m_no_exhaustion;
+}
+
 bool Game::add_character(const QString &name, const std::multiset<Color> &heritage) {
     int max = 0;
     while (m_explorers[max].id() != NOBODY && max < MAX_EXPLORERS) {
