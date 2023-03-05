@@ -325,6 +325,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
             { CostMetallic, 10 },
             { CostCrystalline, 30 },
             { ToolMaximumMetallic, 80 },
+            { ToolMaximumCrystalline, 30 },
             { ToolMaximumRunic, 20 },
         }
     },
