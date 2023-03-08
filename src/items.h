@@ -222,6 +222,8 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         {
             { ItemLevel, 3 },
             { LeafyResource, 20 },
+            { ConsumableEnergyBoost, 20 },
+            { ConsumableSpiritBoost, 20 },
             { ConsumableMakesCouplable, 1 }
         }
     },

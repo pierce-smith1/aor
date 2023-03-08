@@ -15,4 +15,4 @@ void SkillSlot::refresh_pixmap() {
 }
 
 void SkillSlot::dragEnterEvent(QDragEnterEvent *) {}
-void SkillSlot::dropEvent(QDropEvent *) {};
+void SkillSlot::dropEvent(QDropEvent *) {}
