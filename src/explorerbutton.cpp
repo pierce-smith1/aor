@@ -119,7 +119,7 @@ void ExplorerButton::dragEnterEvent(QDragEnterEvent *event) {
     }
 
     QString source_slot_name = event->mimeData()->text();
-    ItemSlot *source_slot = gw()->findChild<ItemSlot *>(source_slot_name);
+    ItemSlot *source_slot = gw()->get_slot(source_slot_name);
 
     if (character.dead() && source_slot != this) {
         return;
@@ -142,7 +142,7 @@ void ExplorerButton::dragEnterEvent(QDragEnterEvent *event) {
 
 void ExplorerButton::dropEvent(QDropEvent *event) {
     QString source_slot_name = event->mimeData()->text();
-    ExplorerButton *source_button = gw()->findChild<ExplorerButton *>(source_slot_name);
+    ExplorerButton *source_button = (ExplorerButton *) gw()->get_slot(source_slot_name);
 
     if (source_button == this) {
         mouseReleaseEvent(nullptr);
