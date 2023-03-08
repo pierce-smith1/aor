@@ -15,9 +15,7 @@ ItemSlot::ItemSlot()
     setMouseTracking(true);
     setAcceptDrops(true);
 
-#ifdef _WIN32
     setProperty("slot", true);
-#endif
 
     QGridLayout *layout = new QGridLayout(this);
     layout->setSpacing(0);
