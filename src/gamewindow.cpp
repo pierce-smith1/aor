@@ -229,6 +229,12 @@ void LKGameWindow::refresh_trade_ui() {
     window().trade_arrow_label->setPixmap(QPixmap(":/assets/img/icons/arrows_disabled.png"));
     window().trade_notification_label->setText("");
 
+    if (!m_connection.is_connected()) {
+        window().trade_notification_label->setText("No connection to trade server - try restarting the game");
+    } else if (m_game.tribes().size() == 1) { // Not == 0, since there's always a Nobody tribe
+        window().trade_notification_label->setText("There's no one else to trade with.");
+    }
+
     for (Character &character : game().characters()) {
         if (character.activity().action() == Trading) {
             window().trade_arrow_label->setPixmap(QPixmap(":/assets/img/icons/arrows.png"));

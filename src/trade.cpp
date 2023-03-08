@@ -8,15 +8,17 @@ DoughbyteConnection::DoughbyteConnection()
     QObject::connect(&m_socket, &QTcpSocket::connected, [=]() {
         IO::write_long(&m_socket, gw()->game().game_id());
         IO::write_string(&m_socket, gw()->game().tribe_name());
+
         availability_changed(true);
         want_game_state();
-        qDebug("trade server connected");
+
         m_is_connected = true;
+        gw()->refresh_trade_ui();
     });
 
     QObject::connect(&m_socket, &QTcpSocket::disconnected, [=]() {
-        gw()->notify(Warning, "Connection to the trade server was lost - trading will no longer be available.");
         m_is_connected = false;
+        gw()->refresh_trade_ui();
     });
 
     QObject::connect(&m_socket, &QTcpSocket::readyRead, [=]() {
@@ -161,9 +163,11 @@ void DoughbyteConnection::update_availability(GameId tribe_id, const QString &tr
         partner_box->insertItem(0, tribe_name, QVariant::fromValue(tribe_id));
     } else if (!available && index != -1) {
         partner_box->removeItem(index);
+        gw()->game().tribes().erase(tribe_id);
     }
 
     gw()->refresh_ui_buttons();
+    gw()->refresh_trade_ui();
 }
 
 void DoughbyteConnection::update_all() {
