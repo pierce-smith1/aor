@@ -73,6 +73,10 @@ void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
             break;
         }
         case Portrait: {
+            if (dropped_type & Tool) {
+                break;
+            }
+
             event->acceptProposedAction();
             break;
         }
@@ -82,7 +86,6 @@ void ExternalSlot::dragEnterEvent(QDragEnterEvent *event) {
             }
 
             event->acceptProposedAction();
-
             break;
         }
         case SmithingTool:
