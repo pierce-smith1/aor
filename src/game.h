@@ -68,7 +68,7 @@ private:
     Offer m_trade_offer {};
     bool m_accepting_trade = false;
     RemoteOffer m_accepted_offer {};
-    GameId m_trade_partner = NOBODY;
+    GameId m_trade_partner = NO_TRIBE;
     GameId m_game_id;
     QString m_tribe_name;
     ItemHistory m_history;

@@ -10,7 +10,7 @@
 
 #include "colors.h"
 #include "die.h"
-#include "id.h"
+#include "types.h"
 
 class Character;
 

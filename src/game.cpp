@@ -322,7 +322,7 @@ Game *Game::deserialize(QIODevice *dev) {
         g->m_history.insert(IO::read_short(dev));
     }
 
-    g->m_tribes[NOBODY];
+    g->m_tribes[NO_TRIBE];
     return g;
 }
 
@@ -331,7 +331,7 @@ Game *Game::new_game() {
 
     g->add_character(Generators::yokin_name(), { Generators::color() });
 
-    g->m_tribes[NOBODY];
+    g->m_tribes[NO_TRIBE];
 
     return g;
 }

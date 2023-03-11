@@ -14,39 +14,52 @@
 
 #include "tooltip.h"
 
-const static int INVALID_COORD = -1;
+using PayloadVariant = std::variant<
+    std::monostate,
+    ItemId,
+    CharacterId,
+    ActivityId
+>;
+
+const static char PV_EMPTY = 'n';
+const static char PV_ITEM = 'i';
+const static char PV_CHARACTER = 'c';
+const static char PV_ACTIVITY = 'a';
+
+struct DropPayload : public PayloadVariant {
+    DropPayload(const PayloadVariant &data, ItemSlot *source);
+
+    // We can only put known MIME types into QDrag objects, so since I don't
+    // feel like doing the ritual to register this as a meta type, we just
+    // awkwardly serialize it to a string...
+    QString to_string() const;
+    static DropPayload from_string(const QString &string);
+
+    ItemSlot *source;
+};
 
 class ItemSlot : public Hoverable<QFrame> {
-    Q_OBJECT
-
 public:
     ItemSlot();
-    ItemSlot(int y, int x);
 
-    virtual Item get_item();
-    virtual void set_item(const Item &item);
-    virtual ItemDomain type();
-    virtual void refresh_pixmap();
-    void drop_external_item();
-
-    static void insert_inventory_slots();
-    static void insert_inventory_slot(unsigned y, unsigned x);
-    static QString make_internal_name(const QString &base, int y, int x);
-
-    int y;
-    int x;
+    virtual void refresh();
+    virtual QPixmap pixmap();
+    virtual bool will_accept_drop(const DropPayload &payload);
+    virtual void accept_drop(const DropPayload &payload);
+    virtual void after_dropped_elsewhere(const DropPayload &response_payload);
+    virtual void on_left_click(QMouseEvent *event);
+    virtual void on_right_click(QMouseEvent *event);
+    virtual DropPayload get_payload();
+    virtual void install(LKGameWindow *game_window);
 
 protected:
-    virtual bool do_hovering() override;
-    virtual std::optional<Item> tooltip_item() override;
-
-    virtual void mousePressEvent(QMouseEvent *event) override;
-    virtual void dragEnterEvent(QDragEnterEvent *event) override;
-    virtual void dropEvent(QDropEvent *event) override;
-
     QLabel *m_item_label;
     QGridLayout *m_item_layout;
+    QGraphicsOpacityEffect *m_opacity_effect;
 
 private:
-    QGraphicsOpacityEffect *m_opacity_effect;
+    void mousePressEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
+    void dragEnterEvent(QDragEnterEvent *event);
+    void dropEvent(QDropEvent *event);
 };

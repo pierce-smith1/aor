@@ -124,7 +124,7 @@ void CharacterActivity::complete() {
             gw()->connection().offer_changed(Item(), i);
         }
         gw()->game().accepting_trade() = false;
-        gw()->game().trade_partner() = NOBODY;
+        gw()->game().trade_partner() = NO_TRIBE;
     }
 
     exhaust_character();

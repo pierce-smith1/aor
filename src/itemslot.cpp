@@ -1,11 +1,49 @@
 #include "itemslot.h"
 #include "items.h"
-#include "qnamespace.h"
+
+DropPayload::DropPayload(const PayloadVariant &data, ItemSlot *source)
+    : PayloadVariant(data), source(source) {}
+
+QString DropPayload::to_string() const {
+    QString string = QString("%1;%2;%3").arg((uintptr_t) source);
+
+    if (std::holds_alternative<std::monostate>(*this)) {
+        return string.arg(PV_EMPTY).arg("");
+    } else if (std::holds_alternative<ItemId>(*this)) {
+        return string.arg(PV_ITEM).arg(std::get<ItemId>(*this));
+    } else if (std::holds_alternative<CharacterId>(*this)) {
+        return string.arg(PV_CHARACTER).arg(std::get<CharacterId>(*this));
+    } else {
+        bugcheck(NonExhaustivePayloadSerialization, *this);
+        return "";
+    }
+}
+
+DropPayload DropPayload::from_string(const QString &string) {
+    QStringList chunks = string.split(";");
+
+    // oh man oh no
+    ItemSlot *source = reinterpret_cast<ItemSlot *>(chunks[0].toULongLong());
+
+    PayloadVariant data;
+    switch (chunks[1][0].toLatin1()) {
+        case PV_EMPTY: {
+            data = std::monostate();
+            break;
+        }
+        case PV_ITEM:
+        case PV_CHARACTER:
+        case PV_ACTIVITY: {
+            data = ItemId(chunks[2].toULongLong());
+            break;
+        }
+    }
+
+    return DropPayload(data, source);
+}
 
 ItemSlot::ItemSlot()
     : Hoverable<QFrame>(gw()->tooltip(), gw()),
-      y(INVALID_COORD),
-      x(INVALID_COORD),
       m_opacity_effect(new QGraphicsOpacityEffect(this))
 {
     setMinimumSize(QSize(56, 56));
@@ -15,7 +53,7 @@ ItemSlot::ItemSlot()
     setMouseTracking(true);
     setAcceptDrops(true);
 
-    setProperty("slot", true);
+    setProperty("slot", true); // So that we can reference these widgets in a stylesheet.
 
     QGridLayout *layout = new QGridLayout(this);
     layout->setSpacing(0);
@@ -32,138 +70,52 @@ ItemSlot::ItemSlot()
 
     m_opacity_effect->setOpacity(1.0);
     m_item_label->setGraphicsEffect(m_opacity_effect);
-}
-
-ItemSlot::ItemSlot(int y, int x)
-    : ItemSlot()
-{
-    setObjectName(make_internal_name("inventory_slot", y, x));
-    m_item_layout->setObjectName(make_internal_name("inventory_layout", y, x));
-    m_item_label->setObjectName(make_internal_name("inventory_label", y, x));
 
     gw()->register_slot(this);
-
-    this->y = y;
-    this->x = x;
 }
 
-Item ItemSlot::get_item() {
-    return gw()->game().inventory().get_item(y, x);
-}
-
-void ItemSlot::set_item(const Item &item) {
-    gw()->game().inventory().put_item(item, y, x);
-}
-
-ItemDomain ItemSlot::type() {
-    return Ordinary;
-}
-
-void ItemSlot::refresh_pixmap() {
-    Item item = get_item();
-    m_item_label->setPixmap(Item::pixmap_of(item));
-
-    if (item.intent != None && type() == Ordinary) {
-        m_opacity_effect->setOpacity(0.5);
-    } else {
-        m_opacity_effect->setOpacity(1.0);
-    }
-}
-
-void ItemSlot::drop_external_item() {
-    Item item_to_drop = get_item();
-    if (item_to_drop.id == EMPTY_ID) {
-        return;
-    }
-
-    ItemId external_item_id = get_item().id;
-    gw()->game().inventory().get_item_ref(external_item_id).intent = None;
-    set_item(Item());
-
-    // Hacky: if we dropped a smithing tool, unslot all of the active materials,
-    // because we may no longer be able to support them without the tool's power.
-    if (item_to_drop.def()->type & SmithingTool) {
-        for (ItemSlot *slot : gw()->item_slots(Material)) {
-            if (slot->get_item().id != EMPTY_ID) {
-                gw()->game().inventory().get_item_ref(slot->get_item().id).intent = None;
-                slot->set_item(Item());
-            }
-        }
-    }
-
-    refresh_pixmap();
-    gw()->refresh_ui();
-}
-
-void ItemSlot::insert_inventory_slots() {
-    for (unsigned x = 0; x < INVENTORY_COLS; x++) {
-        for (unsigned y = 0; y < INVENTORY_ROWS; y++) {
-            insert_inventory_slot(y, x);
-        }
-    }
-}
-
-void ItemSlot::insert_inventory_slot(unsigned y, unsigned x) {
-    QGridLayout *inventory_grid = dynamic_cast<QGridLayout*>(gw()->window().inventory_slots->layout());
-    inventory_grid->addWidget(new ItemSlot(y, x), y, x);
-}
-
-QString ItemSlot::make_internal_name(const QString &base, int y, int x) {
-    return QString("%1;%2:%3").arg(base).arg(y).arg(x);
-}
-
-bool ItemSlot::do_hovering() {
-    return get_item().id != EMPTY_ID;
-}
-
-std::optional<Item> ItemSlot::tooltip_item() {
-    return std::optional<Item>(get_item());
-}
+void ItemSlot::refresh() { m_item_label->setPixmap(pixmap()); }
+QPixmap ItemSlot::pixmap() { return Item::pixmap_of(Item()); }
+bool ItemSlot::will_accept_drop(const DropPayload &) { return false; }
+void ItemSlot::accept_drop(const DropPayload &) {}
+void ItemSlot::after_dropped_elsewhere(const DropPayload &) {}
+void ItemSlot::on_left_click(QMouseEvent *) {}
+void ItemSlot::on_right_click(QMouseEvent *) {}
+DropPayload ItemSlot::get_payload() { return DropPayload(std::monostate(), this); }
+void ItemSlot::install(LKGameWindow *) { bugcheck(UnimplementedSlotInstall, typeid(this).name()); }
 
 void ItemSlot::mousePressEvent(QMouseEvent *event) {
-    Item item = get_item();
-
-    if (item.id == EMPTY_ID) {
-        return;
-    }
-
-    bool is_inventory_slot = type() == Ordinary;
-    bool item_being_used = get_item().intent != None;
-    bool is_current_activity_unrelated = type() != gw()->selected_char().activity().action();
-
-    if (event->button() == Qt::RightButton
-        && !is_inventory_slot
-        && is_current_activity_unrelated
-    ) {
-        drop_external_item();
-        return;
-    }
-
-    if (event->button() == Qt::LeftButton
-        && (!item_being_used || (!is_inventory_slot && !gw()->selected_char().activity().ongoing()))
-        && !gw()->selected_char().dead()
-    ) {
+    if (event->button() == Qt::LeftButton) {
         QDrag *drag = new QDrag(this);
         QMimeData *data = new QMimeData;
+        DropPayload payload = get_payload();
 
-        data->setText(objectName());
+        data->setText(payload.to_string());
         drag->setMimeData(data);
-        drag->setPixmap(Item::pixmap_of(item));
+
+        if (std::holds_alternative<ItemId>(payload)) {
+            drag->setPixmap(Item::pixmap_of(gw()->game().inventory().get_item(std::get<ItemId>(payload))));
+        }
 
         drag->exec();
     }
 }
 
-void ItemSlot::dragEnterEvent(QDragEnterEvent *event) {
-    const QMimeData *data = event->mimeData();
-    if (!data->hasFormat("text/plain")) {
-        return;
+void ItemSlot::mouseReleaseEvent(QMouseEvent *event) {
+    if (event->button() == Qt::RightButton) {
+        on_right_click(event);
     }
 
-    QString source_slot_name = event->mimeData()->text();
-    ItemSlot *source_slot = gw()->get_slot(source_slot_name);
+    if (event->button() == Qt::LeftButton) {
+        on_left_click(event);
+    }
+}
 
-    if (source_slot->type() == Explorer) {
+void ItemSlot::dragEnterEvent(QDragEnterEvent *event) {
+    const QMimeData *data = event->mimeData();
+    DropPayload payload = DropPayload::from_string(data->text());
+
+    if (!will_accept_drop(payload)) {
         return;
     }
 
@@ -171,23 +123,10 @@ void ItemSlot::dragEnterEvent(QDragEnterEvent *event) {
 }
 
 void ItemSlot::dropEvent(QDropEvent *event) {
-    QString source_slot_name = event->mimeData()->text();
-    ItemSlot *source_slot = gw()->get_slot(source_slot_name);
+    const QMimeData *data = event->mimeData();
+    DropPayload payload = DropPayload::from_string(data->text());
 
-    if (source_slot->type() == Ordinary) {
-        // Dragging between inventory slots swaps the items in each slot.
-        Item source_item = source_slot->get_item();
-        Item dest_item = get_item();
-
-        gw()->game().inventory().put_item(source_item, y, x);
-        gw()->game().inventory().put_item(dest_item, source_slot->y, source_slot->x);
-
-        source_slot->refresh_pixmap();
-    } else {
-        // Dragging from an external slot to an inventory slot clears the external
-        // slot and returns the intent of the original item to NoIntent.
-        source_slot->drop_external_item();
-    }
+    accept_drop(payload);
 
     gw()->refresh_ui();
 }

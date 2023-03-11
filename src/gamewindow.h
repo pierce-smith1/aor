@@ -50,6 +50,7 @@ public:
     void swap_char(CharacterId char_id);
 
     void register_slot(ItemSlot *slot);
+    void install_slots();
 
     void notify(NotificationType type, const QString &message);
 
@@ -86,7 +87,7 @@ private:
     Ui::LKMainWindow m_window;
     Tooltip *m_item_tooltip;
     Game m_game;
-    GameId m_selected_tribe_id = NOBODY;
+    GameId m_selected_tribe_id = NO_TRIBE;
     std::vector<ItemSlot *> m_slots;
     DoughbyteConnection m_connection;
     EncryptedFile m_save_file;

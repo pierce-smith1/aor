@@ -14,7 +14,7 @@
 
 #include "itemproperties.h"
 #include "itemmark.h"
-#include "id.h"
+#include "types.h"
 
 #define USES
 #define LEVEL
@@ -34,6 +34,7 @@ const static ItemId EMPTY_ID = 0;
 const static ItemId INVALID_ID = 0xffffffffffffffff;
 const static ItemCode INVALID_CODE = 0xff;
 const static CharacterId NOBODY = 0;
+const static GameId NO_TRIBE = 0;
 const static ActivityId NO_ACTION = 0;
 
 const static quint64 ACTIONS_TO_HATCH = 25;

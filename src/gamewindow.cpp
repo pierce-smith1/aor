@@ -1,6 +1,6 @@
 #include "gamewindow.h"
 #include "items.h"
-#include "itemslot.h"
+#include "inventoryslot.h"
 #include "externalslot.h"
 #include "effectslot.h"
 #include "queuedactivityslot.h"
@@ -58,7 +58,7 @@ LKGameWindow::LKGameWindow()
     connect(m_window.trade_unaccept_button, &QPushButton::clicked, [=]() {
         m_connection.agreement_changed(m_selected_tribe_id, false);
         m_game.accepting_trade() = false;
-        m_game.trade_partner() = NOBODY;
+        m_game.trade_partner() = NO_TRIBE;
         refresh_ui_buttons();
     });
 
@@ -67,14 +67,7 @@ LKGameWindow::LKGameWindow()
         refresh_ui();
     });
 
-    ItemSlot::insert_inventory_slots();
-    ExternalSlot::insert_external_slots();
-    ToolSlot::insert_tool_slots();
-    EffectSlot::insert_effect_slots();
-    PortraitSlot::insert_portrait_slot();
-    ExplorerButton::insert_explorer_buttons();
-    QueuedActivitySlot::insert_queued_activity_slots();
-    SkillSlot::insert_skill_slots();
+    install_slots();
 
     QPalette activity_palette;
     activity_palette.setColor(QPalette::Highlight, Colors::qcolor(Lime));
@@ -137,6 +130,14 @@ void LKGameWindow::register_slot(ItemSlot *slot) {
     m_slots.push_back(slot);
 }
 
+void LKGameWindow::install_slots() {
+    for (int x = 0; x < INVENTORY_COLS; x++) {
+        for (int y = 0; y < INVENTORY_COLS; y++) {
+            InventorySlot(y, x).install(this);
+        }
+    }
+}
+
 void LKGameWindow::notify(NotificationType type, const QString &msg) {
     m_event_log.events_list->addItem(new GameNotification(type, msg));
 }
@@ -153,7 +154,7 @@ void LKGameWindow::refresh_ui() {
 
 void LKGameWindow::refresh_slots() {
     for (ItemSlot *slot : m_slots) {
-        slot->refresh_pixmap();
+        slot->refresh();
     }
 }
 
@@ -162,11 +163,9 @@ void LKGameWindow::refresh_ui_bars() {
 }
 
 void LKGameWindow::refresh_ui_buttons() {
-    bool smithing_already_queued = std::any_of(
-        begin(selected_char().activities()),
-        end(selected_char().activities()),
-        [](CharacterActivity &a) {
-            return a.action() == Smithing;
+    auto activities = selected_char().activities();
+    bool smithing_already_queued = std::any_of(activities.begin(), activities.end(), [](CharacterActivity &a) {
+        return a.action() == Smithing;
     });
 
     for (ItemDomain domain : { Smithing, Foraging, Mining }) {
@@ -179,7 +178,7 @@ void LKGameWindow::refresh_ui_buttons() {
         }
     }
 
-    m_window.trade_partner_combobox->setEnabled(m_game.trade_partner() == NOBODY);
+    m_window.trade_partner_combobox->setEnabled(m_game.trade_partner() == NO_TRIBE);
 
     if (!m_connection.is_connected()
         || selected_char().activity().ongoing()
@@ -200,13 +199,13 @@ void LKGameWindow::refresh_ui_buttons() {
 }
 
 void LKGameWindow::refresh_trade_ui() {
-    if (m_selected_tribe_id != NOBODY && m_game.tribes().at(m_selected_tribe_id).remote_accepted) {
+    if (m_selected_tribe_id != NO_TRIBE && m_game.tribes().at(m_selected_tribe_id).remote_accepted) {
         m_window.trade_remote_accept_icon->setPixmap(QPixmap(":/assets/img/icons/check.png"));
     } else {
         m_window.trade_remote_accept_icon->setPixmap(QPixmap(":/assets/img/icons/warning.png"));
     }
 
-    if (m_selected_tribe_id != NOBODY) {
+    if (m_selected_tribe_id != NO_TRIBE) {
         m_window.foreign_trade_level_label->setText(QString("<b>%1</b>")
             .arg(m_game.foreign_trade_level(m_selected_tribe_id))
         );
@@ -282,9 +281,7 @@ const std::vector<ItemSlot *> LKGameWindow::item_slots(ItemDomain domain) {
     std::vector<ItemSlot *> slots_of_type;
 
     for (ItemSlot *slot : item_slots()) {
-        if (slot->type() == domain) {
-            slots_of_type.push_back(slot);
-        }
+        slots_of_type.push_back(slot);
     }
 
     return slots_of_type;

@@ -73,7 +73,7 @@ void Character::queue_activity(ItemDomain domain, const std::vector<ItemId> &ite
     // If this was the first activity added, get it started!
     if (m_activities.size() == 1) {
         // If we're doing something else, we shouldn't be accepting trades
-        if (gw()->selected_tribe_id() != NOBODY) {
+        if (gw()->selected_tribe_id() != NO_TRIBE) {
             gw()->connection().agreement_changed(gw()->selected_tribe_id(), false);
             gw()->game().accepting_trade() = false;
         }

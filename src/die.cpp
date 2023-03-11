@@ -29,6 +29,9 @@ QString bugcheck_error_string(FatalErrorType type) {
         case IncorrectHookPayload: { return "INCORRECT_HOOK_PAYLOAD"; }
         case CallForUnknownHookType: { return "CALL_FOR_UNKNOWN_HOOK_TYPE"; }
         case ItemSlotByNameLookupMiss: { return "ITEM_SLOT_BY_NAME_LOOKUP_MISS"; }
+        case NonExhaustivePayloadSerialization: { return "NON_EXHAUSTIVE_PAYLOAD_SERIALIZATION"; }
+        case NonExhaustivePayloadDeserialization: { return "NON_EXHAUSTIVE_PAYLOAD_DESERIALIZATION"; }
+        case UnimplementedSlotInstall: { return "UNIMPLEMENTED_SLOT_INSTALL"; }
     }
 
     return "TOTAL_RUIN";
