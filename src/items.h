@@ -51,7 +51,7 @@ enum ItemDomain : ItemType {
     Skill           = 1 << 6,
     Artifact        = 1 << 7,
     Effect          = 1 << 8,
-    Rune            = 1 << 9,
+    Resident        = 1 << 9,
     Portrait        = 1 << 10,
     ForeignOffering = 1 << 11,
     Defiling        = 1 << 12,

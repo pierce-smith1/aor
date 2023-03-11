@@ -2,8 +2,12 @@
 
 #include "itemslot.h"
 
-class ExternalSlot : public ItemSlot {};
+class ExternalSlot : public ItemSlot {
+public:
+    ExternalSlot(size_t n);
 
-class ToolSlot : public ExternalSlot {};
+protected:
+    ExternalItemIds &external_ids();
 
-class PortraitSlot : public ExternalSlot {};
+    size_t m_n;
+};

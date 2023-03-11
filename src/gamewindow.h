@@ -18,7 +18,7 @@ class LKGameWindow;
 #include "trade.h"
 #include "encryptedfile.h"
 
-class ItemSlot;
+class Slot;
 class RecipieBox;
 class Encyclopedia;
 class Tooltip;
@@ -49,7 +49,7 @@ public:
     Character &selected_char();
     void swap_char(CharacterId char_id);
 
-    void register_slot(ItemSlot *slot);
+    void register_slot(Slot *slot);
     void install_slots();
 
     void notify(NotificationType type, const QString &message);
@@ -64,9 +64,9 @@ public:
     void tutorial(const QString &text);
 
     const std::map<ItemDomain, QPushButton *> get_activity_buttons();
-    const std::vector<ItemSlot *> &item_slots();
-    const std::vector<ItemSlot *> item_slots(ItemDomain domain);
-    ItemSlot *get_slot(const QString &name);
+    const std::vector<Slot *> &item_slots();
+    const std::vector<Slot *> item_slots(ItemDomain domain);
+    Slot *get_slot(const QString &name);
 
     void save();
     void load();
@@ -88,7 +88,7 @@ private:
     Tooltip *m_item_tooltip;
     Game m_game;
     GameId m_selected_tribe_id = NO_TRIBE;
-    std::vector<ItemSlot *> m_slots;
+    std::vector<Slot *> m_slots;
     DoughbyteConnection m_connection;
     EncryptedFile m_save_file;
     Encyclopedia *m_encyclopedia;

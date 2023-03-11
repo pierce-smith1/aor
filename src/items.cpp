@@ -200,7 +200,6 @@ QString Item::type_to_string(ItemType type) {
     if (type & MiningTool) { string += "Mining Tool, "; }
     if (type & Skill) { string += "Skill, "; }
     if (type & Artifact) { string += "Artifact, "; }
-    if (type & Rune) { string += "Curse, "; }
     if (type & Effect) { string += "Injury, "; }
 
     // Chop off the last comma and space

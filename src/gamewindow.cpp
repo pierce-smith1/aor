@@ -1,7 +1,7 @@
 #include "gamewindow.h"
 #include "items.h"
 #include "inventoryslot.h"
-#include "externalslot.h"
+#include "materialslot.h"
 #include "effectslot.h"
 #include "queuedactivityslot.h"
 #include "skillslot.h"
@@ -126,7 +126,7 @@ Encyclopedia *&LKGameWindow::encyclopedia() {
     return m_encyclopedia;
 }
 
-void LKGameWindow::register_slot(ItemSlot *slot) {
+void LKGameWindow::register_slot(Slot *slot) {
     m_slots.push_back(slot);
 }
 
@@ -135,6 +135,10 @@ void LKGameWindow::install_slots() {
         for (int y = 0; y < INVENTORY_ROWS; y++) {
             (new InventorySlot(y, x))->install();
         }
+    }
+
+    for (int i = 0; i < SMITHING_SLOTS; i++) {
+        (new MaterialSlot(i))->install();
     }
 }
 
@@ -153,7 +157,7 @@ void LKGameWindow::refresh_ui() {
 }
 
 void LKGameWindow::refresh_slots() {
-    for (ItemSlot *slot : m_slots) {
+    for (Slot *slot : m_slots) {
         slot->refresh();
     }
 }
@@ -261,12 +265,12 @@ const std::map<ItemDomain, QPushButton *> LKGameWindow::get_activity_buttons() {
     };
 }
 
-const std::vector<ItemSlot *> &LKGameWindow::item_slots() {
+const std::vector<Slot *> &LKGameWindow::item_slots() {
     return m_slots;
 }
 
-ItemSlot *LKGameWindow::get_slot(const QString &name) {
-    auto result = std::find_if(begin(m_slots), end(m_slots), [&name](ItemSlot *slot) {
+Slot *LKGameWindow::get_slot(const QString &name) {
+    auto result = std::find_if(begin(m_slots), end(m_slots), [&name](Slot *slot) {
         return slot->objectName() == name;
     });
 
@@ -277,10 +281,10 @@ ItemSlot *LKGameWindow::get_slot(const QString &name) {
     return *result;
 }
 
-const std::vector<ItemSlot *> LKGameWindow::item_slots(ItemDomain domain) {
-    std::vector<ItemSlot *> slots_of_type;
+const std::vector<Slot *> LKGameWindow::item_slots(ItemDomain domain) {
+    std::vector<Slot *> slots_of_type;
 
-    for (ItemSlot *slot : item_slots()) {
+    for (Slot *slot : item_slots()) {
         slots_of_type.push_back(slot);
     }
 
