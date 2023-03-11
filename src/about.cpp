@@ -15,29 +15,5 @@ AboutBox::AboutBox() {
     layout()->addWidget(buttons);
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
 
-    slot->refresh_pixmap();
+    slot->refresh();
 }
-
-void AboutSlot::refresh_pixmap() {
-    m_item_label->setPixmap(Item::pixmap_of("welchian_rune"));
-}
-
-bool AboutSlot::do_hovering() {
-    return true;
-}
-
-std::optional<TooltipInfo> AboutSlot::tooltip_info() {
-    return std::optional<TooltipInfo>({
-        "<b>Aegis of Rhodon</b>",
-        "Level " + GAME_VERSION,
-        "<i>Be still, Rhodon.</i><br>"
-        "<i>https://doughbyte.com</i>",
-        Item::pixmap_of("welchian_rune"),
-        {},
-        std::optional<QColor>()
-    });
-}
-
-void AboutSlot::mousePressEvent(QMouseEvent *) {};
-void AboutSlot::dragEnterEvent(QDragEnterEvent *) {};
-void AboutSlot::dropEvent(QDropEvent *) {};

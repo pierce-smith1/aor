@@ -45,12 +45,13 @@ public:
     virtual void refresh();
     virtual QPixmap pixmap();
     virtual bool will_accept_drop(const DropPayload &payload);
+    virtual bool is_draggable();
     virtual void accept_drop(const DropPayload &payload);
     virtual void after_dropped_elsewhere(const DropPayload &response_payload);
     virtual void on_left_click(QMouseEvent *event);
     virtual void on_right_click(QMouseEvent *event);
     virtual DropPayload get_payload();
-    virtual void install(LKGameWindow *game_window);
+    virtual void install();
 
 protected:
     QLabel *m_item_label;

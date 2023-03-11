@@ -132,8 +132,8 @@ void LKGameWindow::register_slot(ItemSlot *slot) {
 
 void LKGameWindow::install_slots() {
     for (int x = 0; x < INVENTORY_COLS; x++) {
-        for (int y = 0; y < INVENTORY_COLS; y++) {
-            InventorySlot(y, x).install(this);
+        for (int y = 0; y < INVENTORY_ROWS; y++) {
+            (new InventorySlot(y, x))->install();
         }
     }
 }

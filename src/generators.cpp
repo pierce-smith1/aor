@@ -119,7 +119,7 @@ Color Generators::color() {
 }
 
 GameId Generators::game_id() {
-    return item_id();
+    return item_id().n;
 }
 
 CharacterId Generators::char_id() {
@@ -127,7 +127,7 @@ CharacterId Generators::char_id() {
 }
 
 ActivityId Generators::activity_id() {
-    return item_id();
+    return item_id().n;
 }
 
 bool Generators::percent_chance(int p) {

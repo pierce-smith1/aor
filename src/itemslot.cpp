@@ -14,7 +14,7 @@ QString DropPayload::to_string() const {
     } else if (std::holds_alternative<CharacterId>(*this)) {
         return string.arg(PV_CHARACTER).arg(std::get<CharacterId>(*this));
     } else {
-        bugcheck(NonExhaustivePayloadSerialization, *this);
+        bugcheck(NonExhaustivePayloadSerialization);
         return "";
     }
 }
@@ -77,15 +77,16 @@ ItemSlot::ItemSlot()
 void ItemSlot::refresh() { m_item_label->setPixmap(pixmap()); }
 QPixmap ItemSlot::pixmap() { return Item::pixmap_of(Item()); }
 bool ItemSlot::will_accept_drop(const DropPayload &) { return false; }
+bool ItemSlot::is_draggable() { return false; }
 void ItemSlot::accept_drop(const DropPayload &) {}
 void ItemSlot::after_dropped_elsewhere(const DropPayload &) {}
 void ItemSlot::on_left_click(QMouseEvent *) {}
 void ItemSlot::on_right_click(QMouseEvent *) {}
 DropPayload ItemSlot::get_payload() { return DropPayload(std::monostate(), this); }
-void ItemSlot::install(LKGameWindow *) { bugcheck(UnimplementedSlotInstall, typeid(this).name()); }
+void ItemSlot::install() { /* TODO: bugcheck(UnimplementedSlotInstall, typeid(this).name()); */ qWarning("unimplented slot install"); }
 
 void ItemSlot::mousePressEvent(QMouseEvent *event) {
-    if (event->button() == Qt::LeftButton) {
+    if (event->button() == Qt::LeftButton && is_draggable()) {
         QDrag *drag = new QDrag(this);
         QMimeData *data = new QMimeData;
         DropPayload payload = get_payload();

@@ -125,7 +125,7 @@ void DoughbyteConnection::update_offers(GameId tribe_id, ItemCode code, char use
     gw()->game().tribes()[tribe_id].offer[n] = item;
 
     // If we witnessed the remote offer change, stop accepting
-    if (tribe_id == gw()->window().trade_partner_combobox->currentData().toULongLong()) {
+    if (tribe_id.n == gw()->window().trade_partner_combobox->currentData().toULongLong()) {
         gw()->game().accepting_trade() = false;
         agreement_changed(tribe_id, false);
         gw()->refresh_ui_buttons();
@@ -157,10 +157,10 @@ void DoughbyteConnection::update_availability() {
 
 void DoughbyteConnection::update_availability(GameId tribe_id, const QString &tribe_name, bool available) {
     QComboBox *partner_box = gw()->window().trade_partner_combobox;
-    int index = partner_box->findData(QVariant::fromValue(tribe_id));
+    int index = partner_box->findData(QVariant::fromValue(tribe_id.n));
 
     if (available && index == -1) {
-        partner_box->insertItem(0, tribe_name, QVariant::fromValue(tribe_id));
+        partner_box->insertItem(0, tribe_name, QVariant::fromValue(tribe_id.n));
     } else if (!available && index != -1) {
         partner_box->removeItem(index);
         gw()->game().tribes().erase(tribe_id);
