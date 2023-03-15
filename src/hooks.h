@@ -5,6 +5,7 @@
 #include <QtCore>
 
 #include "die.h"
+#include "types.h"
 
 // WARNING: verbatim from generators.h, which we can't directly include
 template <typename T> using WeightedVector = std::vector<std::pair<T, double>>;
@@ -15,15 +16,12 @@ class Character;
 using HookPayload = std::array<std::variant<
     bool *,
     qreal *,
-    qint64 *,
-    quint32 *,
-    qint32 *,
-    quint16 *,
-    qint16 *,
+    AorUInt *,
+    AorInt *,
     QString *,
     std::vector<WeightedVector<Item>> *,
     Character *>, 4>;
-using Hook = std::function<void(const HookPayload &, quint16, quint16)>;
+using Hook = std::function<void(const HookPayload &, AorUInt, AorUInt)>;
 
 template <typename T> T extract_payload(const HookPayload &payload, size_t index) {
     if (!std::holds_alternative<T>(payload[index])) {
@@ -32,7 +30,7 @@ template <typename T> T extract_payload(const HookPayload &payload, size_t index
     return std::get<T>(payload[index]);
 }
 
-enum HookType : quint16 {
+enum HookType : AorUInt {
     HookNone,
     HookCanDoActionCheck,
     HookCalcEnergyGain,

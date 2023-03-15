@@ -1,16 +1,18 @@
 #include "gamewindow.h"
 #include "items.h"
-#include "inventoryslot.h"
-#include "materialslot.h"
-#include "effectslot.h"
-#include "queuedactivityslot.h"
-#include "skillslot.h"
 #include "encyclopedia.h"
-#include "explorerbutton.h"
 #include "die.h"
 #include "main.h"
 #include "about.h"
 #include "menu.h"
+
+#include "slot/inventoryslot.h"
+#include "slot/materialslot.h"
+#include "slot/toolslot.h"
+#include "slot/effectslot.h"
+#include "slot/queuedactivityslot.h"
+#include "slot/skillslot.h"
+#include "slot/explorerbutton.h"
 
 LKGameWindow *LKGameWindow::the_game_window;
 
@@ -131,15 +133,19 @@ void LKGameWindow::register_slot(Slot *slot) {
 }
 
 void LKGameWindow::install_slots() {
-    for (int x = 0; x < INVENTORY_COLS; x++) {
-        for (int y = 0; y < INVENTORY_ROWS; y++) {
+    for (AorUInt x = 0; x < INVENTORY_COLS; x++) {
+        for (AorUInt y = 0; y < INVENTORY_ROWS; y++) {
             (new InventorySlot(y, x))->install();
         }
     }
 
-    for (int i = 0; i < SMITHING_SLOTS; i++) {
+    for (AorUInt i = 0; i < SMITHING_SLOTS; i++) {
         (new MaterialSlot(i))->install();
     }
+
+    (new ToolSlot(SmithingTool))->install();
+    (new ToolSlot(ForagingTool))->install();
+    (new ToolSlot(MiningTool))->install();
 }
 
 void LKGameWindow::notify(NotificationType type, const QString &msg) {
@@ -298,9 +304,10 @@ void LKGameWindow::save() {
 
     m_save_file.reset();
 
-    IO::write_byte(&m_save_file, 'r');
-    IO::write_byte(&m_save_file, 'h');
-    IO::write_byte(&m_save_file, 'o');
+    IO::write_uint(&m_save_file, SAVE_MAGIC_NUMBER);
+    IO::write_uint(&m_save_file, MAJOR_VERSION);
+    IO::write_uint(&m_save_file, MINOR_VERSION);
+    IO::write_uint(&m_save_file, PATCH_VERSION);
 
     m_game.serialize(&m_save_file);
 
@@ -314,13 +321,15 @@ void LKGameWindow::load() {
 
     m_save_file.reset();
 
-    char r = IO::read_byte(&m_save_file);
-    char h = IO::read_byte(&m_save_file);
-    char o = IO::read_byte(&m_save_file);
+    AorUInt magic = IO::read_uint(&m_save_file);
 
-    if (r != 'r' || h != 'h' || o != 'o') {
-        bugcheck(SaveInvalidHeader, r, h, o);
+    if (magic != SAVE_MAGIC_NUMBER) {
+        bugcheck(SaveInvalidHeader);
     }
+
+    IO::read_uint(&m_save_file);
+    IO::read_uint(&m_save_file);
+    IO::read_uint(&m_save_file);
 
     Game *game = Game::deserialize(&m_save_file);
     m_game = *game;

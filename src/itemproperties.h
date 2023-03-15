@@ -6,7 +6,7 @@
 
 class Character;
 
-enum ItemProperty : quint16 {
+enum ItemProperty : AorUInt {
     NoProperty = 0,
     ItemLevel,
     ToolEnergyCost,
@@ -99,11 +99,12 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions();
 class ItemProperties {
 public:
     ItemProperties() = default;
-    ItemProperties(std::initializer_list<std::pair<const ItemProperty, quint16>> map);
-    quint16 operator[](ItemProperty prop) const;
-    std::map<ItemProperty, quint16>::const_iterator begin() const;
-    std::map<ItemProperty, quint16>::const_iterator end() const;
-    void call_hooks(HookType type, const HookPayload &payload, quint16 int_domain = 0) const;
+    ItemProperties(std::initializer_list<std::pair<const ItemProperty, AorUInt>> map);
+    ItemProperties(const std::map<ItemProperty, AorUInt> &map);
+    AorUInt operator[](ItemProperty prop) const;
+    std::map<ItemProperty, AorUInt>::const_iterator begin() const;
+    std::map<ItemProperty, AorUInt>::const_iterator end() const;
+    void call_hooks(HookType type, const HookPayload &payload, AorUInt int_domain = 0) const;
 
-    std::map<ItemProperty, quint16> map;
+    std::map<ItemProperty, AorUInt> map;
 };

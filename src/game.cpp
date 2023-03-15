@@ -45,7 +45,7 @@ GameId &Game::trade_partner() {
     return m_trade_partner;
 }
 
-quint64 &Game::actions_done() {
+AorUInt &Game::actions_done() {
     return m_actions_done;
 }
 
@@ -58,7 +58,7 @@ bool &Game::no_exhaustion() {
 }
 
 bool Game::add_character(const QString &name, const std::multiset<Color> &heritage) {
-    int max = 0;
+    AorUInt max = 0;
     while (m_explorers[max].id() != NOBODY && max < MAX_EXPLORERS) {
         max++;
     }
@@ -73,7 +73,7 @@ bool Game::add_character(const QString &name, const std::multiset<Color> &herita
 
 bool Game::add_item(const Item &item) {
     if (m_inventory.add_item(item)) {
-        check_tutorial((ItemDomain) item.def()->type);
+        check_tutorial((ItemDomain) item.def()->type.n);
         m_history.insert(item.code);
         gw()->encyclopedia()->refresh();
 
@@ -135,7 +135,7 @@ void Game::check_tutorial(ItemDomain domain) {
                 "<br>"
                 "<b>Materials</b> are used to craft new items.</b><br>"
                 "All materials have some amount of value in one of the <b>five resource types</b>.<br>"
-                "Materials can be dragged into an explorer's <b>smithing slots</b> to use them for crafting - the total value of all materials in her smithing slots determines what item she will make.<br>"
+                "Materials can be dragged AorInto an explorer's <b>smithing slots</b> to use them for crafting - the total value of all materials in her smithing slots determines what item she will make.<br>"
                 "Materials can also be dragged to an explorer's <b>portrait</b> to have her <b>defile</b> it, which will destroy the item to restore <b>25 spirit per item level</b>.<br>"
                 "<br>"
                 "Why don't I check the <b>encyclopedia</b> and see if I can smith <b>a new tool</b>?"
@@ -146,7 +146,7 @@ void Game::check_tutorial(ItemDomain domain) {
             gw()->tutorial(
                 "<b>I just made a smithing tool!</b><br>"
                 "<br>"
-                "When equipped, <b>smithing tools</b> increase the amount of resources I can put into <b>smithing slots</b>.<br>"
+                "When equipped, <b>smithing tools</b> increase the amount of resources I can put AorInto <b>smithing slots</b>.<br>"
                 "The maximum amount of resources a smithing tool can support is referred to as its <b>power</b>.<br>"
                 "Regardless of tool, I can always support at least <b>10 of each resource type</b>.<br>"
                 "<br>"
@@ -160,7 +160,7 @@ void Game::check_tutorial(ItemDomain domain) {
                 "<br>"
                 "When equipped, <b>foraging tools</b> allow me to find new consumables when I forage.<br>"
                 "Each foraging tool has a unique pool of items it can discover; some potentially rarer than others.<br>"
-                "While I hold a foraging tool, I also have a chance to find <b>loose eggs</b> that can <b>hatch into new explorers!</b><br>"
+                "While I hold a foraging tool, I also have a chance to find <b>loose eggs</b> that can <b>hatch AorInto new explorers!</b><br>"
                 "<br>"
                 "Like all tools, foraging tools can <b>only be used a limited number of times</b> before they break."
             );
@@ -192,15 +192,15 @@ void Game::check_tutorial(ItemDomain domain) {
     }
 }
 
-int Game::trade_level() {
-    return std::accumulate(begin(m_trade_offer), end(m_trade_offer), 0, [this](int a, ItemId id) {
+AorInt Game::trade_level() {
+    return std::accumulate(begin(m_trade_offer), end(m_trade_offer), 0, [this](AorInt a, ItemId id) {
         return a + m_inventory.get_item(id).def()->properties[ItemLevel];
     });
 }
 
-int Game::foreign_trade_level(GameId tribe_id) {
+AorInt Game::foreign_trade_level(GameId tribe_id) {
     auto &offer = m_tribes.at(tribe_id).offer;
-    return std::accumulate(begin(offer), end(offer), 0, [](int a, const Item &item) {
+    return std::accumulate(begin(offer), end(offer), 0, [](AorInt a, const Item &item) {
         return a + item.def()->properties[ItemLevel];
     });
 }
@@ -215,6 +215,38 @@ ItemProperties Game::total_resources() {
     }
 
     return resources;
+}
+
+ItemDomain Game::intent_of(ItemId item_id) {
+    AorUInt intent = None;
+
+    if (std::find(m_trade_offer.begin(), m_trade_offer.end(), item_id) != m_trade_offer.end()) {
+        intent |= Offering;
+    }
+
+    for (Character &character : m_explorers) {
+        auto &materials = character.external_items()[Material];
+        if (std::find(materials.begin(), materials.end(), item_id) != materials.end()) {
+            intent |= Material;
+        }
+
+        auto &artifacts = character.external_items()[Artifact];
+        if (std::find(artifacts.begin(), artifacts.end(), item_id) != artifacts.end()) {
+            intent |= Artifact;
+        }
+
+        auto &tools = character.tools();
+        if (tools[SmithingTool] == item_id || tools[ForagingTool] == item_id || tools[MiningTool] == item_id) {
+            intent |= Tool;
+        }
+
+        auto &activity_items = character.activity().owned_item_ids();
+        if (std::find(activity_items.begin(), activity_items.end(), item_id) != activity_items.end()) {
+            intent |= character.activity().action();
+        }
+    }
+
+    return static_cast<ItemDomain>(intent);
 }
 
 Character &Game::character(CharacterId id) {
@@ -246,7 +278,7 @@ CharacterActivity &Game::activity(ActivityId id) {
 }
 
 void Game::refresh_ui_bars(QProgressBar *activity, QProgressBar *spirit, QProgressBar *energy, CharacterId char_id) {
-    auto clamp = [](int min, int value, int max) -> int {
+    auto clamp = [](AorInt min, AorInt value, AorInt max) -> AorInt {
         return value < min ? min : (value > max ? max : value);
     };
 
@@ -268,58 +300,58 @@ void Game::refresh_ui_bars(QProgressBar *activity, QProgressBar *spirit, QProgre
 }
 
 void Game::serialize(QIODevice *dev) {
-    IO::write_bool(dev, m_accepting_trade);
+    IO::write_uint(dev, m_accepting_trade);
     IO::write_string(dev, m_tribe_name);
-    IO::write_long(dev, m_trade_partner);
-    IO::write_long(dev, m_game_id);
-    IO::write_long(dev, m_actions_done);
+    IO::write_uint(dev, m_trade_partner);
+    IO::write_uint(dev, m_game_id);
+    IO::write_uint(dev, m_actions_done);
 
-    for (int i = 0; i < INVENTORY_SIZE; i++) {
+    for (AorUInt i = 0; i < INVENTORY_SIZE; i++) {
         IO::write_item(dev, m_inventory.items()[i]);
     }
 
-    for (int i = 0; i < MAX_EXPLORERS; i++) {
+    for (AorUInt i = 0; i < MAX_EXPLORERS; i++) {
         m_explorers[i].serialize(dev);
     }
 
-    for (int i = 0; i < TRADE_SLOTS; i++) {
-        IO::write_long(dev, m_trade_offer[i]);
+    for (AorUInt i = 0; i < TRADE_SLOTS; i++) {
+        IO::write_uint(dev, m_trade_offer[i]);
         IO::write_item(dev, m_accepted_offer[i]);
     }
 
-    IO::write_short(dev, m_history.size());
+    IO::write_uint(dev, m_history.size());
     for (ItemCode code : m_history) {
-        IO::write_short(dev, code);
+        IO::write_uint(dev, code);
     }
 }
 
 Game *Game::deserialize(QIODevice *dev) {
     Game *g = new Game;
 
-    g->m_accepting_trade = IO::read_bool(dev);
+    g->m_accepting_trade = IO::read_uint(dev);
     g->m_tribe_name = IO::read_string(dev);
-    g->m_trade_partner = IO::read_long(dev);
-    g->m_game_id = IO::read_long(dev);
-    g->m_actions_done = IO::read_long(dev);
+    g->m_trade_partner = IO::read_uint(dev);
+    g->m_game_id = IO::read_uint(dev);
+    g->m_actions_done = IO::read_uint(dev);
 
     for (size_t i = 0; i < INVENTORY_SIZE; i++) {
         g->m_inventory.items()[i] = IO::read_item(dev);
     }
 
-    for (int i = 0; i < MAX_EXPLORERS; i++) {
+    for (AorUInt i = 0; i < MAX_EXPLORERS; i++) {
         Character *c = Character::deserialize(dev);
         g->m_explorers[i] = *c;
         delete c;
     }
 
-    for (int i = 0; i < TRADE_SLOTS; i++) {
-        g->m_trade_offer[i] = IO::read_long(dev);
+    for (AorUInt i = 0; i < TRADE_SLOTS; i++) {
+        g->m_trade_offer[i] = IO::read_uint(dev);
         g->m_accepted_offer[i] = IO::read_item(dev);
     }
 
-    quint16 size = IO::read_short(dev);
-    for (quint16 i = 0; i < size; i++) {
-        g->m_history.insert(IO::read_short(dev));
+    AorUInt size = IO::read_uint(dev);
+    for (AorUInt i = 0; i < size; i++) {
+        g->m_history.insert(IO::read_uint(dev));
     }
 
     g->m_tribes[NO_TRIBE];

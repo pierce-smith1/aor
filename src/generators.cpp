@@ -7,7 +7,7 @@ QRandomGenerator *Generators::rng() {
 }
 
 QString Generators::yokin_name() {
-    qint32 length = 3;
+    AorUInt length = 3;
     while (percent_chance(75 - ((length - 3) * 15))) {
         length++;
     }
@@ -99,11 +99,15 @@ QString Generators::tribe_name() {
     return sample_with_weights(LOCATION_ADJECTIVES) + sample_with_weights(LOCATION_NOUNS);
 }
 
-ItemId Generators::item_id() {
+AorUInt Generators::uint() {
     auto time = std::chrono::system_clock::now().time_since_epoch();
     auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(time).count();
 
-    return ((milliseconds & 0xffffffff) + ((quint64) rng()->generate() << 32)) & 0x7fffffffffffffff;
+    return ((milliseconds & 0xffffffff) + ((AorUInt) rng()->generate() << 32)) & 0x7fffffffffffffff;
+}
+
+ItemId Generators::item_id() {
+    return uint();
 }
 
 Color Generators::color() {
@@ -119,15 +123,15 @@ Color Generators::color() {
 }
 
 GameId Generators::game_id() {
-    return item_id().n;
+    return uint();
 }
 
 CharacterId Generators::char_id() {
-    return rng()->generate() % 0xffff;
+    return uint();
 }
 
 ActivityId Generators::activity_id() {
-    return item_id().n;
+    return uint();
 }
 
 bool Generators::percent_chance(int p) {

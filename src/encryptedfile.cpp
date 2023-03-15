@@ -11,11 +11,11 @@ bool EncryptedFile::reset() {
     return QFile::reset();
 }
 
-bool EncryptedFile::seek(qint64 pos) {
+bool EncryptedFile::seek(AorInt pos) {
     bool success = QFile::seek(pos);
 
     if (success) {
-        for (qint64 i = 0; i < pos; i++) {
+        for (AorInt i = 0; i < pos; i++) {
             m_rng.generate();
         }
     }
@@ -23,11 +23,11 @@ bool EncryptedFile::seek(qint64 pos) {
     return success;
 }
 
-qint64 EncryptedFile::readData(char *data, qint64 maxSize) {
+AorInt EncryptedFile::readData(char *data, AorInt maxSize) {
     char *intermediate_data = new char[maxSize];
 
-    qint64 ret = QFile::readData(intermediate_data, maxSize);
-    for (qint64 i = 0; i < ret; i++) {
+    AorInt ret = QFile::readData(intermediate_data, maxSize);
+    for (AorInt i = 0; i < ret; i++) {
         data[i] = intermediate_data[i] ^ (m_rng.generate() & 0xff);
     }
 
@@ -35,14 +35,14 @@ qint64 EncryptedFile::readData(char *data, qint64 maxSize) {
     return ret;
 }
 
-qint64 EncryptedFile::writeData(const char *data, qint64 maxSize) {
+AorInt EncryptedFile::writeData(const char *data, AorInt maxSize) {
     char *encrypted_data = new char[maxSize];
 
-    for (qint64 i = 0; i < maxSize; i++) {
+    for (AorInt i = 0; i < maxSize; i++) {
         encrypted_data[i] = data[i] ^ (m_rng.generate() & 0xff);
     }
 
-    qint64 ret = QFile::writeData(encrypted_data, maxSize);
+    AorInt ret = QFile::writeData(encrypted_data, maxSize);
 
     delete[] encrypted_data;
     return ret;

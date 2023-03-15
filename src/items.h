@@ -19,34 +19,33 @@
 #define USES
 #define LEVEL
 
-const static int SMITHING_SLOTS = 5;
-const static int SMITHING_SLOTS_PER_ROW = 5;
+const static AorUInt SMITHING_SLOTS = 5;
+const static AorUInt SMITHING_SLOTS_PER_ROW = 5;
 
-const static int TRADE_SLOTS = 5;
+const static AorUInt TRADE_SLOTS = 5;
 
-const static int ARTIFACT_SLOTS = 3;
+const static AorUInt ARTIFACT_SLOTS = 3;
 
-const static int EFFECT_SLOTS = 4;
-
-using ItemCode = quint16;
+const static AorUInt EFFECT_SLOTS = 4;
 
 const static ItemId EMPTY_ID = 0;
-const static ItemId INVALID_ID = 0xffffffffffffffff;
-const static ItemCode INVALID_CODE = 0xff;
+const static ItemId INVALID_ID = ~0ull;
+const static ItemCode EMPTY_CODE = 0;
+const static ItemCode INVALID_CODE = ~0ull;
 const static CharacterId NOBODY = 0;
 const static GameId NO_TRIBE = 0;
 const static ActivityId NO_ACTION = 0;
 
-const static quint64 ACTIONS_TO_HATCH = 25;
+const static AorUInt ACTIONS_TO_HATCH = 25;
 
-using ItemType = quint16;
-enum ItemDomain : ItemType {
+enum ItemDomain : AorUInt {
     Ordinary        = 0,      None = 0,
     Consumable      = 1 << 0, Eating   = 1 << 0,
     Material        = 1 << 1,
     SmithingTool    = 1 << 2, Smithing = 1 << 2,
     ForagingTool    = 1 << 3, Foraging = 1 << 3,
     MiningTool      = 1 << 4, Mining   = 1 << 4,
+    Tool            = SmithingTool | ForagingTool | MiningTool,
     Offering        = 1 << 5, Trading  = 1 << 5,
     Skill           = 1 << 6,
     Artifact        = 1 << 7,
@@ -57,19 +56,20 @@ enum ItemDomain : ItemType {
     Defiling        = 1 << 12,
     Coupling        = 1 << 13, Explorer = 1 << 13, Egg = 1 << 13,
     Untradeable     = 1 << 14,
-    Tool            = SmithingTool | ForagingTool | MiningTool,
-    All             = 0xffff
+    Script          = 1 << 15,
+    All             = ~0ull
 };
 
-const static int CT_EMPTY = 0;
-const static int CT_CONSUMABLE = 1 << 8;
-const static int CT_MATERIAL = 1 << 9;
-const static int CT_TOOL = 1 << 10;
-const static int CT_ARTIFACT = 1 << 11;
-const static int CT_EFFECT = 1 << 12;
-const static int CT_RUNE = 1 << 13;
-const static int CT_OTHER = 1 << 14;
-const static int CT_SKILL = 1 << 15;
+const static AorUInt CT_EMPTY = 0;
+const static AorUInt CT_CONSUMABLE = 1 << 8;
+const static AorUInt CT_MATERIAL = 1 << 9;
+const static AorUInt CT_TOOL = 1 << 10;
+const static AorUInt CT_ARTIFACT = 1 << 11;
+const static AorUInt CT_SCRIPT = 1 << 12;
+const static AorUInt CT_EFFECT = 1 << 13;
+const static AorUInt CT_RUNE = 1 << 14;
+const static AorUInt CT_SKILL = 1 << 15;
+const static AorUInt CT_OTHER = 1ull << 63;
 
 struct ItemDefinition {
     ItemCode code;
@@ -498,8 +498,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
 struct Item {
     ItemCode code = 0;
     ItemId id = EMPTY_ID;
-    unsigned char uses_left = 0;
-    ItemDomain intent = Ordinary;
+    AorUInt uses_left = 0;
     ActivityId owning_action = NO_ACTION;
     ItemProperties instance_properties = {};
 
@@ -514,6 +513,9 @@ struct Item {
 
     ItemDefinitionPtr def() const;
     QString instance_properties_to_string() const;
+
+    QString to_data_string() const;
+    static Item from_data_string(const QString &data_string);
 
     void call_hooks(HookType type, const HookPayload &payload) const;
 

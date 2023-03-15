@@ -66,6 +66,7 @@ namespace Generators {
 
     QString yokin_name();
     QString tribe_name();
+    AorUInt uint();
     ItemId item_id();
     Color color();
     GameId game_id();

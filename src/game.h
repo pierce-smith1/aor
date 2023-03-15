@@ -12,7 +12,7 @@
 #include "hooks.h"
 #include "map.h"
 
-const static int MAX_EXPLORERS = 11;
+const static AorUInt MAX_EXPLORERS = 12;
 
 using RemoteOffer = std::array<Item, TRADE_SLOTS>;
 
@@ -41,7 +41,7 @@ public:
     GameId game_id();
     QString &tribe_name();
     ItemHistory &history();
-    quint64 &actions_done();
+    AorUInt &actions_done();
     bool &fast_actions();
     bool &no_exhaustion();
 
@@ -49,9 +49,10 @@ public:
     bool add_item(const Item &item);
     void check_hatch();
     void check_tutorial(ItemDomain domain);
-    int trade_level();
-    int foreign_trade_level(GameId tribe_id);
+    AorInt trade_level();
+    AorInt foreign_trade_level(GameId tribe_id);
     ItemProperties total_resources();
+    ItemDomain intent_of(ItemId item_id);
 
     Character &character(CharacterId id);
     CharacterActivity &activity(ActivityId id);
@@ -72,7 +73,7 @@ private:
     GameId m_game_id;
     QString m_tribe_name;
     ItemHistory m_history;
-    quint64 m_actions_done = 0;
+    AorUInt m_actions_done = 0;
     WorldMap m_map;
 
     // Transient

@@ -2,7 +2,8 @@
 
 #include <QtCore>
 
-using Int = quint64;
+using AorUInt = quint64;
+using AorInt = qint64;
 
 template <typename IntType> struct IntWrapper {
     IntWrapper() : n(0) {}
@@ -13,17 +14,18 @@ template <typename IntType> struct IntWrapper {
     bool operator < (const IntWrapper &other) { return n < other.n; }
     bool operator <= (const IntWrapper &other) { return n <= other.n; }
     bool operator > (const IntWrapper &other) { return n > other.n; }
-    bool operator >= (const IntWrapper &other) { return n >= other.n; };
+    bool operator >= (const IntWrapper &other) { return n >= other.n; }
 
-    operator quint64() const { return n; }
+    operator IntType() const { return n; }
 
     IntType n;
 };
 
-#define ID_TYPE(i, t) struct i : public IntWrapper<t> { i () : IntWrapper() {} i (t n) : IntWrapper(n) {} }
+#define INT_TYPE(i, t) struct i : public IntWrapper<t> { i () : IntWrapper() {} i (t n) : IntWrapper(n) {} }
 
-ID_TYPE(ItemId, quint64);
-ID_TYPE(CharacterId, quint16);
-ID_TYPE(GameId, quint64);
-ID_TYPE(ActivityId, quint64);
-
+INT_TYPE(ItemId, AorUInt);
+INT_TYPE(CharacterId, AorUInt);
+INT_TYPE(GameId, AorUInt);
+INT_TYPE(ActivityId, AorUInt);
+INT_TYPE(ItemCode, AorUInt);
+INT_TYPE(ItemType, AorUInt);

@@ -33,12 +33,12 @@ public:
 
 private:
     void hide_resources();
-    const std::map<quint16, QLabel *> &icons();
-    const std::map<quint16, QLabel *> &text();
-    const std::map<quint16, QLabel *> &cost_icons();
-    const std::map<quint16, QLabel *> &cost_text();
-    const std::map<quint16, QLabel *> &power_icons();
-    const std::map<quint16, QLabel *> &power_text();
+    const std::map<AorUInt, QLabel *> &icons();
+    const std::map<AorUInt, QLabel *> &text();
+    const std::map<AorUInt, QLabel *> &cost_icons();
+    const std::map<AorUInt, QLabel *> &cost_text();
+    const std::map<AorUInt, QLabel *> &power_icons();
+    const std::map<AorUInt, QLabel *> &power_text();
 
     QGraphicsColorizeEffect *m_colorize_effect;
 };

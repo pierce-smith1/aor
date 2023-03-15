@@ -3,16 +3,12 @@
 #include "gamewindow.h"
 #include "die.h"
 
-Item Item::empty_item = Item(0);
+Item Item::empty_item = Item();
 
 ItemDefinitionPtr Item::def_of(ItemCode code) {
-    auto result = std::find_if(
-        begin(ITEM_DEFINITIONS),
-        end(ITEM_DEFINITIONS),
-        [=](const ItemDefinition &def) {
-            return def.code == code;
-        }
-    );
+    auto result = std::find_if(ITEM_DEFINITIONS.begin(), ITEM_DEFINITIONS.end(), [=](const ItemDefinition &def) {
+        return def.code == code;
+    });
 
     if (result == ITEM_DEFINITIONS.end()) {
         bugcheck(DefLookupMiss, "code", code);
@@ -22,8 +18,9 @@ ItemDefinitionPtr Item::def_of(ItemCode code) {
 }
 
 ItemDefinitionPtr Item::def_of(const QString &name) {
-    auto match_name = [&name](const ItemDefinition def) -> bool { return def.internal_name == name; };
-    auto result = std::find_if(begin(ITEM_DEFINITIONS), end(ITEM_DEFINITIONS), match_name);
+    auto result = std::find_if(ITEM_DEFINITIONS.begin(), ITEM_DEFINITIONS.end(), [&](const ItemDefinition &def) {
+        return def.internal_name == name;
+    });
 
     if (result == ITEM_DEFINITIONS.end()) {
         bugcheck(DefLookupMiss, "name", name);
@@ -37,11 +34,11 @@ ItemDefinitionPtr Item::def_of(const Item &item) {
 }
 
 ItemCode Item::code_of(const QString &name) {
-    auto result = std::find_if(begin(ITEM_DEFINITIONS), end(ITEM_DEFINITIONS), [=](const ItemDefinition &def) {
+    auto result = std::find_if(ITEM_DEFINITIONS.begin(), ITEM_DEFINITIONS.end(), [&](const ItemDefinition &def) {
         return name == def.internal_name;
     });
 
-    if (result == end(ITEM_DEFINITIONS)) {
+    if (result == ITEM_DEFINITIONS.end()) {
         bugcheck(CodeLookupMiss, "name", name);
     }
 
@@ -51,12 +48,11 @@ ItemCode Item::code_of(const QString &name) {
 Item::Item(const ItemDefinition &def)
     : code(def.code),
       id(Generators::item_id()),
-      uses_left(def.default_uses_left),
-      intent(Ordinary)
+      uses_left(def.default_uses_left)
 {
     // Don't give an empty item a unique id
-    if (code == 0) {
-        id = 0;
+    if (code == EMPTY_CODE) {
+        id = EMPTY_ID;
     }
 }
 
@@ -109,6 +105,46 @@ QString Item::instance_properties_to_string() const {
     }
 
     return string;
+}
+
+QString Item::to_data_string() const {
+    QString instance_props_string;
+
+    for (const auto &pair : instance_properties) {
+        instance_props_string += QString("%1:%2:").arg(pair.first).arg(pair.second);
+    }
+
+    return QString("%1;%2;%3;%4;%5 Hey! Keep the items in the game, man. Thanks for playing AOR! :)")
+        .arg(code)
+        .arg(id)
+        .arg(uses_left)
+        .arg(owning_action)
+        .arg(instance_props_string);
+}
+
+Item Item::from_data_string(const QString &data_string) {
+    QStringList chunks = data_string.split(";");
+
+    Item item;
+    item.code = chunks[0].toULongLong();
+    item.id = chunks[1].toULongLong();
+    item.uses_left = chunks[2].toULongLong();
+    item.owning_action = chunks[3].toULongLong();
+
+    bool is_key = true;
+    QString key;
+    std::map<ItemProperty, AorUInt> instance_props;
+    for (const QString &key_or_prop : chunks[4].split(':', Qt::SkipEmptyParts)) {
+        if (is_key) {
+            key = key_or_prop;
+        } else {
+            instance_props[static_cast<ItemProperty>(key.toULongLong())] = key_or_prop.toULongLong();
+        }
+        is_key = !is_key;
+    }
+    item.instance_properties = ItemProperties(instance_props);
+
+    return item;
 }
 
 void Item::call_hooks(HookType type, const HookPayload &payload) const {
@@ -172,7 +208,7 @@ bool Item::has_resource_value(ItemCode code) {
 }
 
 void Item::for_each_resource_type(const std::function<void(ItemProperty, ItemProperty, ItemProperty)> &fn) {
-    for (quint16 i = 1; i <= 5; i++) {
+    for (AorUInt i = 1; i <= 5; i++) {
         ItemProperty cost_prop = (ItemProperty) (Cost + i);
         ItemProperty max_prop = (ItemProperty) (ToolMaximum + i);
         ItemProperty resource_prop = (ItemProperty) (Resource + i);
@@ -181,7 +217,7 @@ void Item::for_each_resource_type(const std::function<void(ItemProperty, ItemPro
 }
 
 void Item::for_each_tool_discover(const std::function<void(ItemProperty, ItemProperty)> &fn) {
-    for (quint16 i = 0; i < 9; i++) {
+    for (AorUInt i = 0; i < 9; i++) {
         ItemProperty can_discover_prop = (ItemProperty) (ToolCanDiscover1 + i);
         ItemProperty weight_prop = (ItemProperty) (ToolDiscoverWeight1 + i);
         fn(can_discover_prop, weight_prop);

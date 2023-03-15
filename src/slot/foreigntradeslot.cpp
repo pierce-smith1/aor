@@ -1,0 +1,2 @@
+#include "foreigntradeslot.h"
+

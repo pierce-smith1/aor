@@ -51,7 +51,7 @@ void Character::queue_activity(ItemDomain domain, const std::vector<ItemId> &ite
         return;
     }
 
-    qint64 activity_ms;
+    AorUInt activity_ms;
     if (gw()->game().fast_actions()) {
         activity_ms = 10 * 120;
     } else {
@@ -88,7 +88,7 @@ CharacterActivity &Character::activity() {
     return m_activities.front();
 }
 
-quint16 &Character::energy() {
+AorInt &Character::energy() {
     if (m_energy > max_energy()) {
         m_energy = max_energy();
     }
@@ -100,7 +100,7 @@ quint16 &Character::energy() {
     return m_energy;
 }
 
-quint16 &Character::spirit() {
+AorInt &Character::spirit() {
     if (m_spirit > max_spirit()) {
         m_spirit = max_spirit();
     }
@@ -112,23 +112,23 @@ quint16 &Character::spirit() {
     return m_spirit;
 }
 
-int Character::max_energy() {
-    int energy = BASE_MAX_ENERGY;
+AorInt Character::max_energy() {
+    AorInt energy = BASE_MAX_ENERGY;
     call_hooks(HookCalcMaxEnergy, { &energy });
     return energy;
 }
 
-int Character::max_spirit() {
-    int spirit = BASE_MAX_SPIRIT;
+AorInt Character::max_spirit() {
+    AorInt spirit = BASE_MAX_SPIRIT;
     call_hooks(HookCalcMaxSpirit, { &spirit });
     return spirit;
 }
 
-int Character::base_spirit_cost() {
+AorInt Character::base_spirit_cost() {
     return 5;
 }
 
-void Character::add_energy(int add) {
+void Character::add_energy(AorInt add) {
     if (-add > m_energy) {
         m_energy = 0;
         return;
@@ -140,7 +140,7 @@ void Character::add_energy(int add) {
     }
 }
 
-void Character::add_spirit(int add) {
+void Character::add_spirit(AorInt add) {
     if (-add > m_spirit) {
         m_spirit = 0;
         return;
@@ -152,7 +152,7 @@ void Character::add_spirit(int add) {
     }
 }
 
-quint16 Character::egg_find_percent_chance() {
+AorUInt Character::egg_find_percent_chance() {
     return 15;
 }
 
@@ -170,7 +170,7 @@ bool Character::can_perform_action(ItemDomain domain) {
             break;
         }
         case Smithing: {
-            can_do = smithing_result() != 0;
+            can_do = smithing_result() != EMPTY_CODE;
             call_hooks(HookCanDoActionCheck, { &can_do, &m_energy }, SmithingTool);
             break;
         }
@@ -188,13 +188,13 @@ bool Character::can_perform_action(ItemDomain domain) {
     return can_do;
 }
 
-int Character::energy_to_gain() {
+AorInt Character::energy_to_gain() {
     if (gw()->game().no_exhaustion()) {
         return 0;
     }
 
     CharacterActivity &activity = m_activities.front();
-    qint32 gain = 0;
+    AorInt gain = 0;
 
     call_hooks(HookCalcEnergyGain, { &gain }, BASE_HOOK_DOMAINS | activity.action(), activity.owned_items());
 
@@ -215,13 +215,13 @@ int Character::energy_to_gain() {
     return gain;
 }
 
-int Character::spirit_to_gain() {
+AorInt Character::spirit_to_gain() {
     if (gw()->game().no_exhaustion()) {
         return 0;
     }
 
     CharacterActivity &activity = m_activities.front();
-    qint32 gain = 0;
+    AorInt gain = 0;
 
     if (activity.action() == Eating || activity.action() == Defiling) {
         call_hooks(HookCalcSpiritGain, { &gain }, BASE_HOOK_DOMAINS, activity.owned_items());
@@ -263,12 +263,12 @@ std::vector<ItemCode> Character::smithable_items() {
         bool can_smith = true;
 
         Item::for_each_resource_type([&](ItemProperty cost_prop, ItemProperty, ItemProperty resource_prop) {
-            int resource_budget = std::accumulate(
+            AorUInt resource_budget = std::accumulate(
                 begin(external_items().at(Material)),
                 end(external_items().at(Material)),
                 0,
-                [=](int a, ItemId b) {
-                    int item_resource = inventory().get_item(b).def()->properties[resource_prop];
+                [=](AorUInt a, ItemId b) {
+                    AorUInt item_resource = inventory().get_item(b).def()->properties[resource_prop];
                     item_resource += (item_resource * material_bonus);
                     return item_resource + a;
                 }
@@ -295,8 +295,8 @@ ItemCode Character::smithing_result() {
         begin(possible_smiths),
         end(possible_smiths),
         [](ItemCode a, ItemCode b) {
-            int total_cost_a = 0;
-            int total_cost_b = 0;
+            AorInt total_cost_a = 0;
+            AorInt total_cost_b = 0;
 
             Item::for_each_resource_type([&](ItemProperty cost_prop, ItemProperty, ItemProperty) {
                 total_cost_a += Item::def_of(a)->properties[cost_prop];
@@ -347,7 +347,7 @@ bool Character::push_effect(const Item &effect) {
     }
     gw()->game().history().insert(effect.code);
 
-    int current_effects = std::count_if(begin(m_effects), end(m_effects), [](const Item &item) {
+    AorInt current_effects = std::count_if(begin(m_effects), end(m_effects), [](const Item &item) {
         return item.id != EMPTY_ID;
     });
 
@@ -358,7 +358,7 @@ bool Character::push_effect(const Item &effect) {
         m_dead = true;
     }
 
-    for (int i = 0; i < EFFECT_SLOTS; i++) {
+    for (AorUInt i = 0; i < EFFECT_SLOTS; i++) {
         if (m_effects[i].id == EMPTY_ID) {
             m_effects[i] = effect;
             gw()->notify(Warning, QString("%1 suffered an injury...").arg(name()));
@@ -397,8 +397,8 @@ bool Character::discover(const Item &item) {
     }
 }
 
-void Character::call_hooks(HookType type, const HookPayload &payload, quint16 int_domain, const std::vector<Item> &extra_items) {
-    ItemDomain domain = (ItemDomain) int_domain;
+void Character::call_hooks(HookType type, const HookPayload &payload, AorUInt AorInt_domain, const std::vector<Item> &extra_items) {
+    ItemDomain domain = (ItemDomain) AorInt_domain;
 
     if (domain & Tool) {
         inventory().get_item(m_tool_ids[(ItemDomain) (domain & Tool)]).call_hooks(type, payload);
@@ -426,7 +426,7 @@ void Character::call_hooks(HookType type, const HookPayload &payload, quint16 in
 }
 
 bool Character::clear_last_effect() {
-    for (int i = EFFECT_SLOTS - 1; i >= 0; i--) {
+    for (AorInt i = EFFECT_SLOTS - 1; i >= 0; i--) {
         if (effects()[i].id != EMPTY_ID) {
             effects()[i] = Item();
             return true;
@@ -453,74 +453,74 @@ Effects &Character::effects() {
 }
 
 void Character::serialize(QIODevice *dev) const {
-    IO::write_short(dev, m_id);
+    IO::write_uint(dev, m_id);
     IO::write_string(dev, m_name);
-    IO::write_short(dev, m_partner);
-    IO::write_bool(dev, m_dead);
-    IO::write_bool(dev, m_can_couple);
-    IO::write_short(dev, m_energy);
-    IO::write_short(dev, m_spirit);
+    IO::write_uint(dev, m_partner);
+    IO::write_uint(dev, m_dead);
+    IO::write_uint(dev, m_can_couple);
+    IO::write_uint(dev, m_energy);
+    IO::write_uint(dev, m_spirit);
 
-    IO::write_short(dev, m_heritage.size());
+    IO::write_uint(dev, m_heritage.size());
     for (Color c : m_heritage) {
-        IO::write_short(dev, c);
+        IO::write_uint(dev, c);
     }
 
-    for (int i = 0; i < MAX_ARRAY_SIZE; i++) {
-        IO::write_long(dev, m_external_item_ids.at(Material)[i]);
-        IO::write_long(dev, m_external_item_ids.at(Artifact)[i]);
+    for (AorUInt i = 0; i < MAX_ARRAY_SIZE; i++) {
+        IO::write_uint(dev, m_external_item_ids.at(Material)[i]);
+        IO::write_uint(dev, m_external_item_ids.at(Artifact)[i]);
     }
 
     for (const Item &effect : m_effects) {
         IO::write_item(dev, effect);
     }
 
-    IO::write_short(dev, m_activities.size());
+    IO::write_uint(dev, m_activities.size());
     for (const CharacterActivity &activity : m_activities) {
         activity.serialize(dev);
     }
 
-    IO::write_long(dev, m_tool_ids.at(SmithingTool));
-    IO::write_long(dev, m_tool_ids.at(ForagingTool));
-    IO::write_long(dev, m_tool_ids.at(MiningTool));
+    IO::write_uint(dev, m_tool_ids.at(SmithingTool));
+    IO::write_uint(dev, m_tool_ids.at(ForagingTool));
+    IO::write_uint(dev, m_tool_ids.at(MiningTool));
 }
 
 // Transfers ownership
 Character *Character::deserialize(QIODevice *dev) {
     Character *c = new Character;
 
-    c->m_id = IO::read_short(dev);
+    c->m_id = IO::read_uint(dev);
     c->m_name = IO::read_string(dev);
-    c->m_partner = IO::read_short(dev);
-    c->m_dead = IO::read_bool(dev);
-    c->m_can_couple = IO::read_bool(dev);
-    c->m_energy = IO::read_short(dev);
-    c->m_spirit = IO::read_short(dev);
+    c->m_partner = IO::read_uint(dev);
+    c->m_dead = IO::read_uint(dev);
+    c->m_can_couple = IO::read_uint(dev);
+    c->m_energy = IO::read_uint(dev);
+    c->m_spirit = IO::read_uint(dev);
 
-    quint16 heritage_size = IO::read_short(dev);
-    for (quint16 i = 0; i < heritage_size; i++) {
-        c->m_heritage.insert((Color) IO::read_short(dev));
+    AorUInt heritage_size = IO::read_uint(dev);
+    for (AorUInt i = 0; i < heritage_size; i++) {
+        c->m_heritage.insert((Color) IO::read_uint(dev));
     }
 
-    for (int i = 0; i < MAX_ARRAY_SIZE; i++) {
-        c->m_external_item_ids[Material][i] = IO::read_long(dev);
-        c->m_external_item_ids[Artifact][i] = IO::read_long(dev);
+    for (AorUInt i = 0; i < MAX_ARRAY_SIZE; i++) {
+        c->m_external_item_ids[Material][i] = IO::read_uint(dev);
+        c->m_external_item_ids[Artifact][i] = IO::read_uint(dev);
     }
 
-    for (int i = 0; i < EFFECT_SLOTS; i++) {
+    for (AorUInt i = 0; i < EFFECT_SLOTS; i++) {
         c->m_effects[i] = IO::read_item(dev);
     }
 
-    quint16 activities_size = IO::read_short(dev);
-    for (quint16 i = 0; i < activities_size; i++) {
+    AorUInt activities_size = IO::read_uint(dev);
+    for (AorUInt i = 0; i < activities_size; i++) {
         CharacterActivity *a = CharacterActivity::deserialize(dev);
         c->m_activities.push_back(*a);
         delete a;
     }
 
-    c->m_tool_ids[SmithingTool] = IO::read_long(dev);
-    c->m_tool_ids[ForagingTool] = IO::read_long(dev);
-    c->m_tool_ids[MiningTool] = IO::read_long(dev);
+    c->m_tool_ids[SmithingTool] = IO::read_uint(dev);
+    c->m_tool_ids[ForagingTool] = IO::read_uint(dev);
+    c->m_tool_ids[MiningTool] = IO::read_uint(dev);
 
     return c;
 }

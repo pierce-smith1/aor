@@ -8,11 +8,11 @@
 class CheatConsole;
 
 #include "gamewindow.h"
-#include "itemslot.h"
+#include "slot/itemslot.h"
 #include "../ui_cheat.h"
 
 #define QS_TO_INT(i, s) \
-int i; \
+AorInt i; \
 { \
     bool ok; \
     i = s.toInt(&ok); \
@@ -24,7 +24,7 @@ int i; \
 
 #define OOB_CHECK(y, x) \
 if (Inventory::are_yx_coords_oob(y, x)) { \
-    qWarning("Yx coords were oob (y: %d, x: %d)", y, x); \
+    qWarning("Yx coords were oob (y: %lld, x: %lld)", y, x); \
     return; \
 }
 
@@ -69,12 +69,11 @@ const static std::vector<CheatCommand> COMMANDS = {
 
             Item item = game->game().inventory().get_item(y, x);
 
-            qDebug("print: item yx (%d, %d): code (%d), id (%llx), name (%s), intent (%d)",
+            qDebug("print: item yx (%lld, %lld): code (%llx), id (%llx), name (%s)",
                 y, x,
-                item.code,
-                item.id,
-                Item::def_of(item.code)->internal_name.toStdString().c_str(),
-                item.intent
+                item.code.n,
+                item.id.n,
+                Item::def_of(item.code)->internal_name.toStdString().c_str()
             );
         }
     },
@@ -131,14 +130,14 @@ const static std::vector<CheatCommand> COMMANDS = {
         1,
         [](LKGameWindow *game, const QStringList &args) {
             if (args[0] == "?") {
-                qDebug("Current energy is (%d)", game->selected_char().energy());
+                qDebug("Current energy is (%lld)", game->selected_char().energy());
                 return;
             }
 
             QS_TO_INT(energy, args[0]);
 
             if (energy < 0 || energy > 100) {
-                qWarning("New energy value is oob (%d)", energy);
+                qWarning("New energy value is oob (%lld)", energy);
                 return;
             }
 
@@ -151,14 +150,14 @@ const static std::vector<CheatCommand> COMMANDS = {
         1,
         [](LKGameWindow *game, const QStringList &args) {
             if (args[0] == "?") {
-                qDebug("Current spirit is (%d)", game->selected_char().spirit());
+                qDebug("Current spirit is (%lld)", game->selected_char().spirit());
                 return;
             }
 
             QS_TO_INT(spirit, args[0]);
 
             if (spirit < 0 || spirit > 100) {
-                qWarning("New spirit value is oob (%d)", spirit);
+                qWarning("New spirit value is oob (%lld)", spirit);
                 return;
             }
 

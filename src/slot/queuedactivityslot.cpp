@@ -1,0 +1,2 @@
+#include "queuedactivityslot.h"
+

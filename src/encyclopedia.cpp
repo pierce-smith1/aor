@@ -6,7 +6,7 @@ Encyclopedia::Encyclopedia()
 {
     m_widget.setupUi(this);
 
-    for (ItemCode group = CT_CONSUMABLE; group <= CT_ARTIFACT; group <<= 1) {
+    for (ItemCode group = CT_CONSUMABLE; group.n <= CT_ARTIFACT; group.n <<= 1) {
         QGroupBox *group_box = new QGroupBox(this);
         QGridLayout *box_layout = new QGridLayout;
         group_box->setLayout(box_layout);

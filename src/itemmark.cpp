@@ -25,7 +25,7 @@ std::vector<ItemDefinition> ItemMark::resolve_markers(std::vector<ItemDefinition
     return defs;
 }
 
-quint16 ItemMark::marker(const QString &name) {
+AorUInt ItemMark::marker(const QString &name) {
     auto existing_mark = std::find_if(marked_names.begin(), marked_names.end(), [&](const QString &n) {
         return name == n;
     });

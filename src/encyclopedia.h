@@ -4,7 +4,7 @@
 
 #include "../ui_encyclopedia.h"
 #include "gamewindow.h"
-#include "itemslot.h"
+#include "slot/encyclopediaslot.h"
 
 const static int ENCYCLOPEDIA_GROUP_ROWS = 3;
 const static int ENCYCLOPEDIA_GROUP_COLS = 10;
@@ -22,4 +22,3 @@ private:
     Ui::Encyclopedia m_widget;
 };
 
-class EncyclopediaSlot : public ItemSlot {};

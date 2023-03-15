@@ -77,24 +77,20 @@ void Tooltip::set(const Item &item, Game &game) {
     subtext += Item::type_to_string(this_def->type);
 
     if (item.owning_action != NO_ACTION) {
-        switch (item.intent) {
+        switch (gw()->game().intent_of(item.id)) {
             default:
             case None: {
                 break;
-            }
-            case Consumable: {
+            } case Consumable: {
                 subtext += QString(" <b><font color=green>(Will be eaten by %1)</font></b>").arg(character_name);
                 break;
-            }
-            case Defiling: {
+            } case Defiling: {
                 subtext += QString(" <b><font color=green>(Will be defiled by %1)</font></b>").arg(character_name);
                 break;
-            }
-            case Material: {
+            } case Material: {
                 subtext += QString(" <b><font color=green>(Will be used by %1)</font></b>").arg(character_name);
                 break;
-            }
-            case Offering: {
+            } case Offering: {
                 subtext += QString(" <b><font color=green>(Will be traded away)</font></b>");
                 break;
             }
@@ -172,7 +168,7 @@ void Tooltip::color_cost_text() {
 
     Item::for_each_resource_type([&](ItemProperty cost_prop, ItemProperty, ItemProperty resource_prop) {
         QLabel *label = cost_text().at(cost_prop);
-        quint16 cost = label->text().toUShort();
+        AorUInt cost = label->text().toUShort();
         if (resources[resource_prop] < cost) {
             label->setText("<font color=red> " + label->text() + " </font>");
         } else {
@@ -214,8 +210,8 @@ void Tooltip::hide_resources() {
     widget.power_container->hide();
 }
 
-const std::map<quint16, QLabel *> &Tooltip::icons() {
-    static std::map<quint16, QLabel *> icons = {
+const std::map<AorUInt, QLabel *> &Tooltip::icons() {
+    static std::map<AorUInt, QLabel *> icons = {
         { StoneResource, widget.stone_icon },
         { MetallicResource, widget.metallic_icon },
         { CrystallineResource, widget.crystal_icon },
@@ -226,8 +222,8 @@ const std::map<quint16, QLabel *> &Tooltip::icons() {
     return icons;
 }
 
-const std::map<quint16, QLabel *> &Tooltip::text() {
-    static std::map<quint16, QLabel *> text = {
+const std::map<AorUInt, QLabel *> &Tooltip::text() {
+    static std::map<AorUInt, QLabel *> text = {
         { StoneResource, widget.stone_text },
         { MetallicResource, widget.metallic_text },
         { CrystallineResource, widget.crystal_text },
@@ -238,8 +234,8 @@ const std::map<quint16, QLabel *> &Tooltip::text() {
     return text;
 }
 
-const std::map<quint16, QLabel *> &Tooltip::cost_icons() {
-    static std::map<quint16, QLabel *> icons = {
+const std::map<AorUInt, QLabel *> &Tooltip::cost_icons() {
+    static std::map<AorUInt, QLabel *> icons = {
         { CostStone, widget.stone_cost_icon },
         { CostMetallic, widget.metallic_cost_icon },
         { CostCrystalline, widget.crystalline_cost_icon },
@@ -250,8 +246,8 @@ const std::map<quint16, QLabel *> &Tooltip::cost_icons() {
     return icons;
 }
 
-const std::map<quint16, QLabel *> &Tooltip::cost_text() {
-    static std::map<quint16, QLabel *> text = {
+const std::map<AorUInt, QLabel *> &Tooltip::cost_text() {
+    static std::map<AorUInt, QLabel *> text = {
         { CostStone, widget.stone_cost_text },
         { CostMetallic, widget.metallic_cost_text },
         { CostCrystalline, widget.crystalline_cost_text },
@@ -262,8 +258,8 @@ const std::map<quint16, QLabel *> &Tooltip::cost_text() {
     return text;
 }
 
-const std::map<quint16, QLabel *> &Tooltip::power_icons() {
-    static std::map<quint16, QLabel *> icons = {
+const std::map<AorUInt, QLabel *> &Tooltip::power_icons() {
+    static std::map<AorUInt, QLabel *> icons = {
         { ToolMaximumStone, widget.stone_power_icon },
         { ToolMaximumMetallic, widget.metallic_power_icon },
         { ToolMaximumCrystalline, widget.crystalline_power_icon },
@@ -274,8 +270,8 @@ const std::map<quint16, QLabel *> &Tooltip::power_icons() {
     return icons;
 }
 
-const std::map<quint16, QLabel *> &Tooltip::power_text() {
-    static std::map<quint16, QLabel *> text = {
+const std::map<AorUInt, QLabel *> &Tooltip::power_text() {
+    static std::map<AorUInt, QLabel *> text = {
         { ToolMaximumStone, widget.stone_power_text },
         { ToolMaximumMetallic, widget.metallic_power_text },
         { ToolMaximumCrystalline, widget.crystalline_power_text },

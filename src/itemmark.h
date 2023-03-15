@@ -12,12 +12,14 @@
 #include <QtCore>
 #include <QString>
 
+#include "types.h"
+
 class ItemDefinition;
 
 class ItemMark {
 public:
     static std::vector<ItemDefinition> resolve_markers(std::vector<ItemDefinition> defs);
-    static quint16 marker(const QString &item_name);
+    static AorUInt marker(const QString &item_name);
 
 private:
     static std::vector<QString> marked_names;

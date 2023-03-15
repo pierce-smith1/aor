@@ -1,5 +1,5 @@
 #include "actions.h"
-#include "externalslot.h"
+#include "slot/externalslot.h"
 #include "gamewindow.h"
 #include "die.h"
 
@@ -15,8 +15,8 @@ CharacterActivity::CharacterActivity(
     CharacterId id,
     ItemDomain action,
     const std::vector<ItemId> &owned_items,
-    qint64 ms_total,
-    qint64 ms_left
+    AorInt ms_total,
+    AorInt ms_left
 )
     : m_id(Generators::activity_id()),
       m_action(action),
@@ -44,11 +44,11 @@ ItemDomain &CharacterActivity::action() {
     return m_action;
 }
 
-qint64 &CharacterActivity::ms_left() {
+AorInt &CharacterActivity::ms_left() {
     return m_ms_left;
 }
 
-qint64 &CharacterActivity::ms_total() {
+AorInt &CharacterActivity::ms_total() {
     return m_ms_total;
 }
 
@@ -84,7 +84,7 @@ bool CharacterActivity::ongoing() {
     return m_action != None && m_ms_left > 0;
 }
 
-void CharacterActivity::progress(qint64 ms) {
+void CharacterActivity::progress(AorInt ms) {
     m_ms_left -= ms;
 
     if (m_ms_left <= 0) {
@@ -120,7 +120,7 @@ void CharacterActivity::complete() {
 
     if (m_action == Trading) {
         gw()->connection().agreement_changed(gw()->game().trade_partner(), false);
-        for (int i = 0; i < TRADE_SLOTS; i++) {
+        for (AorUInt i = 0; i < TRADE_SLOTS; i++) {
             gw()->connection().offer_changed(Item(), i);
         }
         gw()->game().accepting_trade() = false;
@@ -132,7 +132,7 @@ void CharacterActivity::complete() {
     give_injuries();
     std::vector<Item> items = products();
 
-    qint32 item_double_chance = 0;
+    AorInt item_double_chance = 0;
     character().call_hooks(HookCalcItemDoubleChance, { &item_double_chance });
 
     if (Generators::percent_chance(item_double_chance)) {
@@ -170,13 +170,13 @@ std::vector<Item> CharacterActivity::products() {
         case Smithing: {
             ItemCode smithing_result = character().smithing_result();
 
-            if (smithing_result == 0) {
+            if (smithing_result == EMPTY_CODE) {
                 break;
             }
 
             Item result = Item(smithing_result);
 
-            qint32 use_bonus = 0;
+            AorInt use_bonus = 0;
             character().call_hooks(HookCalcBonusProductUse, { &use_bonus });
             result.uses_left += use_bonus;
 
@@ -330,8 +330,6 @@ void CharacterActivity::exhaust_item(ItemId id) {
             gw()->game().inventory().remove_item(id);
         } else if (item.uses_left == 0) {
             gw()->game().inventory().remove_item(id);
-        } else if (!(item.intent & Tool)) {
-            item.intent = None;
         }
     }
 
@@ -370,7 +368,7 @@ void CharacterActivity::give_bonuses() {
 void CharacterActivity::give_injuries() {
     bool welchian = false;
 
-    qint32 injury_percent_chance = 0;
+    AorInt injury_percent_chance = 0;
     character().call_hooks(HookCalcInjuryChance, { &injury_percent_chance }, BASE_HOOK_DOMAINS | m_action);
 
     if (gw()->game().actions_done() > 800) {
@@ -424,32 +422,32 @@ void CharacterActivity::clear_injuries() {
 }
 
 void CharacterActivity::serialize(QIODevice *dev) const {
-    IO::write_long(dev, m_id);
-    IO::write_short(dev, m_action);
-    IO::write_long(dev, m_ms_left);
-    IO::write_long(dev, m_ms_total);
-    IO::write_bool(dev, m_started);
-    IO::write_short(dev, m_char_id);
+    IO::write_uint(dev, m_id);
+    IO::write_uint(dev, m_action);
+    IO::write_uint(dev, m_ms_left);
+    IO::write_uint(dev, m_ms_total);
+    IO::write_uint(dev, m_started);
+    IO::write_uint(dev, m_char_id);
 
-    IO::write_short(dev, m_owned_items.size());
+    IO::write_uint(dev, m_owned_items.size());
     for (ItemId id : m_owned_items) {
-        IO::write_long(dev, id);
+        IO::write_uint(dev, id);
     }
 }
 
 CharacterActivity *CharacterActivity::deserialize(QIODevice *dev) {
     CharacterActivity *a = new CharacterActivity;
 
-    a->m_id = IO::read_long(dev);
-    a->m_action = (ItemDomain) IO::read_short(dev);
-    a->m_ms_left = IO::read_long(dev);
-    a->m_ms_total = IO::read_long(dev);
-    a->m_started = IO::read_bool(dev);
-    a->m_char_id = IO::read_short(dev);
+    a->m_id = IO::read_uint(dev);
+    a->m_action = (ItemDomain) IO::read_uint(dev);
+    a->m_ms_left = IO::read_uint(dev);
+    a->m_ms_total = IO::read_uint(dev);
+    a->m_started = IO::read_uint(dev);
+    a->m_char_id = IO::read_uint(dev);
 
-    quint16 owned_size = IO::read_short(dev);
-    for (quint16 i = 0; i < owned_size; i++) {
-        a->m_owned_items.push_back(IO::read_long(dev));
+    AorUInt owned_size = IO::read_uint(dev);
+    for (AorUInt i = 0; i < owned_size; i++) {
+        a->m_owned_items.push_back(IO::read_uint(dev));
     }
 
     return a;

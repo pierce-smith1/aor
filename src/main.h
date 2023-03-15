@@ -9,12 +9,14 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
-#include "itemslot.h"
+#include "slot/itemslot.h"
 #include "gamewindow.h"
 #include "cheatconsole.h"
 #include "encyclopedia.h"
 
-const static QString GAME_VERSION = "b1.4.1";
+const static AorUInt MAJOR_VERSION = 2;
+const static AorUInt MINOR_VERSION = 0;
+const static AorUInt PATCH_VERSION = 0;
 
 void new_game_prompt();
 void welcome_message();

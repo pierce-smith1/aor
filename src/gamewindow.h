@@ -24,10 +24,11 @@ class Encyclopedia;
 class Tooltip;
 class AboutBox;
 
-using ActivityTimers = std::map<CharacterId, int>;
+using ActivityTimers = std::map<CharacterId, AorInt>;
 
 static const QString SAVE_FILE_NAME = "save.rho";
-static const int BACKUP_INTERVAL_MS = 1000 * 6;
+static const AorUInt SAVE_MAGIC_NUMBER = 2270;
+static const AorInt BACKUP_INTERVAL_MS = 1000 * 6;
 
 class LKGameWindow : public QMainWindow {
     Q_OBJECT
@@ -90,9 +91,9 @@ private:
     GameId m_selected_tribe_id = NO_TRIBE;
     std::vector<Slot *> m_slots;
     DoughbyteConnection m_connection;
-    EncryptedFile m_save_file;
+    QFile m_save_file;
     Encyclopedia *m_encyclopedia;
-    int m_backup_timer_id;
+    AorInt m_backup_timer_id;
     Ui::EventLog m_event_log;
     AboutBox *m_about_box;
     std::vector<QMainWindow *> m_multiwindows;

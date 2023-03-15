@@ -1,12 +1,15 @@
 #include "trade.h"
 #include "gamewindow.h"
 
-DoughbyteConnection::DoughbyteConnection()
-{
+DoughbyteConnection::DoughbyteConnection() {
+#ifdef Q_NO_DEBUG
     m_socket.connectToHost("doughbyte.com", 10241);
+#else
+    m_socket.connectToHost("localhost", 10241);
+#endif
 
     QObject::connect(&m_socket, &QTcpSocket::connected, [=]() {
-        IO::write_long(&m_socket, gw()->game().game_id());
+        IO::write_uint(&m_socket, gw()->game().game_id());
         IO::write_string(&m_socket, gw()->game().tribe_name());
 
         availability_changed(true);
@@ -50,26 +53,26 @@ bool DoughbyteConnection::is_connected() {
 void DoughbyteConnection::offer_changed(const Item &item, int n) {
     IO::write_byte(&m_socket, MT_OFFERCHANGED);
 
-    IO::write_short(&m_socket, item.code);
-    IO::write_byte(&m_socket, item.uses_left);
-    IO::write_short(&m_socket, n);
+    IO::write_uint(&m_socket, item.code);
+    IO::write_uint(&m_socket, item.uses_left);
+    IO::write_uint(&m_socket, n);
 }
 
 void DoughbyteConnection::agreement_changed(GameId partner_id, bool accepting) {
     IO::write_byte(&m_socket, MT_AGREEMENTCHANGED);
 
-    IO::write_long(&m_socket, partner_id);
-    IO::write_bool(&m_socket, accepting);
+    IO::write_uint(&m_socket, partner_id);
+    IO::write_uint(&m_socket, accepting);
 }
 
 void DoughbyteConnection::availability_changed(bool available) {
     IO::write_byte(&m_socket, MT_TRIBEAVAILABILITYCHANGED);
 
-    IO::write_bool(&m_socket, available);
+    IO::write_uint(&m_socket, available);
 }
 
 void DoughbyteConnection::send_info() {
-    GameId to = IO::read_long(&m_socket);
+    GameId to = IO::read_uint(&m_socket);
 
     Inventory &inventory = gw()->game().inventory();
     send_info(
@@ -88,13 +91,13 @@ void DoughbyteConnection::send_info() {
 void DoughbyteConnection::send_info(GameId to, const std::array<Item, TRADE_SLOTS> &items, bool accepting) {
     IO::write_byte(&m_socket, MT_MYINFO);
 
-    IO::write_long(&m_socket, to);
+    IO::write_uint(&m_socket, to);
     IO::write_string(&m_socket, gw()->game().tribe_name());
-    for (int i = 0; i < TRADE_SLOTS; i++) {
-        IO::write_short(&m_socket, items[i].code);
-        IO::write_byte(&m_socket, items[i].uses_left);
+    for (AorUInt i = 0; i < TRADE_SLOTS; i++) {
+        IO::write_uint(&m_socket, items[i].code);
+        IO::write_uint(&m_socket, items[i].uses_left);
     }
-    IO::write_bool(&m_socket, accepting);
+    IO::write_uint(&m_socket, accepting);
 }
 
 void DoughbyteConnection::want_game_state() {
@@ -111,10 +114,10 @@ void DoughbyteConnection::execute_trade() {
 }
 
 void DoughbyteConnection::update_offers() {
-    quint64 tribe_id = IO::read_long(&m_socket);
-    quint16 item_code = IO::read_short(&m_socket);
-    char item_uses = IO::read_byte(&m_socket);
-    quint16 index = IO::read_short(&m_socket);
+    AorUInt tribe_id = IO::read_uint(&m_socket);
+    AorUInt item_code = IO::read_uint(&m_socket);
+    AorUInt item_uses = IO::read_uint(&m_socket);
+    AorUInt index = IO::read_uint(&m_socket);
 
     update_offers(tribe_id, item_code, item_uses, index);
 }
@@ -136,8 +139,8 @@ void DoughbyteConnection::update_offers(GameId tribe_id, ItemCode code, char use
 }
 
 void DoughbyteConnection::update_agreements() {
-    quint64 tribe_id = IO::read_long(&m_socket);
-    bool accepting = IO::read_bool(&m_socket);
+    AorUInt tribe_id = IO::read_uint(&m_socket);
+    bool accepting = IO::read_uint(&m_socket);
 
     update_agreements(tribe_id, accepting);
 }
@@ -148,9 +151,9 @@ void DoughbyteConnection::update_agreements(GameId tribe_id, bool agrees) {
 }
 
 void DoughbyteConnection::update_availability() {
-    quint64 tribe_id = IO::read_long(&m_socket);
+    AorUInt tribe_id = IO::read_uint(&m_socket);
     QString tribe_name = IO::read_string(&m_socket);
-    bool available = IO::read_bool(&m_socket);
+    AorUInt available = IO::read_uint(&m_socket);
 
     update_availability(tribe_id, tribe_name, available);
 }
@@ -171,19 +174,19 @@ void DoughbyteConnection::update_availability(GameId tribe_id, const QString &tr
 }
 
 void DoughbyteConnection::update_all() {
-    quint64 tribe_id = IO::read_long(&m_socket);
+    AorUInt tribe_id = IO::read_uint(&m_socket);
     QString tribe_name = IO::read_string(&m_socket);
-    quint16 item_code_1 = IO::read_short(&m_socket);
-    char item_uses_1 = IO::read_byte(&m_socket);
-    quint16 item_code_2 = IO::read_short(&m_socket);
-    char item_uses_2 = IO::read_byte(&m_socket);
-    quint16 item_code_3 = IO::read_short(&m_socket);
-    char item_uses_3 = IO::read_byte(&m_socket);
-    quint16 item_code_4 = IO::read_short(&m_socket);
-    char item_uses_4 = IO::read_byte(&m_socket);
-    quint16 item_code_5 = IO::read_short(&m_socket);
-    char item_uses_5 = IO::read_byte(&m_socket);
-    bool accepting = IO::read_bool(&m_socket);
+    AorUInt item_code_1 = IO::read_uint(&m_socket);
+    AorUInt item_uses_1 = IO::read_uint(&m_socket);
+    AorUInt item_code_2 = IO::read_uint(&m_socket);
+    AorUInt item_uses_2 = IO::read_uint(&m_socket);
+    AorUInt item_code_3 = IO::read_uint(&m_socket);
+    AorUInt item_uses_3 = IO::read_uint(&m_socket);
+    AorUInt item_code_4 = IO::read_uint(&m_socket);
+    AorUInt item_uses_4 = IO::read_uint(&m_socket);
+    AorUInt item_code_5 = IO::read_uint(&m_socket);
+    AorUInt item_uses_5 = IO::read_uint(&m_socket);
+    bool accepting = IO::read_uint(&m_socket);
 
     update_offers(tribe_id, item_code_1, item_uses_1, 0);
     update_offers(tribe_id, item_code_2, item_uses_2, 1);
@@ -196,6 +199,6 @@ void DoughbyteConnection::update_all() {
 
 void DoughbyteConnection::notify_trade(GameId tribe_id) {
     IO::write_byte(&m_socket, MT_EXECUTETRADE);
-    IO::write_long(&m_socket, tribe_id);
+    IO::write_uint(&m_socket, tribe_id);
 }
 

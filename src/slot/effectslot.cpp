@@ -1,0 +1,1 @@
+#include "effectslot.h"
