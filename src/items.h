@@ -24,7 +24,7 @@ const static AorUInt SMITHING_SLOTS_PER_ROW = 5;
 
 const static AorUInt TRADE_SLOTS = 5;
 
-const static AorUInt ARTIFACT_SLOTS = 3;
+const static AorUInt ARTIFACT_SLOTS = 4;
 
 const static AorUInt EFFECT_SLOTS = 4;
 

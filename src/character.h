@@ -17,6 +17,7 @@ class Game;
 
 const static AorUInt MAX_ARRAY_SIZE = std::max({ SMITHING_SLOTS, TRADE_SLOTS, ARTIFACT_SLOTS });
 const static AorUInt MAX_QUEUED_ACTIVITIES = 8;
+const static AorUInt MAX_SKILLS = 6;
 
 const static AorUInt BASE_MAX_ENERGY = 50;
 const static AorUInt BASE_MAX_SPIRIT = 50;

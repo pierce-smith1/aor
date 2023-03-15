@@ -21,14 +21,12 @@ Encyclopedia::Encyclopedia()
 
         for (int y = 0; y < ENCYCLOPEDIA_GROUP_ROWS; y++) {
             for (int x = 0; x < ENCYCLOPEDIA_GROUP_COLS; x++) {
-                /*
                 EncyclopediaSlot *slot = new EncyclopediaSlot(y, x, group);
                 box_layout->addWidget(slot, y, x);
 
-                if (slot->get_item().id != EMPTY_ID) {
+                if (slot->valid()) {
                     m_total_items++;
                 }
-                */
             }
         }
     }

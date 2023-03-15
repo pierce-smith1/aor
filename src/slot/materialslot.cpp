@@ -4,7 +4,7 @@ MaterialSlot::MaterialSlot(size_t n)
     : ExternalSlot(n) {}
 
 bool MaterialSlot::will_accept_drop(const SlotMessage &message) {
-    if (!ExternalSlot::will_accept_drop(message)) {
+    if (!std::holds_alternative<Item>(message)) {
         return false;
     }
 

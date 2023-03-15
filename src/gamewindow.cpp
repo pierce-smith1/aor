@@ -11,6 +11,7 @@
 #include "slot/toolslot.h"
 #include "slot/artifactslot.h"
 #include "slot/effectslot.h"
+#include "slot/portraitslot.h"
 #include "slot/queuedactivityslot.h"
 #include "slot/skillslot.h"
 #include "slot/explorerbutton.h"
@@ -162,6 +163,12 @@ void LKGameWindow::install_slots() {
 
     for (AorUInt i = 0; i < MAX_EXPLORERS; i++) {
         (new ExplorerButton(i))->install();
+    }
+
+    (new PortraitSlot())->install();
+
+    for (AorUInt i = 0; i < MAX_SKILLS; i++) {
+        (new SkillSlot(i))->install();
     }
 }
 
