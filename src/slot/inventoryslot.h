@@ -8,9 +8,9 @@ public:
 
     virtual void refresh() override;
     virtual bool is_draggable() override;
+    virtual bool will_accept_drop(const SlotMessage &message) override;
     virtual void accept_message(const SlotMessage &message) override;
     virtual void install() override;
-    virtual ItemDomain type() override;
 
 protected:
     virtual Item my_item() override;

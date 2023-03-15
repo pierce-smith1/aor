@@ -60,12 +60,14 @@ public:
     virtual void on_right_click(QMouseEvent *event);
     virtual PayloadVariant user_drop_data();
     virtual void install();
-    virtual ItemDomain type();
 
 protected:
     QLabel *m_item_label;
     QGridLayout *m_item_layout;
     QGraphicsOpacityEffect *m_opacity_effect;
+
+    void make_wide();
+    void make_tall();
 
 private:
     void mousePressEvent(QMouseEvent *event);

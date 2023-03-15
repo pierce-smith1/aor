@@ -8,10 +8,6 @@ bool ItemSlot::is_draggable() {
     return my_item().id != EMPTY_ID;
 }
 
-bool ItemSlot::will_accept_drop(const SlotMessage &message) {
-    return std::holds_alternative<Item>(message);
-}
-
 bool ItemSlot::do_hovering() {
     return my_item().id != EMPTY_ID;
 }

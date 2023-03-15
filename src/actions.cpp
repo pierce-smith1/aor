@@ -340,7 +340,7 @@ void CharacterActivity::exhaust_item(ItemId id) {
             }
         }
     } else if (m_action == Trading) {
-        for (ItemId &oid : character().external_items().at(Offering)) {
+        for (ItemId &oid : gw()->game().trade_offer()) {
             if (id == oid) {
                 oid = EMPTY_ID;
             }

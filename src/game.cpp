@@ -218,6 +218,10 @@ ItemProperties Game::total_resources() {
 }
 
 ItemDomain Game::intent_of(ItemId item_id) {
+    if (item_id == EMPTY_ID) {
+        return None;
+    }
+
     AorUInt intent = None;
 
     if (std::find(m_trade_offer.begin(), m_trade_offer.end(), item_id) != m_trade_offer.end()) {

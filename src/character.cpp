@@ -5,14 +5,12 @@
 
 Character::Character()
     : m_id(NOBODY),
-      m_name("Nobody") { }
+      m_name("Nobody") {}
 
 Character::Character(CharacterId id, const QString &name, const Heritage &heritage)
     : m_id(id),
-      m_name(name)
-{
-    m_heritage = heritage;
-}
+      m_name(name),
+      m_heritage(heritage) {}
 
 QString &Character::name() {
     return m_name;
@@ -51,7 +49,7 @@ void Character::queue_activity(ItemDomain domain, const std::vector<ItemId> &ite
         return;
     }
 
-    AorUInt activity_ms;
+    AorInt activity_ms;
     if (gw()->game().fast_actions()) {
         activity_ms = 10 * 120;
     } else {

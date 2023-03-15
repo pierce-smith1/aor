@@ -8,7 +8,6 @@ public:
 
     virtual QPixmap pixmap() override;
     virtual bool is_draggable() override;
-    virtual bool will_accept_drop(const SlotMessage &message) override;
     virtual PayloadVariant user_drop_data() override;
 
     virtual bool do_hovering() override;

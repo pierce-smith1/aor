@@ -17,6 +17,10 @@ bool InventorySlot::is_draggable() {
     return ItemSlot::is_draggable() && gw()->game().intent_of(my_item().id) == None;
 }
 
+bool InventorySlot::will_accept_drop(const SlotMessage &message) {
+    return std::holds_alternative<Item>(message);
+}
+
 void InventorySlot::accept_message(const SlotMessage &message) {
     switch (message.type) {
         case SlotUserDrop: {
@@ -42,8 +46,4 @@ void InventorySlot::install() {
 
 Item InventorySlot::my_item() {
     return inventory().get_item(m_y, m_x);
-}
-
-ItemDomain InventorySlot::type() {
-    return Resident;
 }

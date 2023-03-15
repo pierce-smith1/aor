@@ -3,29 +3,11 @@
 ToolSlot::ToolSlot(ItemDomain tool_type)
     : ExternalSlot(0), m_tool_type(tool_type)
 {
-    setMinimumSize(QSize(0, 80));
-    setMaximumSize(QSize(10000, 80));
+    make_wide();
 }
 
 bool ToolSlot::will_accept_drop(const SlotMessage &message) {
-    Item item = get_item(message);
-    return Item::def_of(item)->type & m_tool_type;
-}
-
-void ToolSlot::accept_message(const SlotMessage &message) {
-    switch (message.type) {
-        case SlotUserDrop: {
-            message.source->accept_message(SlotMessage(SlotForgetItem, my_item(), this));
-            accept_message(SlotMessage(SlotSetItem, message, this));
-            break;
-        } case SlotSetItem: {
-            gw()->selected_char().tools()[m_tool_type] = get_item(message).id;
-            break;
-        } case SlotForgetItem: {
-            gw()->selected_char().tools()[m_tool_type] = EMPTY_ID;
-            break;
-        } default: {}
-    }
+    return Item::def_of(get_item(message))->type & m_tool_type;
 }
 
 ItemDomain ToolSlot::type() {
@@ -52,6 +34,6 @@ void ToolSlot::install() {
     }
 }
 
-Item ToolSlot::my_item() {
-    return inventory().get_item(gw()->selected_char().tool_id(m_tool_type));
+ItemId &ToolSlot::my_item_id() {
+    return gw()->selected_char().tools()[m_tool_type];
 }

@@ -87,7 +87,16 @@ void Slot::on_left_click(QMouseEvent *) {}
 void Slot::on_right_click(QMouseEvent *) {}
 PayloadVariant Slot::user_drop_data() { return std::monostate(); }
 void Slot::install() { /* TODO: bugcheck(UnimplementedSlotInstall, typeid(this).name()); */ qWarning("unimplented slot install"); }
-ItemDomain Slot::type() { return None; }
+
+void Slot::make_wide() {
+    setMinimumSize(QSize(56, 56));
+    setMaximumSize(QSize(99999, 56));
+}
+
+void Slot::make_tall() {
+    setMinimumSize(QSize(56, 56));
+    setMaximumSize(QSize(56, 99999));
+}
 
 void Slot::mousePressEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton && is_draggable()) {

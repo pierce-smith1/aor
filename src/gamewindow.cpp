@@ -9,6 +9,7 @@
 #include "slot/inventoryslot.h"
 #include "slot/materialslot.h"
 #include "slot/toolslot.h"
+#include "slot/artifactslot.h"
 #include "slot/effectslot.h"
 #include "slot/queuedactivityslot.h"
 #include "slot/skillslot.h"
@@ -146,6 +147,22 @@ void LKGameWindow::install_slots() {
     (new ToolSlot(SmithingTool))->install();
     (new ToolSlot(ForagingTool))->install();
     (new ToolSlot(MiningTool))->install();
+
+    for (AorUInt i = 0; i < ARTIFACT_SLOTS; i++) {
+        (new ArtifactSlot(i))->install();
+    }
+
+    for (AorUInt i = 0; i < EFFECT_SLOTS; i++) {
+        (new EffectSlot(i))->install();
+    }
+
+    for (AorUInt i = 0; i < MAX_QUEUED_ACTIVITIES; i++) {
+        (new QueuedActivitySlot(i))->install();
+    }
+
+    for (AorUInt i = 0; i < MAX_EXPLORERS; i++) {
+        (new ExplorerButton(i))->install();
+    }
 }
 
 void LKGameWindow::notify(NotificationType type, const QString &msg) {
