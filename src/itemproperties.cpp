@@ -3,6 +3,9 @@
 #include "character.h"
 #include "choicedialog.h"
 
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
 #define HOOK_0 [](const HookPayload &, AorUInt prop_value) {}
 
 #define HOOK_1(t1, n1) [](const HookPayload &payload, AorUInt prop_value, AorUInt item_domain) { \
@@ -46,7 +49,7 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
         { ToolEnergyCost, {
             "Requires <b>%1 energy</b> per use.",
             {{ HookCanDoActionCheck, HOOK_2(bool, can_do, AorInt, current_energy)
-                *can_do = *can_do && (*current_energy >= prop_value);
+                *can_do = *can_do && (*current_energy >= static_cast<AorInt>(prop_value));
             }},
             { HookCalcEnergyGain, HOOK_1(AorInt, energy_gain)
                 *energy_gain -= prop_value;

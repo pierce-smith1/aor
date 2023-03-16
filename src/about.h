@@ -2,12 +2,9 @@
 
 #include <QDialog>
 
-#include "slot/itemslot.h"
+#include "slot/aboutslot.h"
 
 class AboutBox : public QDialog {
 public:
     AboutBox();
 };
-
-class AboutSlot : public ItemSlot {};
-

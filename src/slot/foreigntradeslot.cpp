@@ -3,7 +3,11 @@
 ForeignTradeSlot::ForeignTradeSlot(size_t n)
     : m_n(n) {}
 
-bool ForeignTradeSlot::will_accept_drop(const SlotMessage &message) {
+bool ForeignTradeSlot::will_accept_drop(const SlotMessage &) {
+    return false;
+}
+
+bool ForeignTradeSlot::is_draggable() {
     return false;
 }
 

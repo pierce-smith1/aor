@@ -66,9 +66,6 @@ public:
     void tutorial(const QString &text);
 
     const std::map<ItemDomain, QPushButton *> get_activity_buttons();
-    const std::vector<Slot *> &item_slots();
-    const std::vector<Slot *> item_slots(ItemDomain domain);
-    Slot *get_slot(const QString &name);
 
     void save();
     void load();

@@ -311,32 +311,6 @@ const std::map<ItemDomain, QPushButton *> LKGameWindow::get_activity_buttons() {
     };
 }
 
-const std::vector<Slot *> &LKGameWindow::item_slots() {
-    return m_slots;
-}
-
-Slot *LKGameWindow::get_slot(const QString &name) {
-    auto result = std::find_if(begin(m_slots), end(m_slots), [&name](Slot *slot) {
-        return slot->objectName() == name;
-    });
-
-    if (result == end(m_slots)) {
-        bugcheck(ItemSlotByNameLookupMiss, name);
-    }
-
-    return *result;
-}
-
-const std::vector<Slot *> LKGameWindow::item_slots(ItemDomain domain) {
-    std::vector<Slot *> slots_of_type;
-
-    for (Slot *slot : item_slots()) {
-        slots_of_type.push_back(slot);
-    }
-
-    return slots_of_type;
-}
-
 void LKGameWindow::save() {
     if (m_save_file.openMode() == QIODevice::NotOpen) {
         m_save_file.open(QIODevice::ReadWrite);

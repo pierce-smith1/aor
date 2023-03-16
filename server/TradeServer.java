@@ -47,7 +47,7 @@ class TradeWorker extends Thread {
                 others.writeByte(TradeServer.MT_TRIBEAVAILABILITYCHANGED);
                 others.writeLong(gameId);
                 TradeServer.writeString(others, tribeName);
-                others.writeBoolean(false);
+                others.writeLong(0);
 
                 others.flush();
             } catch (IOException e) {
@@ -95,45 +95,45 @@ class TradeWorker extends Thread {
     }
 
     public void offerChanged() throws IOException {
-        short itemCode = in.readShort();
-        byte  itemUses = in.readByte();
-        short index    = in.readShort();
+        long itemCode = in.readLong();
+        long itemUses = in.readLong();
+        long index    = in.readLong();
 
         DataOutputStream others = server.sendAllOthers(gameId);
 
         others.writeByte(TradeServer.MT_OFFERCHANGED);
         others.writeLong(gameId);
-        others.writeShort(itemCode);
-        others.writeByte(itemUses);
-        others.writeShort(index);
+        others.writeLong(itemCode);
+        others.writeLong(itemUses);
+        others.writeLong(index);
 
         others.flush();
     }
 
     public void agreementChanged() throws IOException {
-        long partnerId    = in.readLong();
-        boolean accepted  = in.readBoolean();
+        long partnerId = in.readLong();
+        long accepted  = in.readLong();
 
         DataOutputStream partner = server.send(partnerId);
 
         synchronized (partner) {
             partner.writeByte(TradeServer.MT_AGREEMENTCHANGED);
             partner.writeLong(gameId);
-            partner.writeBoolean(accepted);
+            partner.writeLong(accepted);
 
             partner.flush();
         }
     }
 
     public void tribeAvailabilityChanged() throws IOException {
-        boolean nowAvailable = in.readBoolean();
+        long nowAvailable = in.readLong();
 
         DataOutputStream others = server.sendAllOthers(gameId);
 
         others.writeByte(TradeServer.MT_TRIBEAVAILABILITYCHANGED);
         others.writeLong(gameId);
         TradeServer.writeString(others, tribeName);
-        others.writeBoolean(nowAvailable);
+        others.writeLong(nowAvailable);
 
         others.flush();
     }
@@ -149,19 +149,19 @@ class TradeWorker extends Thread {
     }
 
     public void myInfo() throws IOException {
-        long reportTo          = in.readLong();
-        String tribeName       = TradeServer.readString(in);
-        short itemCode1        = in.readShort();
-        byte itemUses1         = in.readByte();
-        short itemCode2        = in.readShort();
-        byte itemUses2         = in.readByte();
-        short itemCode3        = in.readShort();
-        byte itemUses3         = in.readByte();
-        short itemCode4        = in.readShort();
-        byte itemUses4         = in.readByte();
-        short itemCode5        = in.readShort();
-        byte itemUses5         = in.readByte();
-        boolean acceptingTrade = in.readBoolean();
+        long reportTo       = in.readLong();
+        String tribeName    = TradeServer.readString(in);
+        long itemCode1      = in.readLong();
+        long itemUses1      = in.readLong();
+        long itemCode2      = in.readLong();
+        long itemUses2      = in.readLong();
+        long itemCode3      = in.readLong();
+        long itemUses3      = in.readLong();
+        long itemCode4      = in.readLong();
+        long itemUses4      = in.readLong();
+        long itemCode5      = in.readLong();
+        long itemUses5      = in.readLong();
+        long acceptingTrade = in.readLong();
 
         DataOutputStream client = server.send(reportTo);
 
@@ -169,17 +169,17 @@ class TradeWorker extends Thread {
             client.writeByte(TradeServer.MT_MYINFO);
             client.writeLong(gameId);
             TradeServer.writeString(client, tribeName);
-            client.writeShort(itemCode1);
-            client.writeByte(itemUses1);
-            client.writeShort(itemCode2);
-            client.writeByte(itemUses2);
-            client.writeShort(itemCode3);
-            client.writeByte(itemUses3);
-            client.writeShort(itemCode4);
-            client.writeByte(itemUses4);
-            client.writeShort(itemCode5);
-            client.writeByte(itemUses5);
-            client.writeBoolean(acceptingTrade);
+            client.writeLong(itemCode1);
+            client.writeLong(itemUses1);
+            client.writeLong(itemCode2);
+            client.writeLong(itemUses2);
+            client.writeLong(itemCode3);
+            client.writeLong(itemUses3);
+            client.writeLong(itemCode4);
+            client.writeLong(itemUses4);
+            client.writeLong(itemCode5);
+            client.writeLong(itemUses5);
+            client.writeLong(acceptingTrade);
 
             client.flush();
         }
@@ -279,13 +279,13 @@ public class TradeServer {
     }
 
     public static void writeString(DataOutputStream out, String s) throws IOException {
-        out.writeByte((byte) s.length());
+        out.writeLong(s.length());
         out.writeBytes(s);
     }
 
     public static String readString(DataInputStream in) throws IOException {
-        byte size = in.readByte();
-        byte[] bytes = new byte[size];
+        long size = in.readLong();
+        byte[] bytes = new byte[(int) size];
         in.read(bytes);
         return new String(bytes, "UTF-8");
     }

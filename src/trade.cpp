@@ -122,7 +122,7 @@ void DoughbyteConnection::update_offers() {
     update_offers(tribe_id, item_code, item_uses, index);
 }
 
-void DoughbyteConnection::update_offers(GameId tribe_id, ItemCode code, char uses, int n) {
+void DoughbyteConnection::update_offers(GameId tribe_id, ItemCode code, AorUInt uses, int n) {
     Item item(code);
     item.uses_left = uses;
     gw()->game().tribes()[tribe_id].offer[n] = item;

@@ -35,7 +35,7 @@ QString IO::read_string(QIODevice *dev) {
     AorUInt size = read_uint(dev);
     QByteArray data = dev->read(size);
 
-    if (data.count() < size) {
+    if (static_cast<AorUInt>(data.count()) < size) {
         dev->rollbackTransaction();
         throw RetryException();
     }

@@ -95,7 +95,7 @@ ItemId Inventory::make_item(ItemDefinitionPtr def, AorUInt y, AorUInt x) {
 }
 
 bool Inventory::are_yx_coords_oob(AorUInt y, AorUInt x) {
-    return (y < 0 || y >= INVENTORY_ROWS) || (x < 0 || x >= INVENTORY_COLS);
+    return (y >= INVENTORY_ROWS) || (x >= INVENTORY_COLS);
 }
 
 size_t Inventory::inventory_index(AorUInt y, AorUInt x) {
