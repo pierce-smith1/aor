@@ -16,8 +16,11 @@ public:
 
     virtual void refresh() override;
     virtual QPixmap pixmap() override;
+    virtual bool will_accept_drop(const SlotMessage &message) override;
+    virtual void accept_message(const SlotMessage &message) override;
     virtual bool is_draggable() override;
     virtual void on_left_click(QMouseEvent *event) override;
+    virtual PayloadVariant user_drop_data() override;
     virtual void install() override;
 
 protected:

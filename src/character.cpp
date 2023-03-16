@@ -450,6 +450,10 @@ Effects &Character::effects() {
     return m_effects;
 }
 
+Skills &Character::skills() {
+    return m_skills;
+}
+
 void Character::serialize(QIODevice *dev) const {
     IO::write_uint(dev, m_id);
     IO::write_string(dev, m_name);

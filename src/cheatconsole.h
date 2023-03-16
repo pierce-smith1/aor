@@ -181,13 +181,22 @@ const static std::vector<CheatCommand> COMMANDS = {
     },
     {
         "effect",
-        "Set the effect at n = $0 to a new item with code $1",
+        "Set the effect at n = $0 to a new item with name $1",
         2,
         [](LKGameWindow *game, const QStringList &args) {
             QS_TO_INT(n, args[0]);
-            QS_TO_INT(code, args[1]);
 
-            game->selected_char().effects()[n] = Item(code);
+            game->selected_char().effects()[n] = Item(args[1]);
+        }
+    },
+    {
+        "skill",
+        "Set the skill at n = $0 to a new item with name $1",
+        2,
+        [](LKGameWindow *game, const QStringList &args) {
+            QS_TO_INT(n, args[0]);
+
+            game->selected_char().skills()[n] = Item(args[1]);
         }
     },
     {

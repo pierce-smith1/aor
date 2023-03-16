@@ -28,6 +28,7 @@ const static AorUInt BASE_HOOK_DOMAINS = Artifact | Effect | Explorer;
 using Heritage = std::multiset<Color>;
 using ExternalItemIds = std::map<ItemDomain, std::array<ItemId, MAX_ARRAY_SIZE>>;
 using Effects = std::array<Item, EFFECT_SLOTS>;
+using Skills = std::array<Item, MAX_SKILLS>;
 using ToolIds = std::map<ItemDomain, ItemId>;
 
 class Character {
@@ -75,6 +76,7 @@ public:
     ToolIds &tools();
     ExternalItemIds &external_items();
     Effects &effects();
+    Skills &skills();
 
     void serialize(QIODevice *dev) const;
     static Character *deserialize(QIODevice *dev);
@@ -96,6 +98,7 @@ private:
         { ForagingTool, EMPTY_ID },
         { MiningTool, EMPTY_ID },
     };
+    Skills m_skills {};
     CharacterId m_partner = NOBODY;
     bool m_dead = false;
     bool m_can_couple = false;

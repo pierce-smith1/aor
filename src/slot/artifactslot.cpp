@@ -7,6 +7,10 @@ ArtifactSlot::ArtifactSlot(size_t n)
 }
 
 bool ArtifactSlot::will_accept_drop(const SlotMessage &message) {
+    if (!std::holds_alternative<Item>(message)) {
+        return false;
+    }
+
     Item item = get_item(message);
     return Item::def_of(item)->type & Artifact;
 }

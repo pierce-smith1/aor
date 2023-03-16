@@ -51,6 +51,7 @@ public:
     void swap_char(CharacterId char_id);
 
     void register_slot(Slot *slot);
+    void unregister_slot(Slot *slot);
     void install_slots();
 
     void notify(NotificationType type, const QString &message);

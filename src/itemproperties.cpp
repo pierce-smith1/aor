@@ -214,6 +214,10 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
                 character->push_effect(Item(prop_value));
             }}}
         }},
+        { SkillClearInjury, {
+            "Fully clears up to <b>%1 injury(ies)</b>, starting with the rightmost.",
+            {}
+        }}
     };
 
     return PROPERTY_DESCRIPTIONS;

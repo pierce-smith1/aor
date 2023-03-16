@@ -15,7 +15,7 @@ ChoiceDialog::ChoiceDialog(const WeightedVector<Item> &items) {
 
     for (size_t n = 0; n < items.size(); n++) {
         const Item &item = items[n].first;
-        //slot_layout->addWidget(new ChoiceSlot(item.code, this, n));
+        slot_layout->addWidget(new ChoiceSlot(item.code, this, n));
     }
     slot_area->setLayout(slot_layout);
     layout->addWidget(slot_area);

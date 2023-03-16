@@ -91,6 +91,47 @@ QPixmap ExplorerButton::pixmap() {
     return QPixmap(":/assets/img/icons/yok.png");
 }
 
+bool ExplorerButton::will_accept_drop(const SlotMessage &message) {
+    if (!std::holds_alternative<CharacterId>(message)) {
+        return false;
+    }
+
+    if (std::get<CharacterId>(message) == character().id()) {
+        return true;
+    }
+
+    if (std::get<CharacterId>(message) == NOBODY || character().id() == NOBODY) {
+        return false;
+    }
+
+    return (character().energy() == character().max_energy()) && (character().activity().action() == None);
+}
+
+void ExplorerButton::accept_message(const SlotMessage &message) {
+    switch (message.type) {
+        case SlotUserDrop: {
+            if (std::get<CharacterId>(message) == character().id()) {
+                on_left_click(nullptr);
+                break;
+            }
+
+            accept_message(SlotMessage(SlotDoCouple, message, this));
+            break;
+        } case SlotDoCouple: {
+            Character &me = character();
+            Character &partner = gw()->game().character(std::get<CharacterId>(message));
+
+            me.partner() = partner.id();
+            me.queue_activity(Coupling, {});
+            partner.partner() = me.id();
+            partner.queue_activity(Coupling, {});
+
+            partner.can_couple() = false;
+            break;
+        } default: {}
+    }
+}
+
 bool ExplorerButton::is_draggable() {
     return character().can_couple()
         && character().energy() == character().max_energy()
@@ -103,6 +144,10 @@ void ExplorerButton::on_left_click(QMouseEvent *) {
     }
 
     gw()->selected_char_id() = character().id();
+}
+
+PayloadVariant ExplorerButton::user_drop_data() {
+    return character().id();
 }
 
 void ExplorerButton::install() {

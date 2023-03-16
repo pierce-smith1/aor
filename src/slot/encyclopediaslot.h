@@ -13,9 +13,9 @@ public:
     virtual QPixmap pixmap() override;
 
     bool valid();
+    bool undiscovered();
 
 private:
-    bool undiscovered();
     ItemCode code();
 
     size_t m_y, m_x;

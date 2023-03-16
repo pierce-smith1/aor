@@ -477,6 +477,24 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         }
     },
     {
+        CT_SKILL | 0,
+        "organ_system_administrator", "Organ System Administrator",
+        "<i>We trust you have recieved the usual lecture from the local Organ</i><br>"
+        "<i>System Administrator. It usually boils down to these three things:</i><br>"
+        "<i> #1) Respect the privacy of the patient.</i><br>"
+        "<i> #2) Think before you slice.</i><br>"
+        "<i> #3) With great power comes great responsibility.</i><br>",
+        0 USES, Skill,
+        {
+            { ItemLevel, 1 },
+            { SkillDraggableTo, Explorer },
+            { SkillActionCooldown, 5 },
+            { SkillClearInjury, 1 },
+            { SkillPropertyUpgrades1, SkillClearInjury },
+            { SkillUpgradeIncrement1, 1 }
+        }
+    },
+    {
         CT_OTHER | 0,
         "fennahian_egg", "Fennahian Egg",
         "<i>I could make an omelette out of it, but maybe it's best to just wait for it to hatch.</i><br>",

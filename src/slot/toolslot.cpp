@@ -7,6 +7,10 @@ ToolSlot::ToolSlot(ItemDomain tool_type)
 }
 
 bool ToolSlot::will_accept_drop(const SlotMessage &message) {
+    if (!std::holds_alternative<Item>(message)) {
+        return false;
+    }
+
     return Item::def_of(get_item(message))->type & m_tool_type;
 }
 

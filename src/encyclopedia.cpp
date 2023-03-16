@@ -37,11 +37,9 @@ void Encyclopedia::refresh() {
 
     int discovered = 0;
     for (EncyclopediaSlot *slot : findChildren<EncyclopediaSlot *>()) {
-        /*
         if (!slot->undiscovered()) {
             discovered++;
         }
-        */
     }
 
     m_widget.progress_bar->setValue(discovered);

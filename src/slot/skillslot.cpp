@@ -9,3 +9,7 @@ SkillSlot::SkillSlot(size_t n)
 void SkillSlot::install() {
     gw()->window().skills_box->layout()->addWidget(this);
 }
+
+Item SkillSlot::my_item() {
+    return gw()->selected_char().skills()[m_n];
+}

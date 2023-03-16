@@ -134,6 +134,12 @@ void LKGameWindow::register_slot(Slot *slot) {
     m_slots.push_back(slot);
 }
 
+void LKGameWindow::unregister_slot(Slot *slot) {
+    m_slots.erase(std::find_if(m_slots.begin(), m_slots.end(), [=](Slot *s) {
+        return s == slot;
+    }));
+}
+
 void LKGameWindow::install_slots() {
     for (AorUInt x = 0; x < INVENTORY_COLS; x++) {
         for (AorUInt y = 0; y < INVENTORY_ROWS; y++) {

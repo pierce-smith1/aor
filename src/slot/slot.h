@@ -30,6 +30,7 @@ enum SlotMessageType {
     SlotUserDrop,
     SlotSetItem,
     SlotForgetItem,
+    SlotDoCouple,
 };
 
 class Slot;
