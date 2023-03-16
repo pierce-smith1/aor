@@ -13,6 +13,9 @@
 #include "slot/effectslot.h"
 #include "slot/portraitslot.h"
 #include "slot/queuedactivityslot.h"
+#include "slot/smithingresultslot.h"
+#include "slot/foreigntradeslot.h"
+#include "slot/tradeslot.h"
 #include "slot/skillslot.h"
 #include "slot/explorerbutton.h"
 
@@ -175,6 +178,13 @@ void LKGameWindow::install_slots() {
 
     for (AorUInt i = 0; i < MAX_SKILLS; i++) {
         (new SkillSlot(i))->install();
+    }
+
+    (new SmithingResultSlot())->install();
+
+    for (AorUInt i = 0; i < TRADE_SLOTS; i++) {
+        (new ForeignTradeSlot(i))->install();
+        (new TradeSlot(i))->install();
     }
 }
 

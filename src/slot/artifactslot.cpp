@@ -7,7 +7,7 @@ ArtifactSlot::ArtifactSlot(size_t n)
 }
 
 bool ArtifactSlot::will_accept_drop(const SlotMessage &message) {
-    if (!std::holds_alternative<Item>(message)) {
+    if (!ItemSlot::will_accept_drop(message)) {
         return false;
     }
 
@@ -22,5 +22,3 @@ void ArtifactSlot::install() {
 ItemId &ArtifactSlot::my_item_id() {
     return gw()->selected_char().external_items()[Artifact][m_n];
 }
-
-
