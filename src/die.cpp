@@ -32,6 +32,8 @@ QString bugcheck_error_string(FatalErrorType type) {
         case NonExhaustivePayloadSerialization: { return "NON_EXHAUSTIVE_PAYLOAD_SERIALIZATION"; }
         case NonExhaustivePayloadDeserialization: { return "NON_EXHAUSTIVE_PAYLOAD_DESERIALIZATION"; }
         case UnimplementedSlotInstall: { return "UNIMPLEMENTED_SLOT_INSTALL"; }
+        case LocationDefinitionLookupMiss: { return "LOCATION_DEFINITION_LOOKUP_MISS"; }
+        case CoordsByLocationIdLookupMiss: { return "COORDS_BY_LOCATION_ID_LOOKUP_MISS"; }
     }
 
     return "TOTAL_RUIN";

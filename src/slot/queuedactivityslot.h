@@ -14,7 +14,7 @@ public:
     virtual void install() override;
 
 private:
-    CharacterActivity activity();
+    CharacterActivity *activity();
 
     size_t m_n;
 };

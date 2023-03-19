@@ -42,7 +42,7 @@ DoughbyteConnection::DoughbyteConnection() {
                 }
                 m_socket.commitTransaction();
             }
-        } catch (IO::RetryException) { }
+        } catch (IO::RetryException) {}
     });
 }
 

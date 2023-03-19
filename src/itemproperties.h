@@ -114,6 +114,9 @@ enum ItemProperty : AorUInt {
     SkillUpgradeDecrement8,
     SkillUpgradeDecrement9,
     SkillClearInjury,
+    WeatherProperty = 0x20000,
+    WeatherEffect1 = WeatherProperty | HoldsItemCode | 1,
+    WeatherEffect2 = WeatherProperty | HoldsItemCode | 2,
 };
 
 struct PropertyDefinition {

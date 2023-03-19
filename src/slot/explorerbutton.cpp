@@ -72,7 +72,7 @@ void ExplorerButton::refresh() {
     m_couple_status_icon->raise();
 
     m_activity_icon->setVisible(true);
-    m_activity_icon->setPixmap(Icons::activity_icons().at(character().activity().action()));
+    m_activity_icon->setPixmap(Icons::activity_icons().at(character().activity()->action()));
     m_activity_icon->raise();
 
     m_portrait_effect->setStrength(1.0);
@@ -104,7 +104,7 @@ bool ExplorerButton::will_accept_drop(const SlotMessage &message) {
         return false;
     }
 
-    return (character().energy() == character().max_energy()) && (character().activity().action() == None);
+    return (character().energy() == character().max_energy()) && (character().activity()->action() == None);
 }
 
 void ExplorerButton::accept_message(const SlotMessage &message) {
@@ -135,7 +135,7 @@ void ExplorerButton::accept_message(const SlotMessage &message) {
 bool ExplorerButton::is_draggable() {
     return character().can_couple()
         && character().energy() == character().max_energy()
-        && !character().activity().ongoing();
+        && !character().activity()->isActive();
 }
 
 void ExplorerButton::on_left_click(QMouseEvent *) {
@@ -161,7 +161,7 @@ Character &ExplorerButton::character() {
 
 QString ExplorerButton::character_description() {
     QString string;
-    switch (character().activity().action()) {
+    switch (character().activity()->action()) {
         case Smithing: { string += "<i>Currently smithing</i><br>"; break; }
         case Foraging: { string += "<i>Currently foraging</i><br>"; break; }
         case Mining: { string += "<i>Currently mining</i><br>"; break; }

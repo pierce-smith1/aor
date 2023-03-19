@@ -27,5 +27,6 @@ INT_TYPE(ItemId, AorUInt);
 INT_TYPE(CharacterId, AorUInt);
 INT_TYPE(GameId, AorUInt);
 INT_TYPE(ActivityId, AorUInt);
+INT_TYPE(LocationId, AorUInt);
 INT_TYPE(ItemCode, AorUInt);
 INT_TYPE(ItemType, AorUInt);

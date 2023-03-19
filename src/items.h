@@ -13,7 +13,7 @@
 #include <QPixmap>
 
 #include "itemproperties.h"
-#include "itemmark.h"
+#include "definitionmark.h"
 #include "types.h"
 
 #define USES
@@ -57,6 +57,8 @@ enum ItemDomain : AorUInt {
     Coupling        = 1 << 13, Explorer = 1 << 13, Egg = 1 << 13,
     Untradeable     = 1 << 14,
     Script          = 1 << 15,
+    Weather         = 1 << 16, Map = 1 << 16,
+    Scan            = 1 << 17,
     All             = ~0ull
 };
 
@@ -69,6 +71,7 @@ const static AorUInt CT_SCRIPT = 1 << 12;
 const static AorUInt CT_EFFECT = 1 << 13;
 const static AorUInt CT_RUNE = 1 << 14;
 const static AorUInt CT_SKILL = 1 << 15;
+const static AorUInt CT_WEATHER = 1 << 16;
 const static AorUInt CT_OTHER = 1ull << 63;
 
 struct ItemDefinition {
@@ -492,6 +495,27 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
             { SkillClearInjury, 1 },
             { SkillPropertyUpgrades1, SkillClearInjury },
             { SkillUpgradeIncrement1, 1 }
+        }
+    },
+    {
+        CT_WEATHER | 0,
+        "acid_rain", "ACID Rain",
+        "<i>Ironically, this is a good thing.</i><br>"
+        "<i>The constant downpour of flesh-eating rain has really forced us to become more consistent, reliable workers.</i><br>",
+        0 USES, Weather,
+        {
+            { ItemLevel, 1 },
+            { PersistentMaxEnergyBoost, 20 }
+        }
+    },
+    {
+        CT_WEATHER | 1,
+        "worm_storms", "Worm Storms",
+        "<i>230 dead as storm batters Rhodon</i><br>",
+        0 USES, Weather,
+        {
+            { ItemLevel, 1 },
+            { PersistentEnergyPenalty, 5 }
         }
     },
     {

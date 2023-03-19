@@ -170,13 +170,13 @@ const static std::vector<CheatCommand> COMMANDS = {
         1,
         [](LKGameWindow *game, const QStringList &args) {
             if (args[0] == "?") {
-                qDebug("Amount of ms left in activity is (%lld)", game->selected_char().activity().ms_left());
+                qDebug("Amount of ms left in activity is (%d)", game->selected_char().activity()->remainingTime());
                 return;
             }
 
             QS_TO_INT(ms, args[0]);
 
-            game->selected_char().activity().ms_left() = ms;
+            game->selected_char().activity()->setInterval(ms);
         }
     },
     {

@@ -120,11 +120,11 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
         { PersistentRandomConsumableProducts, {
             "Whenever I eat a consumable, it is <b>replaced with a random item of the same level.</b>",
             {{ HookDecideProducts, HOOK_2(std::vector<WeightedVector<Item>>, discoverables, Character, character)
-                if (character->activity().action() != Eating) {
+                if (character->activity()->action() != Eating) {
                     return;
                 }
 
-                for (const Item &consumable : character->activity().owned_items()) {
+                for (const Item &consumable : character->activity()->owned_items()) {
                     AorUInt level = consumable.def()->properties[ItemLevel];
 
                     if (level == 0) {

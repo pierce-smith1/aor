@@ -48,6 +48,10 @@ generate_qrc() {
         echo "<file>$image</file>" >> .images.qrc
     done
 
+    for image in assets/img/map/*.png; do
+        echo "<file>$image</file>" >> .images.qrc
+    done
+
     echo "</qresource></RCC>" >> .images.qrc
 
     if [[ $(sha256sum .images.qrc | cut -f 1 -d " ") != $(sha256sum images.qrc | cut -f 1 -d " ") ]]; then

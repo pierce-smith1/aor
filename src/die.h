@@ -37,6 +37,8 @@ enum FatalErrorType {
     NonExhaustivePayloadSerialization,
     NonExhaustivePayloadDeserialization,
     UnimplementedSlotInstall,
+    LocationDefinitionLookupMiss,
+    CoordsByLocationIdLookupMiss,
 };
 
 QString bugcheck_error_string(FatalErrorType type);

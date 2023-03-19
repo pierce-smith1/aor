@@ -17,6 +17,8 @@ class LKGameWindow;
 #include "game.h"
 #include "trade.h"
 #include "encryptedfile.h"
+#include "map.h"
+#include "timedactivity.h"
 
 class Slot;
 class RecipieBox;
@@ -61,6 +63,7 @@ public:
     void refresh_ui();
     void refresh_slots();
     void refresh_ui_bars();
+    void refresh_map_bar();
     void refresh_ui_buttons();
     void refresh_trade_ui();
     void tutorial(const QString &text);
@@ -92,9 +95,12 @@ private:
     QFile m_save_file;
     Encyclopedia *m_encyclopedia;
     AorInt m_backup_timer_id;
+    AorInt m_refresh_timer_id;
     Ui::EventLog m_event_log;
     AboutBox *m_about_box;
+    MapView *m_map_view;
     std::vector<QMainWindow *> m_multiwindows;
+    std::vector<TimedActivity> m_timed_actions;
 
     friend LKGameWindow *gw();
     friend class MenuBar;

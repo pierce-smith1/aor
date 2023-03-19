@@ -49,6 +49,22 @@ AorUInt &Game::actions_done() {
     return m_actions_done;
 }
 
+RunningActivities &Game::running_activities() {
+    return m_running_activities;
+}
+
+WorldMap &Game::map() {
+    return m_map;
+}
+
+LocationId &Game::current_location_id() {
+    return m_current_location_id;
+}
+
+ItemId &Game::scan_item_id() {
+    return m_scan_item_id;
+}
+
 bool &Game::fast_actions() {
     return m_fast_actions;
 }
@@ -81,6 +97,17 @@ bool Game::add_item(const Item &item) {
     } else {
         return false;
     }
+}
+
+void Game::register_activity(ItemDomain domain, TimedActivity *activity) {
+    m_running_activities.insert({ domain, activity });
+}
+
+void Game::unregister_activity(TimedActivity *activity) {
+    auto &acts = m_running_activities;
+    acts.erase(std::find_if(acts.begin(), acts.end(), [=](auto &pair) {
+        return pair.second == activity;
+    }));
 }
 
 void Game::check_hatch() {
@@ -228,6 +255,10 @@ ItemDomain Game::intent_of(ItemId item_id) {
         intent |= Offering;
     }
 
+    if (item_id == m_scan_item_id) {
+        intent |= Scan;
+    }
+
     for (Character &character : m_explorers) {
         auto &materials = character.external_items()[Material];
         if (std::find(materials.begin(), materials.end(), item_id) != materials.end()) {
@@ -244,9 +275,9 @@ ItemDomain Game::intent_of(ItemId item_id) {
             intent |= Tool;
         }
 
-        auto &activity_items = character.activity().owned_item_ids();
+        auto &activity_items = character.activity()->owned_item_ids();
         if (std::find(activity_items.begin(), activity_items.end(), item_id) != activity_items.end()) {
-            intent |= character.activity().action();
+            intent |= character.activity()->action();
         }
     }
 
@@ -265,10 +296,10 @@ Character &Game::character(CharacterId id) {
     return *result;
 }
 
-CharacterActivity &Game::activity(ActivityId id) {
-    auto result = std::find_if(begin(m_explorers), end(m_explorers), [=](Character &c) {
-        return std::any_of(begin(c.activities()), end(c.activities()), [=](CharacterActivity &a) {
-            return a.id() == id;
+CharacterActivity *Game::activity(ActivityId id) {
+    auto result = std::find_if(m_explorers.begin(), m_explorers.end(), [=](Character &c) {
+        return std::any_of(c.activities().begin(), c.activities().end(), [=](CharacterActivity *a) {
+            return a->id() == id;
         });
     });
 
@@ -276,8 +307,8 @@ CharacterActivity &Game::activity(ActivityId id) {
         bugcheck(ActivityByIdLookupMiss, id);
     }
 
-    return *std::find_if(begin(result->activities()), end(result->activities()), [=](CharacterActivity &a) {
-        return a.id() == id;
+    return *std::find_if(result->activities().begin(), result->activities().end(), [=](CharacterActivity *a) {
+        return a->id() == id;
     });
 }
 
@@ -289,16 +320,16 @@ void Game::refresh_ui_bars(QProgressBar *activity, QProgressBar *spirit, QProgre
     Character &character = Game::character(char_id);
 
     activity->setMaximum(100);
-    activity->setValue(character.activity().percent_complete() * 100);
+    activity->setValue(character.activity()->percent_complete() * 100);
 
     // We have to be very particular about clamping values here, since if we
     // pass a number to QProgressBar::setValue that is < minValue or > maxValue,
     // nothing happens - leading to UI inconsistencies.
-    double spirit_gain = character.spirit_to_gain() * character.activity().percent_complete();
+    double spirit_gain = character.spirit_to_gain() * character.activity()->percent_complete();
     spirit->setMaximum(character.max_spirit());
     spirit->setValue(clamp(0, character.spirit() + spirit_gain, character.max_spirit()));
 
-    double energy_gain = character.energy_to_gain() * character.activity().percent_complete();
+    double energy_gain = character.energy_to_gain() * character.activity()->percent_complete();
     energy->setMaximum(character.max_energy());
     energy->setValue(clamp(0, character.energy() + energy_gain, character.max_energy()));
 }

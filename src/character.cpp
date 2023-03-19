@@ -62,27 +62,27 @@ void Character::queue_activity(ItemDomain domain, const std::vector<ItemId> &ite
         call_hooks(HookCalcActivityTime, { &activity_ms }, BASE_HOOK_DOMAINS | domain);
     }
 
-    CharacterActivity new_activity = CharacterActivity(m_id, domain, items, activity_ms, activity_ms);
+    CharacterActivity *new_activity = new CharacterActivity(m_id, domain, items, activity_ms, activity_ms);
     m_activities.push_back(new_activity);
     for (ItemId id : items) {
-        inventory().get_item_ref(id).owning_action = new_activity.id();
+        inventory().get_item_ref(id).owning_action = new_activity->id();
     }
 
     // If this was the first activity added, get it started!
     if (m_activities.size() == 1) {
-        // If we're doing something else, we shouldn't be accepting trades
+        // If we're doing something else, we shouldn't be accepting trades.
         if (gw()->selected_tribe_id() != NO_TRIBE) {
             gw()->connection().agreement_changed(gw()->selected_tribe_id(), false);
             gw()->game().accepting_trade() = false;
         }
-        m_activities.front().start();
+        m_activities.front()->start();
     }
 
     gw()->refresh_ui_buttons();
     gw()->refresh_slots();
 }
 
-CharacterActivity &Character::activity() {
+CharacterActivity *Character::activity() {
     return m_activities.front();
 }
 
@@ -191,12 +191,12 @@ AorInt Character::energy_to_gain() {
         return 0;
     }
 
-    CharacterActivity &activity = m_activities.front();
+    CharacterActivity *activity = m_activities.front();
     AorInt gain = 0;
 
-    call_hooks(HookCalcEnergyGain, { &gain }, BASE_HOOK_DOMAINS | activity.action(), activity.owned_items());
+    call_hooks(HookCalcEnergyGain, { &gain }, BASE_HOOK_DOMAINS | activity->action(), activity->owned_items());
 
-    switch (activity.action()) {
+    switch (activity->action()) {
         case Eating: {
             call_hooks(HookCalcBonusConsumableEnergy, { &gain });
             break;
@@ -218,11 +218,11 @@ AorInt Character::spirit_to_gain() {
         return 0;
     }
 
-    CharacterActivity &activity = m_activities.front();
+    CharacterActivity *activity = m_activities.front();
     AorInt gain = 0;
 
-    if (activity.action() == Eating || activity.action() == Defiling) {
-        call_hooks(HookCalcSpiritGain, { &gain }, BASE_HOOK_DOMAINS, activity.owned_items());
+    if (activity->action() == Eating || activity->action() == Defiling) {
+        call_hooks(HookCalcSpiritGain, { &gain }, BASE_HOOK_DOMAINS, activity->owned_items());
     } else {
         gain -= base_spirit_cost();
     }
@@ -478,8 +478,8 @@ void Character::serialize(QIODevice *dev) const {
     }
 
     IO::write_uint(dev, m_activities.size());
-    for (const CharacterActivity &activity : m_activities) {
-        activity.serialize(dev);
+    for (const CharacterActivity *activity : m_activities) {
+        activity->serialize(dev);
     }
 
     IO::write_uint(dev, m_tool_ids.at(SmithingTool));
@@ -516,8 +516,7 @@ Character *Character::deserialize(QIODevice *dev) {
     AorUInt activities_size = IO::read_uint(dev);
     for (AorUInt i = 0; i < activities_size; i++) {
         CharacterActivity *a = CharacterActivity::deserialize(dev);
-        c->m_activities.push_back(*a);
-        delete a;
+        c->m_activities.push_back(a);
     }
 
     c->m_tool_ids[SmithingTool] = IO::read_uint(dev);

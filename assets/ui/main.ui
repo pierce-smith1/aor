@@ -794,11 +794,14 @@
              </size>
             </property>
             <property name="title">
-             <string>Crawl</string>
+             <string/>
             </property>
-            <layout class="QHBoxLayout" name="horizontalLayout_5">
-             <item>
+            <layout class="QGridLayout" name="gridLayout_14">
+             <item row="0" column="1">
               <widget class="QScrollArea" name="crawl_area">
+               <property name="verticalScrollBarPolicy">
+                <enum>Qt::ScrollBarAlwaysOff</enum>
+               </property>
                <property name="widgetResizable">
                 <bool>true</bool>
                </property>
@@ -807,12 +810,92 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>580</width>
-                  <height>334</height>
+                  <width>490</width>
+                  <height>328</height>
                  </rect>
                 </property>
-                <layout class="QHBoxLayout" name="horizontalLayout_7"/>
+                <layout class="QGridLayout" name="gridLayout_12"/>
                </widget>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QWidget" name="widget" native="true">
+               <layout class="QVBoxLayout" name="verticalLayout_2">
+                <item>
+                 <widget class="QGroupBox" name="scan_sac_box">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="title">
+                   <string/>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_13">
+                   <item row="1" column="0">
+                    <widget class="QPushButton" name="scan_button">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>56</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>Scan</string>
+                     </property>
+                     <property name="default">
+                      <bool>false</bool>
+                     </property>
+                     <property name="flat">
+                      <bool>false</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="weather_box">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="title">
+                   <string/>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_3"/>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="1" column="0" colspan="2">
+              <widget class="QProgressBar" name="map_progress_bar">
+               <property name="value">
+                <number>24</number>
+               </property>
               </widget>
              </item>
             </layout>
@@ -872,6 +955,7 @@
  </widget>
  <resources>
   <include location="../../images.qrc"/>
+  <include location="../../../../images.qrc"/>
  </resources>
  <connections/>
 </ui>

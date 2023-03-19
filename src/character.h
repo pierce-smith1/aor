@@ -10,7 +10,7 @@
 
 #include "items.h"
 #include "inventory.h"
-#include "actions.h"
+#include "characteractivity.h"
 #include "generators.h"
 
 class Game;
@@ -23,7 +23,7 @@ const static AorUInt BASE_MAX_ENERGY = 50;
 const static AorUInt BASE_MAX_SPIRIT = 50;
 const static AorUInt BASE_MAX_RESOURCE = 10;
 
-const static AorUInt BASE_HOOK_DOMAINS = Artifact | Effect | Explorer;
+const static AorUInt BASE_HOOK_DOMAINS = Artifact | Effect | Explorer | Weather;
 
 using Heritage = std::multiset<Color>;
 using ExternalItemIds = std::map<ItemDomain, std::array<ItemId, MAX_ARRAY_SIZE>>;
@@ -47,7 +47,7 @@ public:
     ItemProperties heritage_properties();
 
     void queue_activity(ItemDomain domain, const std::vector<ItemId> &items);
-    CharacterActivity &activity();
+    CharacterActivity *activity();
 
     AorInt &energy();
     AorInt &spirit();

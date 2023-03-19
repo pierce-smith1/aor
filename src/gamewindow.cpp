@@ -1,3 +1,5 @@
+#include <QScrollBar>
+
 #include "gamewindow.h"
 #include "items.h"
 #include "encyclopedia.h"
@@ -18,6 +20,8 @@
 #include "slot/tradeslot.h"
 #include "slot/skillslot.h"
 #include "slot/explorerbutton.h"
+#include "slot/weathereffectslot.h"
+#include "slot/scanitemslot.h"
 
 LKGameWindow *LKGameWindow::the_game_window;
 
@@ -32,17 +36,19 @@ LKGameWindow::LKGameWindow()
       m_connection(),
       m_save_file(SAVE_FILE_NAME),
       m_encyclopedia(new Encyclopedia),
-      m_about_box(new AboutBox)
+      m_about_box(new AboutBox),
+      m_map_view(new MapView)
 {
     m_window.setupUi(this);
     m_event_log.setupUi(new QDialog(this));
 
     setMenuBar(new MenuBar(this));
+    window().crawl_contents->layout()->addWidget(m_map_view);
+    window().crawl_area->verticalScrollBar()->setEnabled(false);
 
     Game *new_game = Game::new_game();
     m_game = *new_game;
     delete new_game;
-    m_encyclopedia->refresh();
 
     const auto activity_buttons = get_activity_buttons();
     for (const auto &pair : activity_buttons) {
@@ -70,8 +76,11 @@ LKGameWindow::LKGameWindow()
     });
 
     connect(m_window.trade_partner_combobox, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index) {
-        m_selected_tribe_id = m_window.trade_partner_combobox->itemData(index).toLongLong(nullptr);
+        m_selected_tribe_id = m_window.trade_partner_combobox->itemData(index).toLongLong();
         refresh_ui();
+    });
+
+    connect(m_window.scan_button, &QPushButton::clicked, [=]() {
     });
 
     install_slots();
@@ -91,6 +100,7 @@ LKGameWindow::LKGameWindow()
     m_encyclopedia->refresh();
 
     m_backup_timer_id = startTimer(BACKUP_INTERVAL_MS);
+    m_refresh_timer_id = startTimer(ACTIVITY_TICK_RATE_MS);
 }
 
 bool LKGameWindow::initialized() {
@@ -186,6 +196,12 @@ void LKGameWindow::install_slots() {
         (new ForeignTradeSlot(i))->install();
         (new TradeSlot(i))->install();
     }
+
+    for (AorUInt i = 0; i < WEATHER_EFFECTS; i++) {
+        (new WeatherEffectSlot(i))->install();
+    }
+
+    (new ScanItemSlot)->install();
 }
 
 void LKGameWindow::notify(NotificationType type, const QString &msg) {
@@ -200,6 +216,7 @@ void LKGameWindow::refresh_ui() {
     refresh_ui_buttons();
     refresh_ui_bars();
     refresh_trade_ui();
+    m_map_view->refresh();
 }
 
 void LKGameWindow::refresh_slots() {
@@ -210,12 +227,24 @@ void LKGameWindow::refresh_slots() {
 
 void LKGameWindow::refresh_ui_bars() {
     m_game.refresh_ui_bars(m_window.activity_time_bar, m_window.spirit_bar, m_window.energy_bar, m_selected_char_id);
+    refresh_map_bar();
+}
+
+void LKGameWindow::refresh_map_bar() {
+    m_window.map_progress_bar->setMaximum(100);
+
+    auto map_activity = m_game.running_activities().find(Map);
+    if (map_activity == m_game.running_activities().end()) {
+        m_window.map_progress_bar->setValue(0);
+    } else {
+        m_window.map_progress_bar->setValue(map_activity->second->percent_complete());
+    }
 }
 
 void LKGameWindow::refresh_ui_buttons() {
     auto activities = selected_char().activities();
-    bool smithing_already_queued = std::any_of(activities.begin(), activities.end(), [](CharacterActivity &a) {
-        return a.action() == Smithing;
+    bool smithing_already_queued = std::any_of(activities.begin(), activities.end(), [](CharacterActivity *a) {
+        return a->action() == Smithing;
     });
 
     for (ItemDomain domain : { Smithing, Foraging, Mining }) {
@@ -231,7 +260,7 @@ void LKGameWindow::refresh_ui_buttons() {
     m_window.trade_partner_combobox->setEnabled(m_game.trade_partner() == NO_TRIBE);
 
     if (!m_connection.is_connected()
-        || selected_char().activity().ongoing()
+        || selected_char().activity()->isActive()
         || trade_ongoing(m_selected_tribe_id)
         || m_window.trade_partner_combobox->count() == 0
         || m_game.foreign_trade_level(m_selected_tribe_id) != m_game.trade_level()
@@ -285,7 +314,7 @@ void LKGameWindow::refresh_trade_ui() {
     }
 
     for (Character &character : game().characters()) {
-        if (character.activity().action() == Trading) {
+        if (character.activity()->action() == Trading) {
             window().trade_arrow_label->setPixmap(QPixmap(":/assets/img/icons/arrows.png"));
             window().trade_notification_label->setText(QString("%1 is carrying out this trade...").arg(character.name()));
         }
@@ -350,7 +379,7 @@ void LKGameWindow::load() {
     delete game;
 
     for (Character &character : m_game.characters()) {
-        character.activities().front().start();
+        character.activities().front()->start();
     }
 }
 
@@ -404,10 +433,8 @@ void LKGameWindow::timerEvent(QTimerEvent *event) {
         }
     }
 
-    for (Character &character : m_game.characters()) {
-        if (character.activity().timer_id() == event->timerId() && character.activity().action() != None) {
-            character.activity().progress(ACTIVITY_TICK_RATE_MS);
-        }
+    if (event->timerId() == m_refresh_timer_id) {
+        refresh_ui_bars();
     }
 
     refresh_ui_bars();
