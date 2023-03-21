@@ -31,5 +31,5 @@ Item ItemSlot::get_item(const SlotMessage &message) {
 }
 
 Inventory &ItemSlot::inventory() {
-    return gw()->game().inventory();
+    return gw()->game()->inventory();
 }

@@ -55,7 +55,7 @@ void Tooltip::set(const TooltipInfo &info) {
     color_cost_text();
 }
 
-void Tooltip::set(const Item &item, Game &game) {
+void Tooltip::set(const Item &item) {
     hide_resources();
     m_colorize_effect->setStrength(0.0);
 
@@ -64,7 +64,7 @@ void Tooltip::set(const Item &item, Game &game) {
     ItemDefinitionPtr this_def = item.def();
     QString character_name;
     if (item.owning_action != NO_ACTION) {
-        character_name = game.activity(item.owning_action)->character().name();
+        character_name = gw()->game()->activity(item.owning_action)->character().name();
     }
 
     QString description;
@@ -77,7 +77,7 @@ void Tooltip::set(const Item &item, Game &game) {
     subtext += Item::type_to_string(this_def->type);
 
     if (item.owning_action != NO_ACTION) {
-        switch (gw()->game().intent_of(item.id)) {
+        switch (gw()->game()->intent_of(item.id)) {
             default:
             case None: {
                 break;
@@ -99,7 +99,7 @@ void Tooltip::set(const Item &item, Game &game) {
 
     // Look for this being held/equipped
     if (item.def()->type & Artifact || item.def()->type & Tool) {
-        for (Character &character : gw()->game().characters()) {
+        for (Character &character : gw()->game()->characters()) {
             bool equipped = std::any_of(
                 begin(character.tools()),
                 end(character.tools()),
@@ -164,7 +164,7 @@ void Tooltip::set(const Item &item, Game &game) {
 }
 
 void Tooltip::color_cost_text() {
-    ItemProperties resources = gw()->game().total_resources();
+    ItemProperties resources = gw()->game()->total_resources();
 
     Item::for_each_resource_type([&](ItemProperty cost_prop, ItemProperty, ItemProperty resource_prop) {
         QLabel *label = cost_text().at(cost_prop);

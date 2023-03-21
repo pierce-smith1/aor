@@ -43,7 +43,7 @@ const std::vector<ItemId> &CharacterActivity::owned_item_ids() {
 const std::vector<Item> CharacterActivity::owned_items() {
     std::vector<Item> items;
     for (ItemId id : m_owned_items) {
-        items.push_back(gw()->game().inventory().get_item(id));
+        items.push_back(gw()->game()->inventory().get_item(id));
     }
     return items;
 }
@@ -64,7 +64,7 @@ QString CharacterActivity::domain_to_action_string(ItemDomain domain) {
 }
 
 Character &CharacterActivity::character() {
-    return gw()->game().character(m_char_id);
+    return gw()->game()->character(m_char_id);
 }
 
 void CharacterActivity::complete() {
@@ -78,12 +78,12 @@ void CharacterActivity::complete() {
     );
 
     if (m_action == Trading) {
-        gw()->connection().agreement_changed(gw()->game().trade_partner(), false);
+        gw()->connection().agreement_changed(gw()->game()->trade_partner(), false);
         for (AorUInt i = 0; i < TRADE_SLOTS; i++) {
             gw()->connection().offer_changed(Item(), i);
         }
-        gw()->game().accepting_trade() = false;
-        gw()->game().trade_partner() = NO_TRIBE;
+        gw()->game()->accepting_trade() = false;
+        gw()->game()->trade_partner() = NO_TRIBE;
     }
 
     exhaust_character();
@@ -103,9 +103,9 @@ void CharacterActivity::complete() {
     exhaust_reagents();
     clear_injuries();
 
-    gw()->game().actions_done()++;
+    gw()->game()->actions_done()++;
 
-    Character &character = gw()->game().character(m_char_id);
+    Character &character = gw()->game()->character(m_char_id);
     character.activities().pop_front();
 
     CharacterActivity *next = character.activities().front();
@@ -118,14 +118,38 @@ void CharacterActivity::complete() {
         next = character.activities().front();
     }
 
-    gw()->game().check_hatch();
+    gw()->game()->check_hatch();
     gw()->refresh_ui();
 
     TimedActivity::complete();
 }
 
-ItemDomain CharacterActivity::domain() {
-    return Explorer;
+void CharacterActivity::update_ui() {
+    refresh_ui_bars(character());
+}
+
+void CharacterActivity::refresh_ui_bars(Character &character) {
+    auto clamp = [](AorInt min, AorInt value, AorInt max) -> AorInt {
+        return value < min ? min : (value > max ? max : value);
+    };
+
+    QProgressBar *activity_bar = gw()->window().activity_time_bar;
+    QProgressBar *spirit_bar = gw()->window().spirit_bar;
+    QProgressBar *energy_bar = gw()->window().energy_bar;
+
+    activity_bar->setMaximum(100);
+    activity_bar->setValue(character.activity()->percent_complete() * 100);
+
+    // We have to be very particular about clamping values here, since if we
+    // pass a number to QProgressBar::setValue that is < minValue or > maxValue,
+    // nothing happens - leading to UI inconsistencies.
+    double spirit_gain = character.spirit_to_gain() * character.activity()->percent_complete();
+    spirit_bar->setMaximum(character.max_spirit());
+    spirit_bar->setValue(clamp(0, character.spirit() + spirit_gain, character.max_spirit()));
+
+    double energy_gain = character.energy_to_gain() * character.activity()->percent_complete();
+    energy_bar->setMaximum(character.max_energy());
+    energy_bar->setValue(clamp(0, character.energy() + energy_gain, character.max_energy()));
 }
 
 std::vector<Item> CharacterActivity::products() {
@@ -150,7 +174,7 @@ std::vector<Item> CharacterActivity::products() {
         }
         case Foraging:
         case Mining: {
-            Item tool = gw()->game().inventory().get_item(character().tool_id(m_action));
+            Item tool = gw()->game()->inventory().get_item(character().tool_id(m_action));
             const ItemProperties &tool_props = tool.def()->properties;
 
             if (tool.id == EMPTY_ID) {
@@ -185,7 +209,7 @@ std::vector<Item> CharacterActivity::products() {
             break;
         }
         case Coupling: {
-            auto &characters = gw()->game().characters();
+            auto &characters = gw()->game()->characters();
 
             // Coupling actions always end in pairs.
             // To avoid making two eggs, the first one that finishes their
@@ -209,7 +233,7 @@ std::vector<Item> CharacterActivity::products() {
             break;
         }
         case Trading: {
-            for (const Item &item : gw()->game().accepted_offer()) {
+            for (const Item &item : gw()->game()->accepted_offer()) {
                 discoverable_set.push_back({{ item, 1.0 }});
             }
             break;
@@ -238,8 +262,8 @@ void CharacterActivity::exhaust_reagents() {
             exhaust_item(id);
         }
     } else if (m_action == Trading) {
-        for (ItemId &id : gw()->game().trade_offer()) {
-            gw()->game().inventory().remove_item(id);
+        for (ItemId &id : gw()->game()->trade_offer()) {
+            gw()->game()->inventory().remove_item(id);
             id = EMPTY_ID;
         }
     } else if (m_action == Eating || m_action == Defiling) {
@@ -252,7 +276,7 @@ void CharacterActivity::exhaust_reagents() {
 }
 
 void CharacterActivity::exhaust_character() {
-    Item tool = gw()->game().inventory().get_item(character().tool_id(m_action));
+    Item tool = gw()->game()->inventory().get_item(character().tool_id(m_action));
 
     character().add_energy(character().energy_to_gain());
     character().add_spirit(character().spirit_to_gain());
@@ -286,15 +310,15 @@ void CharacterActivity::exhaust_item(ItemId id) {
         return;
     }
 
-    Item &item = gw()->game().inventory().get_item_ref(id);
+    Item &item = gw()->game()->inventory().get_item_ref(id);
 
     if (item.uses_left > 0) {
         item.uses_left -= 1;
         if (item.uses_left == 0 && item.code & CT_TOOL) {
             character().tools().at(m_action) = EMPTY_ID;
-            gw()->game().inventory().remove_item(id);
+            gw()->game()->inventory().remove_item(id);
         } else if (item.uses_left == 0) {
-            gw()->game().inventory().remove_item(id);
+            gw()->game()->inventory().remove_item(id);
         }
     }
 
@@ -305,7 +329,7 @@ void CharacterActivity::exhaust_item(ItemId id) {
             }
         }
     } else if (m_action == Trading) {
-        for (ItemId &oid : gw()->game().trade_offer()) {
+        for (ItemId &oid : gw()->game()->trade_offer()) {
             if (id == oid) {
                 oid = EMPTY_ID;
             }
@@ -324,7 +348,7 @@ void CharacterActivity::give(const std::vector<Item> &items) {
 void CharacterActivity::give_bonuses() {
     if (m_action == Eating) {
         for (const ItemId id : m_owned_items) {
-            Item item = gw()->game().inventory().get_item(id);
+            Item item = gw()->game()->inventory().get_item(id);
             character().call_hooks(HookPostEat, { &character() }, BASE_HOOK_DOMAINS, { item });
         }
     }
@@ -336,8 +360,8 @@ void CharacterActivity::give_injuries() {
     AorInt injury_percent_chance = 0;
     character().call_hooks(HookCalcInjuryChance, { &injury_percent_chance }, BASE_HOOK_DOMAINS | m_action);
 
-    if (gw()->game().actions_done() > 800) {
-        injury_percent_chance += ((gw()->game().actions_done() - 800) / 2);
+    if (gw()->game()->actions_done() > 800) {
+        injury_percent_chance += ((gw()->game()->actions_done() - 800) / 2);
         welchian = true;
     }
 

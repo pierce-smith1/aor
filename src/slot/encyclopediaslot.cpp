@@ -49,7 +49,7 @@ bool EncyclopediaSlot::valid() {
 }
 
 bool EncyclopediaSlot::undiscovered() {
-    return gw()->game().history().find(code()) == gw()->game().history().end();
+    return gw()->game()->history().find(code()) == gw()->game()->history().end();
 }
 
 ItemCode EncyclopediaSlot::code() {

@@ -36,8 +36,9 @@ public:
     Character &character();
 
     virtual void complete() override;
-    virtual ItemDomain domain() override;
+    virtual void update_ui() override;
 
+    static void refresh_ui_bars(Character &character);
     static QString domain_to_action_string(ItemDomain domain);
 
     void serialize(QIODevice *dev) const;

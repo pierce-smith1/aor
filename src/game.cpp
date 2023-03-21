@@ -99,15 +99,22 @@ bool Game::add_item(const Item &item) {
     }
 }
 
-void Game::register_activity(ItemDomain domain, TimedActivity *activity) {
-    m_running_activities.insert({ domain, activity });
+void Game::register_activity(TimedActivity *activity) {
+    m_running_activities.push_back(activity);
 }
 
 void Game::unregister_activity(TimedActivity *activity) {
     auto &acts = m_running_activities;
-    acts.erase(std::find_if(acts.begin(), acts.end(), [=](auto &pair) {
-        return pair.second == activity;
-    }));
+
+    auto activity_to_unregister = std::find_if(acts.begin(), acts.end(), [=](TimedActivity *a) {
+        return a == activity;
+    });
+
+    if (activity_to_unregister == acts.end()) {
+        bugcheck(UnregisterUnknownActivity, activity);
+    }
+
+    acts.erase(activity_to_unregister);
 }
 
 void Game::check_hatch() {
@@ -312,28 +319,6 @@ CharacterActivity *Game::activity(ActivityId id) {
     });
 }
 
-void Game::refresh_ui_bars(QProgressBar *activity, QProgressBar *spirit, QProgressBar *energy, CharacterId char_id) {
-    auto clamp = [](AorInt min, AorInt value, AorInt max) -> AorInt {
-        return value < min ? min : (value > max ? max : value);
-    };
-
-    Character &character = Game::character(char_id);
-
-    activity->setMaximum(100);
-    activity->setValue(character.activity()->percent_complete() * 100);
-
-    // We have to be very particular about clamping values here, since if we
-    // pass a number to QProgressBar::setValue that is < minValue or > maxValue,
-    // nothing happens - leading to UI inconsistencies.
-    double spirit_gain = character.spirit_to_gain() * character.activity()->percent_complete();
-    spirit->setMaximum(character.max_spirit());
-    spirit->setValue(clamp(0, character.spirit() + spirit_gain, character.max_spirit()));
-
-    double energy_gain = character.energy_to_gain() * character.activity()->percent_complete();
-    energy->setMaximum(character.max_energy());
-    energy->setValue(clamp(0, character.energy() + energy_gain, character.max_energy()));
-}
-
 void Game::serialize(QIODevice *dev) {
     IO::write_uint(dev, m_accepting_trade);
     IO::write_string(dev, m_tribe_name);
@@ -360,9 +345,7 @@ void Game::serialize(QIODevice *dev) {
     }
 }
 
-Game *Game::deserialize(QIODevice *dev) {
-    Game *g = new Game;
-
+void Game::deserialize(Game *g, QIODevice *dev) {
     g->m_accepting_trade = IO::read_uint(dev);
     g->m_tribe_name = IO::read_string(dev);
     g->m_trade_partner = IO::read_uint(dev);
@@ -390,12 +373,12 @@ Game *Game::deserialize(QIODevice *dev) {
     }
 
     g->m_tribes[NO_TRIBE];
-    return g;
 }
 
 Game *Game::new_game() {
     Game *g = new Game;
 
+    g->add_character(Generators::yokin_name(), { Generators::color() });
     g->add_character(Generators::yokin_name(), { Generators::color() });
 
     g->m_tribes[NO_TRIBE];

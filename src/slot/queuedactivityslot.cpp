@@ -17,7 +17,7 @@ bool QueuedActivitySlot::do_hovering() {
 std::optional<TooltipInfo> QueuedActivitySlot::tooltip_info() {
     QString item_name;
     if (activity()->action() == Eating || activity()->action() == Defiling) {
-        Item item = gw()->game().inventory().get_item(activity()->owned_item_ids()[0]);
+        Item item = gw()->game()->inventory().get_item(activity()->owned_item_ids()[0]);
         bool name_starts_with_vowel = item.def()->display_name.toCaseFolded().startsWith('a')
             || item.def()->display_name.toCaseFolded().startsWith('e')
             || item.def()->display_name.toCaseFolded().startsWith('i')
@@ -56,7 +56,7 @@ void QueuedActivitySlot::on_right_click(QMouseEvent *) {
     if (m_n > 0 && activity()->id() != NO_ACTION) {
         CharacterActivity *removed_activity = activities[m_n];
         for (ItemId id : removed_activity->owned_item_ids()) {
-            gw()->game().inventory().get_item_ref(id).owning_action = NO_ACTION;
+            gw()->game()->inventory().get_item_ref(id).owning_action = NO_ACTION;
         }
 
         activities.erase(begin(activities) + m_n);

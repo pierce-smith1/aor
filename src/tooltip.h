@@ -26,7 +26,7 @@ public:
     Tooltip();
 
     void set(const TooltipInfo &item);
-    void set(const Item &item, Game &game);
+    void set(const Item &item);
     void color_cost_text();
 
     Ui::Tooltip widget;
@@ -66,7 +66,7 @@ protected:
             m_tooltip->set(info);
         } else {
             Item item = tooltip_item().value();
-            m_tooltip->set(item, gw()->game());
+            m_tooltip->set(item);
         }
 
         m_tooltip->adjustSize();

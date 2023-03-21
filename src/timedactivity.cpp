@@ -4,7 +4,7 @@
 TimedActivity::TimedActivity(AorInt ms_total, AorInt ms_left)
     : QTimer(gw()), m_ms_total(ms_total)
 {
-    gw()->game().register_activity(domain(), this);
+    gw()->game()->register_activity(this);
 
     setSingleShot(true);
     setInterval(ms_left);
@@ -12,7 +12,7 @@ TimedActivity::TimedActivity(AorInt ms_total, AorInt ms_left)
 }
 
 TimedActivity::~TimedActivity() {
-    gw()->game().unregister_activity(this);
+    gw()->game()->unregister_activity(this);
 }
 
 AorInt TimedActivity::ms_total() {
@@ -28,12 +28,10 @@ double TimedActivity::percent_complete() {
 }
 
 void TimedActivity::complete() {
-    gw()->game().unregister_activity(this);
+    deleteLater();
 }
 
-ItemDomain TimedActivity::domain() {
-    return None;
-}
+void TimedActivity::update_ui() {}
 
 void TimedActivity::serialize(QIODevice *dev) const {
     IO::write_uint(dev, remainingTime());

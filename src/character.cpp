@@ -50,10 +50,10 @@ void Character::queue_activity(ItemDomain domain, const std::vector<ItemId> &ite
     }
 
     AorInt activity_ms;
-    if (gw()->game().fast_actions()) {
+    if (gw()->game()->fast_actions()) {
         activity_ms = 10 * 120;
     } else {
-        activity_ms = 1000 * 120;
+        activity_ms = 100 * 120;
     }
 
     // Don't do any sort of time adjustment if we're coupling - both participants
@@ -73,7 +73,7 @@ void Character::queue_activity(ItemDomain domain, const std::vector<ItemId> &ite
         // If we're doing something else, we shouldn't be accepting trades.
         if (gw()->selected_tribe_id() != NO_TRIBE) {
             gw()->connection().agreement_changed(gw()->selected_tribe_id(), false);
-            gw()->game().accepting_trade() = false;
+            gw()->game()->accepting_trade() = false;
         }
         m_activities.front()->start();
     }
@@ -187,7 +187,7 @@ bool Character::can_perform_action(ItemDomain domain) {
 }
 
 AorInt Character::energy_to_gain() {
-    if (gw()->game().no_exhaustion()) {
+    if (gw()->game()->no_exhaustion()) {
         return 0;
     }
 
@@ -214,7 +214,7 @@ AorInt Character::energy_to_gain() {
 }
 
 AorInt Character::spirit_to_gain() {
-    if (gw()->game().no_exhaustion()) {
+    if (gw()->game()->no_exhaustion()) {
         return 0;
     }
 
@@ -329,7 +329,7 @@ bool Character::push_effect(const Item &effect) {
         return false;
     }
 
-    if (!std::any_of(begin(gw()->game().history()), end(gw()->game().history()), [=](ItemCode code) {
+    if (!std::any_of(begin(gw()->game()->history()), end(gw()->game()->history()), [=](ItemCode code) {
         return Item::def_of(code)->type & Effect;
     })) {
         gw()->tutorial(
@@ -343,7 +343,7 @@ bool Character::push_effect(const Item &effect) {
             "Injuries should not be left to fester; once an explorer fills all her injury slots, she will <b>die</b>. Please don't let this happen."
         );
     }
-    gw()->game().history().insert(effect.code);
+    gw()->game()->history().insert(effect.code);
 
     AorInt current_effects = std::count_if(begin(m_effects), end(m_effects), [](const Item &item) {
         return item.id != EMPTY_ID;
@@ -368,7 +368,7 @@ bool Character::push_effect(const Item &effect) {
 }
 
 bool Character::discover(const Item &item) {
-    if (!gw()->game().add_item(item)) {
+    if (!gw()->game()->add_item(item)) {
         gw()->notify(Warning, QString("%1 discovered %3 %2, but the inventory was too full to accept it!")
             .arg(name())
             .arg(item.def()->display_name)
@@ -527,5 +527,5 @@ Character *Character::deserialize(QIODevice *dev) {
 }
 
 Inventory &Character::inventory() {
-    return gw()->game().inventory();
+    return gw()->game()->inventory();
 }

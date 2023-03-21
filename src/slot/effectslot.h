@@ -6,6 +6,7 @@ class EffectSlot : public ItemSlot {
 public:
     EffectSlot(size_t n);
 
+    virtual bool will_accept_drop(const SlotMessage &message) override;
     virtual void install() override;
 
 protected:

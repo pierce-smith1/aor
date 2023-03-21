@@ -9,8 +9,8 @@ DoughbyteConnection::DoughbyteConnection() {
 #endif
 
     QObject::connect(&m_socket, &QTcpSocket::connected, [=]() {
-        IO::write_uint(&m_socket, gw()->game().game_id());
-        IO::write_string(&m_socket, gw()->game().tribe_name());
+        IO::write_uint(&m_socket, gw()->game()->game_id());
+        IO::write_string(&m_socket, gw()->game()->tribe_name());
 
         availability_changed(true);
         want_game_state();
@@ -74,17 +74,17 @@ void DoughbyteConnection::availability_changed(bool available) {
 void DoughbyteConnection::send_info() {
     GameId to = IO::read_uint(&m_socket);
 
-    Inventory &inventory = gw()->game().inventory();
+    Inventory &inventory = gw()->game()->inventory();
     send_info(
         to,
         {
-            inventory.get_item(gw()->game().trade_offer()[0]),
-            inventory.get_item(gw()->game().trade_offer()[1]),
-            inventory.get_item(gw()->game().trade_offer()[2]),
-            inventory.get_item(gw()->game().trade_offer()[3]),
-            inventory.get_item(gw()->game().trade_offer()[4]),
+            inventory.get_item(gw()->game()->trade_offer()[0]),
+            inventory.get_item(gw()->game()->trade_offer()[1]),
+            inventory.get_item(gw()->game()->trade_offer()[2]),
+            inventory.get_item(gw()->game()->trade_offer()[3]),
+            inventory.get_item(gw()->game()->trade_offer()[4]),
         },
-        gw()->game().accepting_trade()
+        gw()->game()->accepting_trade()
     );
 }
 
@@ -92,7 +92,7 @@ void DoughbyteConnection::send_info(GameId to, const std::array<Item, TRADE_SLOT
     IO::write_byte(&m_socket, MT_MYINFO);
 
     IO::write_uint(&m_socket, to);
-    IO::write_string(&m_socket, gw()->game().tribe_name());
+    IO::write_string(&m_socket, gw()->game()->tribe_name());
     for (AorUInt i = 0; i < TRADE_SLOTS; i++) {
         IO::write_uint(&m_socket, items[i].code);
         IO::write_uint(&m_socket, items[i].uses_left);
@@ -107,8 +107,8 @@ void DoughbyteConnection::want_game_state() {
 void DoughbyteConnection::execute_trade() {
     gw()->selected_char().queue_activity(Trading, {});
 
-    gw()->game().trade_partner() = gw()->selected_tribe_id();
-    gw()->game().accepted_offer() = gw()->game().tribes().at(gw()->selected_tribe_id()).offer;
+    gw()->game()->trade_partner() = gw()->selected_tribe_id();
+    gw()->game()->accepted_offer() = gw()->game()->tribes().at(gw()->selected_tribe_id()).offer;
 
     gw()->refresh_ui();
 }
@@ -125,11 +125,11 @@ void DoughbyteConnection::update_offers() {
 void DoughbyteConnection::update_offers(GameId tribe_id, ItemCode code, AorUInt uses, int n) {
     Item item(code);
     item.uses_left = uses;
-    gw()->game().tribes()[tribe_id].offer[n] = item;
+    gw()->game()->tribes()[tribe_id].offer[n] = item;
 
     // If we witnessed the remote offer change, stop accepting
     if (tribe_id.n == gw()->window().trade_partner_combobox->currentData().toULongLong()) {
-        gw()->game().accepting_trade() = false;
+        gw()->game()->accepting_trade() = false;
         agreement_changed(tribe_id, false);
         gw()->refresh_ui_buttons();
     }
@@ -146,7 +146,7 @@ void DoughbyteConnection::update_agreements() {
 }
 
 void DoughbyteConnection::update_agreements(GameId tribe_id, bool agrees) {
-    gw()->game().tribes()[tribe_id].remote_accepted = agrees;
+    gw()->game()->tribes()[tribe_id].remote_accepted = agrees;
     gw()->refresh_trade_ui();
 }
 
@@ -166,7 +166,7 @@ void DoughbyteConnection::update_availability(GameId tribe_id, const QString &tr
         partner_box->insertItem(0, tribe_name, QVariant::fromValue(tribe_id.n));
     } else if (!available && index != -1) {
         partner_box->removeItem(index);
-        gw()->game().tribes().erase(tribe_id);
+        gw()->game()->tribes().erase(tribe_id);
     }
 
     gw()->refresh_ui_buttons();

@@ -6,6 +6,7 @@ class WeatherEffectSlot : public ItemSlot {
 public:
     WeatherEffectSlot(size_t n);
 
+    bool is_draggable() override;
     void install() override;
 
 protected:

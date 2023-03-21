@@ -13,7 +13,7 @@ bool TradeSlot::will_accept_drop(const SlotMessage &message) {
     }
 
     return (gw()->connection().is_connected())
-        && (gw()->game().trade_partner() == NOBODY)
+        && (gw()->game()->trade_partner() == NOBODY)
         && !(get_item(message).def()->type & Untradeable);
 }
 
@@ -31,5 +31,5 @@ void TradeSlot::accept_message(const SlotMessage &message) {
 }
 
 ItemId &TradeSlot::my_item_id() {
-    return gw()->game().trade_offer()[m_n];
+    return gw()->game()->trade_offer()[m_n];
 }

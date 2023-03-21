@@ -119,7 +119,7 @@ void ExplorerButton::accept_message(const SlotMessage &message) {
             break;
         } case SlotDoCouple: {
             Character &me = character();
-            Character &partner = gw()->game().character(std::get<CharacterId>(message));
+            Character &partner = gw()->game()->character(std::get<CharacterId>(message));
 
             me.partner() = partner.id();
             me.queue_activity(Coupling, {});
@@ -156,7 +156,7 @@ void ExplorerButton::install() {
 }
 
 Character &ExplorerButton::character() {
-    return gw()->game().characters()[m_n];
+    return gw()->game()->characters()[m_n];
 }
 
 QString ExplorerButton::character_description() {
@@ -169,7 +169,7 @@ QString ExplorerButton::character_description() {
         case Defiling: { string += "<i>Currently defiling</i><br>"; break; }
         case Trading: { string += "<i>Currently trading</i><br>"; break; }
         case Coupling: {
-            Character &partner = gw()->game().character(character().partner());
+            Character &partner = gw()->game()->character(character().partner());
             string += QString("<i>Having a child with %1</i><br>").arg(partner.name());
             break;
         }

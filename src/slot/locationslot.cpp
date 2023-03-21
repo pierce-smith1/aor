@@ -26,7 +26,7 @@ std::optional<TooltipInfo> LocationSlot::tooltip_info() {
 void LocationSlot::refresh() {
     Slot::refresh();
 
-    if (m_location_def.id == gw()->game().current_location_id()) {
+    if (m_location_def.id == gw()->game()->current_location_id()) {
         setStyleSheet("*[slot=\"true\"] { border: 2px solid #888; border-radius: 3px; background-color: white; }");
     } else {
         setStyleSheet("*[slot=\"true\"] { border: 1px solid #bbb; border-radius: 3px; background-color: white; }");

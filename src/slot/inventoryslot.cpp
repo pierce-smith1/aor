@@ -6,7 +6,7 @@ InventorySlot::InventorySlot(AorUInt y, AorUInt x)
 void InventorySlot::refresh() {
     Slot::refresh();
 
-    if (gw()->game().intent_of(my_item().id) != None) {
+    if (gw()->game()->intent_of(my_item().id) != None) {
         m_opacity_effect->setOpacity(0.5);
     } else {
         m_opacity_effect->setOpacity(1.0);
@@ -14,7 +14,7 @@ void InventorySlot::refresh() {
 }
 
 bool InventorySlot::is_draggable() {
-    return ItemSlot::is_draggable() && gw()->game().intent_of(my_item().id) == None;
+    return ItemSlot::is_draggable() && gw()->game()->intent_of(my_item().id) == None;
 }
 
 bool InventorySlot::will_accept_drop(const SlotMessage &message) {

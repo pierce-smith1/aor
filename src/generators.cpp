@@ -8,7 +8,7 @@ QRandomGenerator *Generators::rng() {
 
 QString Generators::yokin_name() {
     AorInt length = 3;
-    while (percent_chance(75 - ((length - 3) * 15))) {
+    while (percent_chance(85 - ((length - 3) * 15))) {
         length++;
     }
 
@@ -37,6 +37,7 @@ QString Generators::yokin_name() {
         {"I", 1.0},
         {"Y", 0.2},
         {"O", 1.1},
+        {"EO", 0.2},
         {"U", 0.2},
     };
 

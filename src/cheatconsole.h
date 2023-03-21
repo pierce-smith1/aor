@@ -67,7 +67,7 @@ const static std::vector<CheatCommand> COMMANDS = {
 
             OOB_CHECK(y, x);
 
-            Item item = game->game().inventory().get_item(y, x);
+            Item item = game->game()->inventory().get_item(y, x);
 
             qDebug("print: item yx (%lld, %lld): code (%llx), id (%llx), name (%s)",
                 y, x,
@@ -83,7 +83,7 @@ const static std::vector<CheatCommand> COMMANDS = {
         3,
         [](LKGameWindow *game, const QStringList &args) {
             if (args[1] == "." && args[2] == ".") {
-                game->game().add_item(Item(args[0]));
+                game->game()->add_item(Item(args[0]));
             }
 
             QS_TO_INT(y, args[1]);
@@ -91,7 +91,7 @@ const static std::vector<CheatCommand> COMMANDS = {
 
             OOB_CHECK(y, x);
 
-            game->game().inventory().put_item(Item(args[0]), y, x);
+            game->game()->inventory().put_item(Item(args[0]), y, x);
         }
     },
     {
@@ -204,7 +204,7 @@ const static std::vector<CheatCommand> COMMANDS = {
         "Add an egg from explorers with names $0 and $1 to your inventory that hatches after 1 action",
         2,
         [](LKGameWindow *game, const QStringList &args) {
-            auto &characters = game->game().characters();
+            auto &characters = game->game()->characters();
 
             CharacterId parent_id1 = std::find_if(begin(characters), end(characters), [&](Character &a) {
                 return a.name() == args[0];
@@ -216,7 +216,7 @@ const static std::vector<CheatCommand> COMMANDS = {
 
             Item egg = Item::make_egg(parent_id1, parent_id2);
             egg.instance_properties.map[InstanceEggFoundActionstamp] = 0;
-            game->game().add_item(egg);
+            game->game()->add_item(egg);
         }
     },
     {
@@ -224,7 +224,7 @@ const static std::vector<CheatCommand> COMMANDS = {
         "Put a random found egg into the inventory",
         0,
         [](LKGameWindow *game, const QStringList &) {
-            game->game().add_item(Item::make_egg());
+            game->game()->add_item(Item::make_egg());
         }
     },
     {
@@ -232,7 +232,7 @@ const static std::vector<CheatCommand> COMMANDS = {
         "Create a random explorer",
         0,
         [](LKGameWindow *game, const QStringList &) {
-            game->game().add_character(Generators::yokin_name(), { Generators::color() });
+            game->game()->add_character(Generators::yokin_name(), { Generators::color() });
         }
     },
     {
@@ -242,7 +242,7 @@ const static std::vector<CheatCommand> COMMANDS = {
         [](LKGameWindow *game, const QStringList &args) {
             QS_TO_INT(fast, args[0]);
 
-            game->game().fast_actions() = fast;
+            game->game()->fast_actions() = fast;
         }
     },
     {
@@ -251,13 +251,13 @@ const static std::vector<CheatCommand> COMMANDS = {
         1,
         [](LKGameWindow *game, const QStringList &args) {
             if (args[0] == "?") {
-                qDebug("Action counter at (%lld)", game->game().actions_done());
+                qDebug("Action counter at (%lld)", game->game()->actions_done());
                 return;
             }
 
             QS_TO_INT(actions, args[0]);
 
-            game->game().actions_done() = actions;
+            game->game()->actions_done() = actions;
         }
     },
     {
@@ -267,7 +267,7 @@ const static std::vector<CheatCommand> COMMANDS = {
         [](LKGameWindow *game, const QStringList &args) {
             QS_TO_INT(noexhaust, args[0]);
 
-            game->game().no_exhaustion() = noexhaust;
+            game->game()->no_exhaustion() = noexhaust;
         }
     }
 };

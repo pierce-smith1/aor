@@ -47,8 +47,7 @@ LKGameWindow::LKGameWindow()
     window().crawl_area->verticalScrollBar()->setEnabled(false);
 
     Game *new_game = Game::new_game();
-    m_game = *new_game;
-    delete new_game;
+    m_game = new_game;
 
     const auto activity_buttons = get_activity_buttons();
     for (const auto &pair : activity_buttons) {
@@ -59,10 +58,10 @@ LKGameWindow::LKGameWindow()
 
     connect(m_window.trade_accept_button, &QPushButton::clicked, [=]() {
         m_connection.agreement_changed(m_selected_tribe_id, true);
-        m_game.accepting_trade() = true;
+        m_game->accepting_trade() = true;
         refresh_ui_buttons();
 
-        if (m_game.tribes().at(selected_tribe_id()).remote_accepted) {
+        if (m_game->tribes().at(selected_tribe_id()).remote_accepted) {
             m_connection.execute_trade();
             m_connection.notify_trade(selected_tribe_id());
         }
@@ -70,8 +69,8 @@ LKGameWindow::LKGameWindow()
 
     connect(m_window.trade_unaccept_button, &QPushButton::clicked, [=]() {
         m_connection.agreement_changed(m_selected_tribe_id, false);
-        m_game.accepting_trade() = false;
-        m_game.trade_partner() = NO_TRIBE;
+        m_game->accepting_trade() = false;
+        m_game->trade_partner() = NO_TRIBE;
         refresh_ui_buttons();
     });
 
@@ -107,7 +106,7 @@ bool LKGameWindow::initialized() {
     return m_initialized;
 }
 
-Game &LKGameWindow::game() {
+Game *LKGameWindow::game() {
     return m_game;
 }
 
@@ -124,12 +123,12 @@ Tooltip *&LKGameWindow::tooltip() {
 }
 
 Character &LKGameWindow::selected_char() {
-    return m_game.character(selected_char_id());
+    return m_game->character(selected_char_id());
 }
 
 CharacterId &LKGameWindow::selected_char_id() {
     if (m_selected_char_id == NOBODY) {
-        m_selected_char_id = m_game.characters()[0].id();
+        m_selected_char_id = m_game->characters()[0].id();
     }
 
     return m_selected_char_id;
@@ -210,34 +209,19 @@ void LKGameWindow::notify(NotificationType type, const QString &msg) {
 
 void LKGameWindow::refresh_ui() {
     m_window.player_name_label->setText(QString("Explorer <b>%1</b>").arg(selected_char().name()));
-    m_window.tribe_name_label->setText(QString("Expedition <b>%1</b>").arg(m_game.tribe_name()));
+    m_window.tribe_name_label->setText(QString("Expedition <b>%1</b>").arg(m_game->tribe_name()));
 
     refresh_slots();
     refresh_ui_buttons();
-    refresh_ui_bars();
     refresh_trade_ui();
     m_map_view->refresh();
+
+    CharacterActivity::refresh_ui_bars(selected_char());
 }
 
 void LKGameWindow::refresh_slots() {
     for (Slot *slot : m_slots) {
         slot->refresh();
-    }
-}
-
-void LKGameWindow::refresh_ui_bars() {
-    m_game.refresh_ui_bars(m_window.activity_time_bar, m_window.spirit_bar, m_window.energy_bar, m_selected_char_id);
-    refresh_map_bar();
-}
-
-void LKGameWindow::refresh_map_bar() {
-    m_window.map_progress_bar->setMaximum(100);
-
-    auto map_activity = m_game.running_activities().find(Map);
-    if (map_activity == m_game.running_activities().end()) {
-        m_window.map_progress_bar->setValue(0);
-    } else {
-        m_window.map_progress_bar->setValue(map_activity->second->percent_complete());
     }
 }
 
@@ -257,18 +241,18 @@ void LKGameWindow::refresh_ui_buttons() {
         }
     }
 
-    m_window.trade_partner_combobox->setEnabled(m_game.trade_partner() == NO_TRIBE);
+    m_window.trade_partner_combobox->setEnabled(m_game->trade_partner() == NO_TRIBE);
 
     if (!m_connection.is_connected()
         || selected_char().activity()->isActive()
         || trade_ongoing(m_selected_tribe_id)
         || m_window.trade_partner_combobox->count() == 0
-        || m_game.foreign_trade_level(m_selected_tribe_id) != m_game.trade_level()
-        || m_game.trade_level() == 0
+        || m_game->foreign_trade_level(m_selected_tribe_id) != m_game->trade_level()
+        || m_game->trade_level() == 0
     ) {
         m_window.trade_accept_button->setEnabled(false);
         m_window.trade_unaccept_button->setEnabled(false);
-    } else if (m_game.accepting_trade()) {
+    } else if (m_game->accepting_trade()) {
         m_window.trade_accept_button->setEnabled(false);
         m_window.trade_unaccept_button->setEnabled(true);
     } else {
@@ -278,7 +262,7 @@ void LKGameWindow::refresh_ui_buttons() {
 }
 
 void LKGameWindow::refresh_trade_ui() {
-    if (m_selected_tribe_id != NO_TRIBE && m_game.tribes().at(m_selected_tribe_id).remote_accepted) {
+    if (m_selected_tribe_id != NO_TRIBE && m_game->tribes().at(m_selected_tribe_id).remote_accepted) {
         m_window.trade_remote_accept_icon->setPixmap(QPixmap(":/assets/img/icons/check.png"));
     } else {
         m_window.trade_remote_accept_icon->setPixmap(QPixmap(":/assets/img/icons/warning.png"));
@@ -286,15 +270,15 @@ void LKGameWindow::refresh_trade_ui() {
 
     if (m_selected_tribe_id != NO_TRIBE) {
         m_window.foreign_trade_level_label->setText(QString("<b>%1</b>")
-            .arg(m_game.foreign_trade_level(m_selected_tribe_id))
+            .arg(m_game->foreign_trade_level(m_selected_tribe_id))
         );
     } else {
         m_window.foreign_trade_level_label->setText("");
     }
 
-    m_window.trade_level_label->setText(QString("<b>%1</b>").arg(m_game.trade_level()));
+    m_window.trade_level_label->setText(QString("<b>%1</b>").arg(m_game->trade_level()));
 
-    if (m_game.foreign_trade_level(m_selected_tribe_id) == m_game.trade_level()) {
+    if (m_game->foreign_trade_level(m_selected_tribe_id) == m_game->trade_level()) {
         m_window.foreign_trade_level_label->setText(
             "<font color=green>" + m_window.foreign_trade_level_label->text() + "</font>"
         );
@@ -309,11 +293,11 @@ void LKGameWindow::refresh_trade_ui() {
 
     if (!m_connection.is_connected()) {
         window().trade_notification_label->setText("No connection to trade server - try restarting the game");
-    } else if (m_game.tribes().size() == 1) { // Not == 0, since there's always a Nobody tribe
+    } else if (m_game->tribes().size() == 1) { // Not == 0, since there's always a Nobody tribe
         window().trade_notification_label->setText("There's no one else to trade with.");
     }
 
-    for (Character &character : game().characters()) {
+    for (Character &character : m_game->characters()) {
         if (character.activity()->action() == Trading) {
             window().trade_arrow_label->setPixmap(QPixmap(":/assets/img/icons/arrows.png"));
             window().trade_notification_label->setText(QString("%1 is carrying out this trade...").arg(character.name()));
@@ -329,7 +313,7 @@ void LKGameWindow::tutorial(const QString &text) {
 }
 
 bool LKGameWindow::trade_ongoing(GameId tribe) {
-    return m_game.trade_partner() == tribe;
+    return m_game->trade_partner() == tribe;
 }
 
 const std::map<ItemDomain, QPushButton *> LKGameWindow::get_activity_buttons() {
@@ -352,7 +336,7 @@ void LKGameWindow::save() {
     IO::write_uint(&m_save_file, MINOR_VERSION);
     IO::write_uint(&m_save_file, PATCH_VERSION);
 
-    m_game.serialize(&m_save_file);
+    m_game->serialize(&m_save_file);
 
     m_save_file.flush();
 }
@@ -367,18 +351,23 @@ void LKGameWindow::load() {
     AorUInt magic = IO::read_uint(&m_save_file);
 
     if (magic != SAVE_MAGIC_NUMBER) {
-        bugcheck(SaveInvalidHeader);
+        QMessageBox::critical(this, "Aegis of Rhodon", QString("The save file is damaged or of an incompatible version (1.x.x)."));
+        QApplication::exit(0);
+    }
+
+    AorUInt mv = IO::read_uint(&m_save_file);
+    if (mv != MAJOR_VERSION) {
+        QMessageBox::critical(this, "Aegis of Rhodon", QString("The save file you tried to load is of an incompatible version."));
+        QApplication::exit(0);
     }
 
     IO::read_uint(&m_save_file);
     IO::read_uint(&m_save_file);
-    IO::read_uint(&m_save_file);
 
-    Game *game = Game::deserialize(&m_save_file);
-    m_game = *game;
-    delete game;
+    m_game = Game::new_game();
+    Game::deserialize(m_game, &m_save_file);
 
-    for (Character &character : m_game.characters()) {
+    for (Character &character : m_game->characters()) {
         character.activities().front()->start();
     }
 }
@@ -434,10 +423,12 @@ void LKGameWindow::timerEvent(QTimerEvent *event) {
     }
 
     if (event->timerId() == m_refresh_timer_id) {
-        refresh_ui_bars();
+        for (TimedActivity *activity : m_game->running_activities()) {
+            if (activity->isActive()) {
+                activity->update_ui();
+            }
+        }
     }
-
-    refresh_ui_bars();
 }
 
 void LKGameWindow::closeEvent(QCloseEvent *event) {

@@ -39,6 +39,7 @@ enum FatalErrorType {
     UnimplementedSlotInstall,
     LocationDefinitionLookupMiss,
     CoordsByLocationIdLookupMiss,
+    UnregisterUnknownActivity,
 };
 
 QString bugcheck_error_string(FatalErrorType type);

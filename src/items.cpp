@@ -76,7 +76,7 @@ Item Item::make_egg(CharacterId parent1, CharacterId parent2) {
 
     egg.instance_properties.map[InstanceEggParent1] = parent1;
     egg.instance_properties.map[InstanceEggParent2] = parent2;
-    egg.instance_properties.map[InstanceEggFoundActionstamp] = gw()->game().actions_done();
+    egg.instance_properties.map[InstanceEggFoundActionstamp] = gw()->game()->actions_done();
 
     return egg;
 }
@@ -90,13 +90,13 @@ QString Item::instance_properties_to_string() const {
 
     if (instance_properties[InstanceEggParent1] != NOBODY) {
         string += QString("<i>Lovingly made by <b>%1</b> and <b>%2</b>.</i><br>")
-            .arg(gw()->game().character(instance_properties[InstanceEggParent1]).name())
-            .arg(gw()->game().character(instance_properties[InstanceEggParent2]).name());
+            .arg(gw()->game()->character(instance_properties[InstanceEggParent1]).name())
+            .arg(gw()->game()->character(instance_properties[InstanceEggParent2]).name());
     }
 
     if (instance_properties[InstanceEggFoundActionstamp]) {
         string += QString("Hatches after <b>%1 more actions.</b></i><br>")
-            .arg(ACTIONS_TO_HATCH - (gw()->game().actions_done() - instance_properties[InstanceEggFoundActionstamp]) + 1);
+            .arg(ACTIONS_TO_HATCH - (gw()->game()->actions_done() - instance_properties[InstanceEggFoundActionstamp]) + 1);
     }
 
     if (instance_properties[InstanceEggFoundFlavor]) {

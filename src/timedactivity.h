@@ -18,7 +18,7 @@ public:
 
     virtual double percent_complete();
     virtual void complete();
-    virtual ItemDomain domain();
+    virtual void update_ui();
 
     void serialize(QIODevice *dev) const;
     static TimedActivity *deserialize(QIODevice *dev);

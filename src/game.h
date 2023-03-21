@@ -28,7 +28,7 @@ using TradePurchases = std::array<Item, TRADE_SLOTS>;
 using ItemHistory = std::set<ItemCode>;
 using ConsumableWaste = std::map<LocationId, AorUInt>;
 using MineableWaste = std::map<LocationId, AorUInt>;
-using RunningActivities = std::multimap<ItemDomain, TimedActivity *>;
+using RunningActivities = std::vector<TimedActivity *>;
 
 class Game {
 public:
@@ -54,7 +54,7 @@ public:
 
     bool add_character(const QString &name, const std::multiset<Color> &heritage);
     bool add_item(const Item &item);
-    void register_activity(ItemDomain at, TimedActivity *action);
+    void register_activity(TimedActivity *action);
     void unregister_activity(TimedActivity *action);
     void check_hatch();
     void check_tutorial(ItemDomain domain);
@@ -66,10 +66,8 @@ public:
     Character &character(CharacterId id);
     CharacterActivity *activity(ActivityId id);
 
-    void refresh_ui_bars(QProgressBar *activity, QProgressBar *spirit, QProgressBar *energy, CharacterId char_id);
-
     void serialize(QIODevice *dev);
-    static Game *deserialize(QIODevice *dev);
+    static void deserialize(Game *g, QIODevice *dev);
     static Game *new_game();
 
 private:

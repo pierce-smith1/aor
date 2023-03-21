@@ -8,5 +8,5 @@ void ScanItemSlot::install() {
 }
 
 ItemId &ScanItemSlot::my_item_id() {
-    return gw()->game().scan_item_id();
+    return gw()->game()->scan_item_id();
 }

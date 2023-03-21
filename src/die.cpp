@@ -34,6 +34,7 @@ QString bugcheck_error_string(FatalErrorType type) {
         case UnimplementedSlotInstall: { return "UNIMPLEMENTED_SLOT_INSTALL"; }
         case LocationDefinitionLookupMiss: { return "LOCATION_DEFINITION_LOOKUP_MISS"; }
         case CoordsByLocationIdLookupMiss: { return "COORDS_BY_LOCATION_ID_LOOKUP_MISS"; }
+        case UnregisterUnknownActivity: { return "UNREGISTER_UNKNOWN_ACTIVITY"; }
     }
 
     return "TOTAL_RUIN";

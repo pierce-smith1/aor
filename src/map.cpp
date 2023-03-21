@@ -128,7 +128,7 @@ MapViewTile::MapViewTile(size_t y, size_t x)
 }
 
 void MapViewTile::refresh() {
-    if (!gw()->game().map().tile_discovered(m_y, m_x)) {
+    if (!gw()->game()->map().tile_discovered(m_y, m_x)) {
         m_slot->hide();
         m_image_label->setPixmap(QPixmap(":/assets/img/map/unknown.png"));
         m_image_label->show();

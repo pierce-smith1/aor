@@ -6,6 +6,10 @@ EffectSlot::EffectSlot(size_t n)
     make_wide();
 }
 
+bool EffectSlot::will_accept_drop(const SlotMessage &) {
+    return false;
+}
+
 void EffectSlot::install() {
     gw()->window().effect_group->layout()->addWidget(this);
 }

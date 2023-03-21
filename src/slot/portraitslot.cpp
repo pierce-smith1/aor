@@ -22,7 +22,7 @@ void PortraitSlot::refresh() {
     if (gw()->selected_char().activity()->action() == Coupling) {
         stylesheet += (QString("background: qlineargradient(x1: 0.385, y1: 0.48, x2: 0.3875, y2: 0.482,")
             + "stop: 0 " + Colors::blend(gw()->selected_char().heritage()).name() + ","
-            + "stop: 1 " + Colors::blend(gw()->game().character(gw()->selected_char().partner()).heritage()).name() + ");"
+            + "stop: 1 " + Colors::blend(gw()->game()->character(gw()->selected_char().partner()).heritage()).name() + ");"
         );
     } else {
         stylesheet += QString("background-color: %1;")

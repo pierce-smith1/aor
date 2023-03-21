@@ -41,7 +41,7 @@ public:
                     // constructor public for use with std::allocator.
 
     bool initialized();
-    Game &game();
+    Game *game();
     Ui::LKMainWindow &window();
     Tooltip *&tooltip();
     CharacterId &selected_char_id();
@@ -62,8 +62,6 @@ public:
 
     void refresh_ui();
     void refresh_slots();
-    void refresh_ui_bars();
-    void refresh_map_bar();
     void refresh_ui_buttons();
     void refresh_trade_ui();
     void tutorial(const QString &text);
@@ -88,7 +86,7 @@ private:
     CharacterId m_selected_char_id = NOBODY;
     Ui::LKMainWindow m_window;
     Tooltip *m_item_tooltip;
-    Game m_game;
+    Game *m_game;
     GameId m_selected_tribe_id = NO_TRIBE;
     std::vector<Slot *> m_slots;
     DoughbyteConnection m_connection;
