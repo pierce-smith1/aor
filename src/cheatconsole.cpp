@@ -33,7 +33,7 @@ void CheatConsole::execute(const QString &input) {
         return;
     }
 
-    command->action(game, tokens);
+    command->action(tokens);
     game->refresh_ui();
 }
 

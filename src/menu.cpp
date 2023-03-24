@@ -26,17 +26,6 @@ MenuBar::MenuBar(LKGameWindow *parent)
     seperator->setSeparator(true);
     handbook_menu->addAction(seperator);
 
-    QAction *multiwindow_action = new QAction(handbook_menu);
-    multiwindow_action->setText("Toggle Multiwindow Mode");
-    handbook_menu->addAction(multiwindow_action);
-    connect(multiwindow_action, &QAction::triggered, [=]() {
-        if (parent->m_multiwindows.empty()) {
-            parent->enter_multiwindow_mode();
-        } else {
-            parent->exit_multiwindow_mode();
-        }
-    });
-
     QAction *about_action = new QAction(handbook_menu);
     about_action->setText("About");
     handbook_menu->addAction(about_action);
@@ -45,4 +34,32 @@ MenuBar::MenuBar(LKGameWindow *parent)
     });
 
     addMenu(handbook_menu);
+
+    QMenu *settings_menu = new QMenu("Settings", this);
+
+    QAction *multiwindow_action = new QAction(settings_menu);
+    multiwindow_action->setCheckable(true);
+    multiwindow_action->setChecked(gw()->game()->settings().multiwindow_on);
+    multiwindow_action->setText("Multiwindow");
+    settings_menu->addAction(multiwindow_action);
+    connect(multiwindow_action, &QAction::triggered, [=]() {
+        gw()->game()->settings().multiwindow_on = multiwindow_action->isChecked();
+
+        if (multiwindow_action->isChecked()) {
+            gw()->enter_multiwindow_mode();
+        } else {
+            gw()->exit_multiwindow_mode();
+        }
+    });
+
+    QAction *sound_action = new QAction(settings_menu);
+    sound_action->setCheckable(true);
+    sound_action->setChecked(gw()->game()->settings().sounds_on);
+    sound_action->setText("Sounds");
+    settings_menu->addAction(sound_action);
+    connect(sound_action, &QAction::triggered, [=]() {
+        gw()->game()->settings().sounds_on = sound_action->isChecked();
+    });
+
+    addMenu(settings_menu);
 }

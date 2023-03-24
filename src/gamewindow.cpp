@@ -21,7 +21,6 @@
 #include "slot/skillslot.h"
 #include "slot/explorerbutton.h"
 #include "slot/weathereffectslot.h"
-#include "slot/scanitemslot.h"
 
 LKGameWindow *LKGameWindow::the_game_window;
 
@@ -42,12 +41,13 @@ LKGameWindow::LKGameWindow()
     m_window.setupUi(this);
     m_event_log.setupUi(new QDialog(this));
 
-    setMenuBar(new MenuBar(this));
     window().crawl_contents->layout()->addWidget(m_map_view);
     window().crawl_area->verticalScrollBar()->setEnabled(false);
 
     Game *new_game = Game::new_game();
     m_game = new_game;
+
+    setMenuBar(new MenuBar(this));
 
     const auto activity_buttons = get_activity_buttons();
     for (const auto &pair : activity_buttons) {
@@ -79,9 +79,6 @@ LKGameWindow::LKGameWindow()
         refresh_ui();
     });
 
-    connect(m_window.scan_button, &QPushButton::clicked, [=]() {
-    });
-
     install_slots();
 
     QPalette activity_palette;
@@ -95,11 +92,15 @@ LKGameWindow::LKGameWindow()
     QPalette energy_palette;
     energy_palette.setColor(QPalette::Highlight, Colors::qcolor(Cherry));
     m_window.energy_bar->setPalette(energy_palette);
+    m_window.global_action_bar->setPalette(energy_palette);
 
     m_encyclopedia->refresh();
 
     m_backup_timer_id = startTimer(BACKUP_INTERVAL_MS);
     m_refresh_timer_id = startTimer(ACTIVITY_TICK_RATE_MS);
+
+    CharacterActivity::empty_activity = new CharacterActivity();
+
 }
 
 bool LKGameWindow::initialized() {
@@ -200,7 +201,7 @@ void LKGameWindow::install_slots() {
         (new WeatherEffectSlot(i))->install();
     }
 
-    (new ScanItemSlot)->install();
+
 }
 
 void LKGameWindow::notify(NotificationType type, const QString &msg) {
@@ -214,9 +215,12 @@ void LKGameWindow::refresh_ui() {
     refresh_slots();
     refresh_ui_buttons();
     refresh_trade_ui();
+    refresh_material_infostrips();
+    refresh_global_action_bar();
     m_map_view->refresh();
 
     CharacterActivity::refresh_ui_bars(selected_char());
+    m_window.map_progress_bar->setValue(0);
 }
 
 void LKGameWindow::refresh_slots() {
@@ -240,6 +244,14 @@ void LKGameWindow::refresh_ui_buttons() {
             get_activity_buttons().at(domain)->setEnabled(false);
         }
     }
+
+    get_activity_buttons().at(Foraging)->setText(QString("Forage (%1)")
+        .arg(m_game->forageables_left())
+    );
+
+    get_activity_buttons().at(Mining)->setText(QString("Mine (%1)")
+        .arg(m_game->mineables_left())
+    );
 
     m_window.trade_partner_combobox->setEnabled(m_game->trade_partner() == NO_TRIBE);
 
@@ -305,6 +317,31 @@ void LKGameWindow::refresh_trade_ui() {
     }
 }
 
+void LKGameWindow::refresh_material_infostrips() {
+    ItemProperties total = m_game->total_resources();
+
+    m_window.total_stone_label->setText(QString("<b>%1</b>").arg(total[StoneResource]));
+    m_window.total_metallic_label->setText(QString("<b>%1</b>").arg(total[MetallicResource]));
+    m_window.total_crystalline_label->setText(QString("<b>%1</b>").arg(total[CrystallineResource]));
+    m_window.total_runic_label->setText(QString("<b>%1</b>").arg(total[RunicResource]));
+    m_window.total_leafy_label->setText(QString("<b>%1</b>").arg(total[LeafyResource]));
+
+    ItemProperties smith = m_game->total_smithing_resources(selected_char_id());
+
+    m_window.total_smith_stone_label->setText(QString("<b>%1</b>").arg(smith[StoneResource]));
+    m_window.total_smith_metallic_label->setText(QString("<b>%1</b>").arg(smith[MetallicResource]));
+    m_window.total_smith_crystalline_label->setText(QString("<b>%1</b>").arg(smith[CrystallineResource]));
+    m_window.total_smith_runic_label->setText(QString("<b>%1</b>").arg(smith[RunicResource]));
+    m_window.total_smith_leafy_label->setText(QString("<b>%1</b>").arg(smith[LeafyResource]));
+}
+
+void LKGameWindow::refresh_global_action_bar() {
+    m_window.global_action_bar->setMaximum(ACTIONS_UNTIL_WELCHIAN);
+    m_window.global_action_bar->setValue(m_game->actions_done() > ACTIONS_UNTIL_WELCHIAN ? ACTIONS_UNTIL_WELCHIAN : m_game->actions_done());
+    m_window.global_action_count->setText(QString("<b>%1</b>").arg(m_game->actions_done()));
+    m_window.global_action_max->setText(QString("<b>%1</b>").arg(ACTIONS_UNTIL_WELCHIAN));
+}
+
 void LKGameWindow::tutorial(const QString &text) {
     QMessageBox tut;
     tut.setText(text);
@@ -352,20 +389,20 @@ void LKGameWindow::load() {
 
     if (magic != SAVE_MAGIC_NUMBER) {
         QMessageBox::critical(this, "Aegis of Rhodon", QString("The save file is damaged or of an incompatible version (1.x.x)."));
-        QApplication::exit(0);
+        exit(0);
     }
 
     AorUInt mv = IO::read_uint(&m_save_file);
     if (mv != MAJOR_VERSION) {
-        QMessageBox::critical(this, "Aegis of Rhodon", QString("The save file you tried to load is of an incompatible version."));
-        QApplication::exit(0);
+        QMessageBox::critical(this, "Aegis of Rhodon", QString("The save file is of an incompatible version."));
+        exit(0);
     }
 
     IO::read_uint(&m_save_file);
     IO::read_uint(&m_save_file);
 
-    m_game = Game::new_game();
-    Game::deserialize(m_game, &m_save_file);
+    m_game = new Game();
+    m_game->deserialize(&m_save_file);
 
     for (Character &character : m_game->characters()) {
         character.activities().front()->start();
@@ -411,6 +448,8 @@ void LKGameWindow::exit_multiwindow_mode() {
     }
 
     m_multiwindows.clear();
+
+    setMenuBar(new MenuBar(this)); // LOL
 
     show();
 }

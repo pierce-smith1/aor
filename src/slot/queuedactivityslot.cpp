@@ -68,10 +68,8 @@ void QueuedActivitySlot::install() {
 }
 
 CharacterActivity *QueuedActivitySlot::activity() {
-    static CharacterActivity *empty_activity = new CharacterActivity;
-
     if (m_n >= gw()->selected_char().activities().size()) {
-        return empty_activity;
+        return CharacterActivity::empty_activity;
     }
 
     return gw()->selected_char().activities()[m_n];

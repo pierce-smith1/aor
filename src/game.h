@@ -11,8 +11,10 @@
 #include "io.h"
 #include "hooks.h"
 #include "map.h"
+#include "settings.h"
 
 const static AorUInt MAX_EXPLORERS = 12;
+const static AorUInt ACTIONS_UNTIL_WELCHIAN = 400;
 
 using RemoteOffer = std::array<Item, TRADE_SLOTS>;
 
@@ -29,6 +31,7 @@ using ItemHistory = std::set<ItemCode>;
 using ConsumableWaste = std::map<LocationId, AorUInt>;
 using MineableWaste = std::map<LocationId, AorUInt>;
 using RunningActivities = std::vector<TimedActivity *>;
+using StudiedItems = std::map<ItemDomain, ItemId>;
 
 class Game {
 public:
@@ -49,6 +52,12 @@ public:
     ItemId &scan_item_id();
     AorUInt &actions_done();
     RunningActivities &running_activities();
+    ConsumableWaste &forageable_waste();
+    MineableWaste &mineable_waste();
+    StudiedItems &studied_items();
+
+    Settings &settings();
+
     bool &fast_actions();
     bool &no_exhaustion();
 
@@ -60,14 +69,25 @@ public:
     void check_tutorial(ItemDomain domain);
     AorInt trade_level();
     AorInt foreign_trade_level(GameId tribe_id);
+    ItemProperties total_smithing_resources(CharacterId character_id);
     ItemProperties total_resources();
     ItemDomain intent_of(ItemId item_id);
+
+    void start_scan();
+    bool can_scan();
+    bool can_travel(LocationId id);
+    void start_travel(LocationId id);
+    AorInt forageables_left(LocationId id);
+    AorInt forageables_left();
+    AorInt mineables_left(LocationId id);
+    AorInt mineables_left();
 
     Character &character(CharacterId id);
     CharacterActivity *activity(ActivityId id);
 
     void serialize(QIODevice *dev);
-    static void deserialize(Game *g, QIODevice *dev);
+    void deserialize(QIODevice *dev);
+
     static Game *new_game();
 
 private:
@@ -87,6 +107,9 @@ private:
     ConsumableWaste m_consumable_waste;
     MineableWaste m_mineable_waste;
     RunningActivities m_running_activities;
+    StudiedItems m_studied_items {};
+
+    Settings m_settings;
 
     // Transient
     ForeignTribes m_tribes;

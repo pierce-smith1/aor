@@ -49,8 +49,10 @@ public:
 
     WorldMap();
 
+    Coord &cursor_pos();
+
     bool tile_discovered(size_t y, size_t x);
-    void scan_from(size_t y, size_t x, size_t depth);
+    void scan_from(LocationId location_id, size_t power);
 
     void serialize(QIODevice *dev) const;
     static WorldMap deserialize(QIODevice *dev);
@@ -58,13 +60,14 @@ public:
     static const Tiles &map_tiles();
 
 private:
+    bool scan_from(size_t y, size_t x, size_t depth, bool hit_locations, std::set<Coord> seen_this_scan);
     bool is_oob(size_t y, size_t x);
-    void scan_paths_from(size_t y, size_t x, size_t depth);
     std::vector<Coord> neighbors(size_t y, size_t x);
     Coord coord_of(LocationId location_id);
 
     std::set<LocationId> m_known_locations;
     std::array<std::array<bool, MAP_WIDTH>, MAP_HEIGHT> m_tile_discovered {};
+    Coord m_cursor_pos = { 0, 0 };
 };
 
 class MapViewTile : public QWidget {
@@ -73,10 +76,16 @@ public:
 
     void refresh();
 
+protected:
+    void enterEvent(QHoverEvent *event);
+    void leaveEvent(QHoverEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
+
 private:
     size_t m_y, m_x;
     LocationSlot *m_slot;
     QLabel *m_image_label;
+    bool m_hovered = false;
 };
 
 class MapView : public QWidget {

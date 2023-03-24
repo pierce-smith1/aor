@@ -59,6 +59,7 @@ enum ItemDomain : AorUInt {
     Script          = 1 << 15,
     Weather         = 1 << 16, Map = 1 << 16,
     Scan            = 1 << 17,
+    Travelling      = 1 << 18,
     All             = ~0ull
 };
 
@@ -119,6 +120,86 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         }
     },
     {
+        CT_CONSUMABLE | 2,
+        "norton_ghost_pepper", "Norton Ghost Pepper",
+        "<i>This pepper grows all over the place, but only very few of them are edible.</i><br>"
+        "<i>They've started growing at camp. I ask them to leave but they pretend they're not listening.</i><br>",
+        1 USES, Consumable,
+        {
+            { ItemLevel, 2 },
+            { ConsumableClearsNumEffects, 1 },
+            { ConsumableEnergyBoost, 20 },
+            { LeafyResource, 10 }
+        }
+    },
+    {
+        CT_CONSUMABLE | 3,
+        "bleeding_wildheart", "Bleeding Wildheart",
+        "<i>If you're ever climbing a tree and you think you're near the top, just keep going.</i><br>"
+        "<i>There are some interesting things up there. I think I found someone's keys.</i><br>",
+        1 USES, Consumable,
+        {
+            { ItemLevel, 2 },
+            { ConsumableEnergyBoost, 40 },
+            { LeafyResource, 10 }
+        }
+    },
+    {
+        CT_CONSUMABLE | 4,
+        "pipeapple", "Pipeapple",
+        "<i>The pipeapple is a \"fifodesiac\" -</i><br>"
+        "<i>that is to say, it allows us to share information, if you know what I mean.</i><br>",
+        1 USES, Consumable,
+        {
+            { ItemLevel, 3 },
+            { LeafyResource, 20 },
+            { ConsumableEnergyBoost, 20 },
+            { ConsumableSpiritBoost, 20 },
+            { ConsumableMakesCouplable, 1 }
+        }
+    },
+    {
+        CT_CONSUMABLE | 5,
+        "fungified_token", "Fungified Token",
+        "<i>It seems to be an ancient currency, overgrown with an intoxicating fungus.</i><br>"
+        "<i>Surely this would have made it useless. If only they had some sort of non-fungifiable token...</i><br>",
+        1 USES, Consumable,
+        {
+            { ItemLevel, 3 },
+            { LeafyResource, 10 },
+            { ConsumableEnergyBoost, 20 },
+            { ConsumableGivesEffect, ItemMark::marker("obsessive_checksum_disorder") }
+        }
+    },
+    {
+        CT_CONSUMABLE | 6,
+        "polymore", "Polymore",
+        "<i>Also known as \"curly bracket fungi\", it naturally lives on the bark of syntax trees;</i><br>"
+        "<i>However it loves to grow on paper, and it will even rearrange the words on the page to fit its modular organization scheme.</i><br>"
+        "<i>I wish it would go away.</i><br>",
+        1 USES, Consumable,
+        {
+            { ItemLevel, 3 },
+            { LeafyResource, 10 },
+            { RunicResource, 20 },
+            { ConsumableEnergyBoost, 20 },
+            { ConsumableGivesEffect, ItemMark::marker("dynamic_digestion") }
+        }
+    },
+    {
+        CT_CONSUMABLE | 7,
+        "copycap", "Copycap",
+        "<i>The roots of this fungus seem to grasp an object and form a complete copy of it elsewhere.</i><br>"
+        "<i>It will happily destroy whatever's in its way to complete this ritual.</i><br>",
+        1 USES, Consumable,
+        {
+            { ItemLevel, 3 },
+            { LeafyResource, 10 },
+            { RunicResource, 20 },
+            { ConsumableGivesEffect, ItemMark::marker("double_vision") }
+        }
+    },
+    {
         CT_MATERIAL | 0,
         "obsilicon", "Obsilicon",
         "<i>I see little flashes of light now and again under its glassy surface -</i><br>"
@@ -141,6 +222,90 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
             { StoneResource, 10 }
         }
     },
+    {
+        CT_MATERIAL | 2,
+        "cobolt_bar", "Cobolt Bar",
+        "<i>Ancient writings reveal that entire cities used to be built of this charming metal,</i><br>"
+        "<i>but no one seems to know what it is anymore.</i><br>",
+        1 USES, Material,
+        {
+            { ItemLevel, 2 },
+            { MetallicResource, 25 }
+        }
+    },
+    {
+        CT_MATERIAL | 3,
+        "solid_slate", "Solid Slate",
+        "<i>I used to have to carve my notes on these awful spinning schists -</i><br>"
+        "<i>powered by rune magic or something else sinister, they were slow, loud, and broke easily.</i><br>"
+        "<i>This smaller, more stable stone is a crucial improvement.</i><br>",
+        1 USES, Material,
+        {
+            { ItemLevel, 2 },
+            { StoneResource, 5 },
+            { RunicResource, 10 }
+        }
+    },
+    {
+        CT_MATERIAL | 4,
+        "scandiskium", "Scandiskium",
+        "<i>Every once in a while, stillness grips the whole of Rhodon as it falls into night.</i><br>"
+        "<i>Sometimes this happens very suddenly. I get awful headaches and nausea from it.</i><br>"
+        "<i>And I can hear things changing as the world re-roots itself...</i><br>",
+        1 USES, Material,
+        {
+            { ItemLevel, 2 },
+            { CrystallineResource, 10 },
+            { MetallicResource, 5 },
+        }
+    },
+    {
+        CT_MATERIAL | 5,
+        "fireclay", "Fireclay",
+        "<i>Careful examination of this clay reveals it is selectively permeable -</i><br>"
+        "<i>some particles can get through, but others can't.</i><br>"
+        "<i>It's completely transparent from one side...</i><br>",
+        1 USES, Material,
+        {
+            { ItemLevel, 3 },
+            { StoneResource, 50 },
+        }
+    },
+    /*
+    {
+        CT_MATERIAL | 6,
+        "rubygem", "Rubygem",
+        "<i>These eye-catching stones are deceptively strong and durable, for how pretty they are.</i><br>",
+        "<i>We've been building minecart tracks out of them - they make great rails.</i><br>",
+        1 USES, Material,
+        {
+            { ItemLevel, 4 },
+            { CrystallineResource, 50 },
+            { RunicResource, 20 }
+        }
+    },
+    {
+        CT_MATERIAL | 7,
+        "purl", "Purl",
+        "<i>It looks an awful lot like a pearl, but it isn't one, so we needed to call it something else.</i><br>",
+        "<i>Despite looking like a precious stone, these things are actually eggs - </i><br>"
+        "<i>given enough time, they hatch into a beautiful butterfly.</i><br>",
+        1 USES, Material,
+        {
+
+        }
+    },
+    {
+        CT_MATERIAL | 8,
+        "wolframite_alpha", "Wolframite Alpha",
+        "<i>Technically this is an ore - but the smelting process leaves behind tablets of lore instead of metal.</i><br>",
+        "<i>Reading them makes my head spin. Whoever is out there writing these knows everything about everything.</i><br>",
+        1 USES, Material,
+        {
+
+        }
+    },
+    */
     {
         CT_TOOL | 0,
         "maven_mallet", "Maven Mallet",
@@ -195,139 +360,12 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         }
     },
     {
-        CT_CONSUMABLE | 2,
-        "norton_ghost_pepper", "Norton Ghost Pepper",
-        "<i>This pepper grows all over the place, but only very few of them are edible.</i><br>"
-        "<i>They've started growing at camp. I ask them to leave but they pretend they're not listening.</i><br>",
-        1 USES, Consumable,
-        {
-            { ItemLevel, 2 },
-            { ConsumableClearsNumEffects, 1 },
-            { ConsumableEnergyBoost, 20 },
-        }
-    },
-    {
-        CT_CONSUMABLE | 3,
-        "bleeding_wildheart", "Bleeding Wildheart",
-        "<i>If you're ever climbing a tree and you think you're near the top, just keep going.</i><br>"
-        "<i>There are some interesting things up there. I think I found someone's keys.</i><br>",
-        1 USES, Consumable,
-        {
-            { ItemLevel, 2 },
-            { ConsumableEnergyBoost, 40 },
-        }
-    },
-    {
-        CT_CONSUMABLE | 4,
-        "pipeapple", "Pipeapple",
-        "<i>The pipeapple is a \"fifodesiac\" -</i><br>"
-        "<i>that is to say, it allows us to share information, if you know what I mean.</i><br>",
-        1 USES, Consumable,
-        {
-            { ItemLevel, 3 },
-            { LeafyResource, 20 },
-            { ConsumableEnergyBoost, 20 },
-            { ConsumableSpiritBoost, 20 },
-            { ConsumableMakesCouplable, 1 }
-        }
-    },
-    {
-        CT_CONSUMABLE | 5,
-        "fungified_token", "Fungified Token",
-        "<i>It seems to be an ancient currency, overgrown with an intoxicating fungus.</i><br>"
-        "<i>Surely this would have made it useless. If only they had some sort of non-fungifiable token...</i><br>",
-        1 USES, Consumable,
-        {
-            { ItemLevel, 4 },
-            { LeafyResource, 10 },
-            { ConsumableEnergyBoost, 20 },
-            { ConsumableGivesEffect, ItemMark::marker("obsessive_checksum_disorder") }
-        }
-    },
-    {
-        CT_CONSUMABLE | 6,
-        "polymore", "Polymore",
-        "<i>Also known as \"curly bracket fungi\", it naturally lives on the bark of syntax trees;</i><br>"
-        "<i>However it loves to grow on paper, and it will even rearrange the words on the page to fit its modular organization scheme.</i><br>"
-        "<i>I wish it would go away.</i><br>",
-        1 USES, Consumable,
-        {
-            { ItemLevel, 4 },
-            { LeafyResource, 10 },
-            { RunicResource, 20 },
-            { ConsumableEnergyBoost, 20 },
-            { ConsumableGivesEffect, ItemMark::marker("dynamic_digestion") }
-        }
-    },
-    {
-        CT_CONSUMABLE | 7,
-        "copycap", "Copycap",
-        "<i>The roots of this fungus seem to grasp an object and form a complete copy of it elsewhere.</i><br>"
-        "<i>It will happily destroy whatever's in its way to complete this ritual.</i><br>",
-        1 USES, Consumable,
-        {
-            { ItemLevel, 4 },
-            { LeafyResource, 10 },
-            { RunicResource, 20 },
-            { ConsumableGivesEffect, ItemMark::marker("double_vision") }
-        }
-    },
-    {
-        CT_MATERIAL | 5,
-        "fireclay", "Fireclay",
-        "<i>Careful examination of this clay reveals it is selectively permeable -</i><br>"
-        "<i>some particles can get through, but others can't.</i><br>"
-        "<i>It's completely transparent from one side...</i><br>",
-        1 USES, Material,
-        {
-            { ItemLevel, 3 },
-            { StoneResource, 50 },
-        }
-    },
-    {
-        CT_MATERIAL | 2,
-        "cobolt_bar", "Cobolt Bar",
-        "<i>Ancient writings reveal that entire cities used to be built of this charming metal,</i><br>"
-        "<i>but no one seems to know what it is anymore.</i><br>",
-        1 USES, Material,
-        {
-            { ItemLevel, 2 },
-            { MetallicResource, 25 }
-        }
-    },
-    {
-        CT_MATERIAL | 3,
-        "solid_slate", "Solid Slate",
-        "<i>I used to have to carve my notes on these awful spinning schists -</i><br>"
-        "<i>powered by rune magic or something else sinister, they were slow, loud, and broke easily.</i><br>"
-        "<i>This smaller, more stable stone is a crucial improvement.</i><br>",
-        1 USES, Material,
-        {
-            { ItemLevel, 2 },
-            { StoneResource, 5 },
-            { RunicResource, 10 }
-        }
-    },
-    {
-        CT_MATERIAL | 4,
-        "scandiskium", "Scandiskium",
-        "<i>Every once in a while, stillness grips the whole of Rhodon as it falls into night.</i><br>"
-        "<i>Sometimes this happens very suddenly. I get awful headaches and nausea from it.</i><br>"
-        "<i>And I can hear things changing as the world re-roots itself...</i><br>",
-        1 USES, Material,
-        {
-            { ItemLevel, 2 },
-            { CrystallineResource, 10 },
-            { MetallicResource, 5 },
-        }
-    },
-    {
         CT_TOOL | 3,
         "seaquake", "Seaquake",
         "<i>It makes a very satisfying clang.</i><br>",
         4 USES, SmithingTool,
         {
-            { ItemLevel, 3 },
+            { ItemLevel, 2 },
             { ToolEnergyCost, 30 },
             { CostMetallic, 10 },
             { CostCrystalline, 30 },
@@ -373,6 +411,46 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
             { ToolDiscoverWeight1, 1 },
             { ToolDiscoverWeight2, 1 },
             { ToolDiscoverWeight3, 1 }
+        }
+    },
+    {
+        CT_TOOL | 6,
+        "rowhammer", "Rowhammer",
+        "<i>If you just whack something hard enough for long enough, something cool will happen, right?</i><br>",
+        0 USES, SmithingTool,
+        {
+            { ItemLevel, 3 },
+            { ToolEnergyCost, 70 },
+            { CostStone, 160 },
+            { CostRuinc, 20 },
+            { ToolMaximumStone, 50 },
+            { ToolMaximumCrystalline, 50 },
+            { ToolMaximumMetallic, 50 }
+        }
+    },
+    {
+        CT_TOOL | 7,
+        "ghidrakes_breath", "Ghidrake's Breath",
+        "<i>The flames of the mythical Ghidrake are said to boil away entire mountains,</i><br>"
+        "<i>leaving only the raw core of Rhodon's earth behind.</i><br>"
+        "<i>Inspired by these legendary tales, I made this rad fire-spewing pickaxe.</i><br>",
+        0 USES, MiningTool,
+        {
+            { ItemLevel, 3 },
+            { ToolEnergyCost, 30 },
+            { CostStone, 50 },
+            { CostCrystalline, 50 },
+        }
+    },
+    {
+        CT_TOOL | 8,
+        "encursed_shovel", "Encursed Shovel",
+        "<i>Holding this makes me innately aware that Rhodon's surface is a sprawling graveyard,</i><br>"
+        "<i>its soil packed with the seemingly empty shells of ancient creatures long since dead.</i><br>"
+        "<i>It also makes me deathly afraid of mice.</i><br>",
+        0 USES, ForagingTool,
+        {
+
         }
     },
     {

@@ -9,7 +9,7 @@ std::optional<TooltipInfo> AboutSlot::tooltip_info() {
     return std::optional<TooltipInfo>({
         "<b>Aegis of Rhodon</b>",
         QString("Level b%1.%2.%3").arg(MAJOR_VERSION).arg(MINOR_VERSION).arg(PATCH_VERSION),
-        "<i>Be still, Rhodon.</i>"
+        "<i>Be still, Rhodon.</i><br>"
         "<i>https://doughbyte.com</i>",
         Item::pixmap_of("welchian_rune"),
         {},

@@ -35,6 +35,7 @@ public:
     const std::vector<Item> owned_items();
     Character &character();
 
+    virtual void start() override;
     virtual void complete() override;
     virtual void update_ui() override;
 
@@ -42,7 +43,9 @@ public:
     static QString domain_to_action_string(ItemDomain domain);
 
     void serialize(QIODevice *dev) const;
-    static CharacterActivity *deserialize(QIODevice *dev);
+    void deserialize(QIODevice *dev);
+
+    inline static CharacterActivity *empty_activity;
 
 private:
     void exhaust_reagents();

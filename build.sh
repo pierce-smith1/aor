@@ -52,6 +52,10 @@ generate_qrc() {
         echo "<file>$image</file>" >> .images.qrc
     done
 
+    for wav in assets/wav/*.wav; do
+        echo "<file>$wav</file>" >> .images.qrc
+    done
+
     echo "</qresource></RCC>" >> .images.qrc
 
     if [[ $(sha256sum .images.qrc | cut -f 1 -d " ") != $(sha256sum images.qrc | cut -f 1 -d " ") ]]; then

@@ -2,6 +2,7 @@
 #include "slot/externalslot.h"
 #include "gamewindow.h"
 #include "die.h"
+#include "sounds.h"
 
 CharacterActivity::CharacterActivity()
     : TimedActivity(0, 0),
@@ -57,6 +58,7 @@ QString CharacterActivity::domain_to_action_string(ItemDomain domain) {
         case Trading: { return "Trading"; }
         case Defiling: { return "Defiling"; }
         case Coupling: { return "Coupling"; }
+        case Travelling: { return "Traveling"; }
         default: { bugcheck(NoStringForActionDomain, domain); }
     }
 
@@ -65,6 +67,14 @@ QString CharacterActivity::domain_to_action_string(ItemDomain domain) {
 
 Character &CharacterActivity::character() {
     return gw()->game()->character(m_char_id);
+}
+
+void CharacterActivity::start() {
+    TimedActivity::start();
+
+    if (m_action != None && gw()->game()->settings().sounds_on) {
+        Sounds::activity_sounds().at(m_action)->play();
+    }
 }
 
 void CharacterActivity::complete() {
@@ -119,13 +129,22 @@ void CharacterActivity::complete() {
     }
 
     gw()->game()->check_hatch();
+
+    if (m_action == Foraging) {
+        gw()->game()->forageable_waste()[gw()->game()->current_location_id()]++;
+    } else if (m_action == Mining) {
+        gw()->game()->mineable_waste()[gw()->game()->current_location_id()]++;
+    }
+
     gw()->refresh_ui();
 
     TimedActivity::complete();
 }
 
 void CharacterActivity::update_ui() {
-    refresh_ui_bars(character());
+    if (gw()->selected_char_id() == character().id()) {
+        refresh_ui_bars(character());
+    }
 }
 
 void CharacterActivity::refresh_ui_bars(Character &character) {
@@ -360,8 +379,8 @@ void CharacterActivity::give_injuries() {
     AorInt injury_percent_chance = 0;
     character().call_hooks(HookCalcInjuryChance, { &injury_percent_chance }, BASE_HOOK_DOMAINS | m_action);
 
-    if (gw()->game()->actions_done() > 800) {
-        injury_percent_chance += ((gw()->game()->actions_done() - 800) / 2);
+    if (gw()->game()->actions_done() > ACTIONS_UNTIL_WELCHIAN) {
+        injury_percent_chance += ((gw()->game()->actions_done() - ACTIONS_UNTIL_WELCHIAN) / 2);
         welchian = true;
     }
 
@@ -423,32 +442,22 @@ void CharacterActivity::serialize(QIODevice *dev) const {
     }
 }
 
-CharacterActivity *CharacterActivity::deserialize(QIODevice *dev) {
-    CharacterActivity *a = new CharacterActivity;
+void CharacterActivity::deserialize(QIODevice *dev) {
+    TimedActivity::deserialize(dev);
 
-    TimedActivity *t = TimedActivity::deserialize(dev);
-
-    a->setInterval(t->interval());
-    a->m_ms_total = t->ms_total();
-
-    delete t;
-
-    a->m_id = IO::read_uint(dev);
-    a->m_action = (ItemDomain) IO::read_uint(dev);
-    a->m_char_id = IO::read_uint(dev);
+    m_id = IO::read_uint(dev);
+    m_action = (ItemDomain) IO::read_uint(dev);
+    m_char_id = IO::read_uint(dev);
 
     AorUInt owned_size = IO::read_uint(dev);
     for (AorUInt i = 0; i < owned_size; i++) {
-        a->m_owned_items.push_back(IO::read_uint(dev));
+        m_owned_items.push_back(IO::read_uint(dev));
     }
-
-    return a;
 }
 
 Activities::reference Activities::front() {
-    static CharacterActivity *empty_activity = new CharacterActivity();
     if (empty()) {
-        return empty_activity;
+        return CharacterActivity::empty_activity;
     } else {
         return std::deque<CharacterActivity *>::front();
     }

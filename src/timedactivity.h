@@ -16,12 +16,14 @@ public:
 
     AorInt ms_total();
 
+    virtual void start();
     virtual double percent_complete();
     virtual void complete();
     virtual void update_ui();
+    virtual ItemDomain type();
 
     void serialize(QIODevice *dev) const;
-    static TimedActivity *deserialize(QIODevice *dev);
+    void deserialize(QIODevice *dev);
 
 protected:
     AorInt m_ms_total;

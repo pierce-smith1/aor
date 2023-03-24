@@ -1,6 +1,7 @@
 #include "game.h"
 #include "gamewindow.h"
 #include "encyclopedia.h"
+#include "scanactivity.h"
 
 Game::Game()
     : m_game_id(Generators::game_id()), m_tribe_name(Generators::tribe_name()) { }
@@ -55,6 +56,22 @@ RunningActivities &Game::running_activities() {
 
 WorldMap &Game::map() {
     return m_map;
+}
+
+ConsumableWaste &Game::forageable_waste() {
+    return m_consumable_waste;
+}
+
+MineableWaste &Game::mineable_waste() {
+    return m_mineable_waste;
+}
+
+StudiedItems &Game::studied_items() {
+    return m_studied_items;
+}
+
+Settings &Game::settings() {
+    return m_settings;
 }
 
 LocationId &Game::current_location_id() {
@@ -144,7 +161,7 @@ void Game::check_hatch() {
 }
 
 void Game::check_tutorial(ItemDomain domain) {
-    bool unseen = std::all_of(begin(m_history), end(m_history), [=](ItemCode code) {
+    bool unseen = std::all_of(m_history.begin(), m_history.end(), [=](ItemCode code) {
         return !(Item::def_of(code)->type & domain);
     });
 
@@ -227,16 +244,28 @@ void Game::check_tutorial(ItemDomain domain) {
 }
 
 AorInt Game::trade_level() {
-    return std::accumulate(begin(m_trade_offer), end(m_trade_offer), 0, [this](AorInt a, ItemId id) {
+    return std::accumulate(m_trade_offer.begin(), m_trade_offer.end(), 0, [this](AorInt a, ItemId id) {
         return a + m_inventory.get_item(id).def()->properties[ItemLevel];
     });
 }
 
 AorInt Game::foreign_trade_level(GameId tribe_id) {
     auto &offer = m_tribes.at(tribe_id).offer;
-    return std::accumulate(begin(offer), end(offer), 0, [](AorInt a, const Item &item) {
+    return std::accumulate(offer.begin(), offer.end(), 0, [](AorInt a, const Item &item) {
         return a + item.def()->properties[ItemLevel];
     });
+}
+
+ItemProperties Game::total_smithing_resources(CharacterId character_id) {
+    ItemProperties resources;
+
+    for (ItemId id : character(character_id).external_items()[Material]) {
+        Item::for_each_resource_type([&](ItemProperty, ItemProperty, ItemProperty resource_prop) {
+            resources.map[resource_prop] += inventory().get_item(id).def()->properties[resource_prop];
+        });
+    }
+
+    return resources;
 }
 
 ItemProperties Game::total_resources() {
@@ -291,12 +320,52 @@ ItemDomain Game::intent_of(ItemId item_id) {
     return static_cast<ItemDomain>(intent);
 }
 
+void Game::start_scan() {
+    AorUInt scan_level = gw()->game()->inventory().get_item(gw()->game()->scan_item_id()).def()->properties[ItemLevel];
+
+    ScanActivity *activity = new ScanActivity(16000 + (16000 * scan_level * 0.6));
+    activity->start();
+}
+
+bool Game::can_scan() {
+    auto &acts = m_running_activities;
+    bool is_scanning = std::find_if(acts.begin(), acts.end(), [=](TimedActivity *activity) {
+        return activity->type() == Scan && activity->isActive();
+    }) != acts.end();
+
+    return !is_scanning && inventory().get_item(m_scan_item_id).def()->properties[ItemLevel] > 0;
+}
+
+bool Game::can_travel(LocationId id) {
+    return true;
+}
+
+void Game::start_travel(LocationId id) {
+    m_current_location_id = id;
+}
+
+AorInt Game::forageables_left(LocationId id) {
+    return LocationDefinition::get_def(id).forageables - m_consumable_waste[id];
+}
+
+AorInt Game::forageables_left() {
+    return forageables_left(m_current_location_id);
+}
+
+AorInt Game::mineables_left(LocationId id) {
+    return LocationDefinition::get_def(id).mineables - m_mineable_waste[id];
+}
+
+AorInt Game::mineables_left() {
+    return mineables_left(m_current_location_id);
+}
+
 Character &Game::character(CharacterId id) {
-    auto result = std::find_if(begin(m_explorers), end(m_explorers), [=](Character &c) {
+    auto result = std::find_if(m_explorers.begin(), m_explorers.end(), [=](Character &c) {
         return c.id() == id;
     });
 
-    if (result == end(m_explorers)) {
+    if (result == m_explorers.end()) {
         bugcheck(CharacterByIdLookupMiss, id);
     }
 
@@ -345,40 +414,40 @@ void Game::serialize(QIODevice *dev) {
     }
 }
 
-void Game::deserialize(Game *g, QIODevice *dev) {
-    g->m_accepting_trade = IO::read_uint(dev);
-    g->m_tribe_name = IO::read_string(dev);
-    g->m_trade_partner = IO::read_uint(dev);
-    g->m_game_id = IO::read_uint(dev);
-    g->m_actions_done = IO::read_uint(dev);
+void Game::deserialize(QIODevice *dev) {
+    m_accepting_trade = IO::read_uint(dev);
+    m_tribe_name = IO::read_string(dev);
+    m_trade_partner = IO::read_uint(dev);
+    m_game_id = IO::read_uint(dev);
+    m_actions_done = IO::read_uint(dev);
 
     for (size_t i = 0; i < INVENTORY_SIZE; i++) {
-        g->m_inventory.items()[i] = IO::read_item(dev);
+        m_inventory.items()[i] = IO::read_item(dev);
     }
 
     for (AorUInt i = 0; i < MAX_EXPLORERS; i++) {
-        Character *c = Character::deserialize(dev);
-        g->m_explorers[i] = *c;
-        delete c;
+        Character *c = new Character();
+        c->deserialize(dev);
+        m_explorers[i] = *c;
     }
 
     for (AorUInt i = 0; i < TRADE_SLOTS; i++) {
-        g->m_trade_offer[i] = IO::read_uint(dev);
-        g->m_accepted_offer[i] = IO::read_item(dev);
+        m_trade_offer[i] = IO::read_uint(dev);
+        m_accepted_offer[i] = IO::read_item(dev);
     }
 
     AorUInt size = IO::read_uint(dev);
     for (AorUInt i = 0; i < size; i++) {
-        g->m_history.insert(IO::read_uint(dev));
+        m_history.insert(IO::read_uint(dev));
     }
 
-    g->m_tribes[NO_TRIBE];
+    m_tribes[NO_TRIBE];
 }
 
 Game *Game::new_game() {
     Game *g = new Game;
 
-    g->add_character(Generators::yokin_name(), { Generators::color() });
+    g->add_character(Generators::yokin_name(), { Generators::color(), Generators::color() });
     g->add_character(Generators::yokin_name(), { Generators::color() });
 
     g->m_tribes[NO_TRIBE];

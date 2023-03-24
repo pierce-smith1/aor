@@ -65,6 +65,8 @@ public:
     std::vector<ItemCode> smithable_items();
     ItemCode smithing_result();
     ItemProperties total_material_resources();
+    std::vector<Item> equipped_items();
+    std::vector<Item> nonempty_injuries();
 
     bool clear_last_effect();
     bool push_effect(const Item &effect);
@@ -79,7 +81,7 @@ public:
     Skills &skills();
 
     void serialize(QIODevice *dev) const;
-    static Character *deserialize(QIODevice *dev);
+    void deserialize(QIODevice *dev);
 
 private:
     Inventory &inventory();

@@ -1,4 +1,6 @@
 #include "locationslot.h"
+#include "../icons.h"
+#include <QMenu>
 
 LocationSlot::LocationSlot(const LocationDefinition &def, QWidget *parent)
     : m_location_def(def)
@@ -16,11 +18,23 @@ std::optional<TooltipInfo> LocationSlot::tooltip_info() {
     return std::optional<TooltipInfo>({
         QString("<b>%1</b>").arg(m_location_def.display_name),
         QString("Location"),
-        QString("A place"),
+        location_description(),
         Item::pixmap_of("byteberry"),
         {},
         std::optional<QColor>()
     });
+}
+
+void LocationSlot::on_left_click(QMouseEvent *event) {
+    QAction *travel_action = new QAction(Icons::activity_icons().at(Eating), "Travel", this);
+
+    if (!gw()->game()->can_travel(m_location_def.id)) {
+        travel_action->setEnabled(false);
+    }
+
+    if (travel_action == QMenu::exec({ travel_action }, event->globalPos())) {
+        gw()->game()->start_travel(m_location_def.id);
+    }
 }
 
 void LocationSlot::refresh() {
@@ -31,4 +45,19 @@ void LocationSlot::refresh() {
     } else {
         setStyleSheet("*[slot=\"true\"] { border: 1px solid #bbb; border-radius: 3px; background-color: white; }");
     }
+}
+
+QString LocationSlot::location_description() {
+    QString description = m_location_def.description;
+
+    description += "<br>";
+    description += QString("<font color=%2><b>%1</b></font> forageables left here.<br>")
+        .arg(gw()->game()->forageables_left(m_location_def.id))
+        .arg(Colors::qcolor(Cucumber).name());
+
+    description += QString("<font color=%2><b>%1</b></font> mineables left here.")
+        .arg(gw()->game()->mineables_left(m_location_def.id))
+        .arg(Colors::qcolor(Plum).name());
+
+    return description;
 }

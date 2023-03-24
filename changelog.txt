@@ -1,0 +1,21 @@
+
+b2.0.0
+
+[v] (dev) Rewrote, like, the whole game at this point, so if everything still works the same as it used to that's great
+[ ] (game) Added exploring! Power your scanner to discover new locations adjacent to your own, then pack up once you have enough resources to move. Each location has unique effects on the game and only supports a limited amount of foraging and mining - so don't get too comfortable where you are.
+[ ] (game) Added an end goal! Find and reach the Tree of Roses to bring your adventure to a close.
+[ ] (game) Added sounds! Each activity now plays a short soundbite made by @prrrki#1984 when it is started
+[ ] (game) Added a new tier of items
+[v] (game) All actions now complete 10x faster
+[ ] (game) Tools no longer have a limited number of uses
+[v] (game) Added a bar showing the global action counter and how many actions you have left before Welchian Fever begins
+[v] (game) Added infostrips showing the total number of resources you have in your inventory and in each explorer's material slots
+[v] (game) Added info about explorers' current energy/spirit, equipped items, and injuries to their tooltips
+[v] (game) Raised the maximum number of explorers from 11 to 12
+[v] (game) New games now start with 2 explorers, one of which has mixed heritage
+[ ] (game) Bleeding Wildheart and Norton Ghost Pepper [Leafy Resource]: 0 -> 10
+[v] (game) Seaquake [Item Level]: 3 -> 2
+[v] (game) Fungified Token, Polymore, and Copycap [Item Level]: 4 -> 3
+[v] (qol) Save files are no longer encrypted (the qol is for really for me)
+[v] (bug) Fixed some things probably, I wasn't keeping track
+[v] (bug) Added a bunch of new bugs (you should find them!!!!)

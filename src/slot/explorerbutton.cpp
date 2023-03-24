@@ -161,6 +161,37 @@ Character &ExplorerButton::character() {
 
 QString ExplorerButton::character_description() {
     QString string;
+
+    string += QString("<b><font color=%4>%2</font></b> spirit, <b><font color=%3>%1</font></b> energy<br><br>")
+        .arg(character().energy())
+        .arg(character().spirit())
+        .arg(Colors::qcolor(Cherry).name())
+        .arg(Colors::qcolor(Blueberry).name());
+
+    for (const Item &item : character().equipped_items()) {
+        if (item.def()->type & Tool) {
+            string += QString("Holding tool: <b>%1</b><br>").arg(item.def()->display_name);
+        }
+
+        if (item.def()->type & Artifact) {
+            string += QString("Holding artifact: <b>%1</b><br>").arg(item.def()->display_name);
+        }
+    }
+
+    if (character().equipped_items().size() > 0) {
+        string += "<br>";
+    }
+
+    for (const Item &effect : character().nonempty_injuries()) {
+        string += QString("<font color=%2>Hurt: <b>%1</b></font><br>")
+            .arg(effect.def()->display_name)
+            .arg(Colors::qcolor(Cherry).name());
+    }
+
+    if (character().nonempty_injuries().size() > 0) {
+        string += "<br>";
+    }
+
     switch (character().activity()->action()) {
         case Smithing: { string += "<i>Currently smithing</i><br>"; break; }
         case Foraging: { string += "<i>Currently foraging</i><br>"; break; }

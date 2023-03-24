@@ -15,49 +15,73 @@ WorldMap::WorldMap() {
     m_tile_discovered[start.first][start.second] = true;
 }
 
+WorldMap::Coord &WorldMap::cursor_pos() {
+    return m_cursor_pos;
+}
+
 bool WorldMap::tile_discovered(size_t y, size_t x) {
     return m_tile_discovered[y][x];
 }
 
-void WorldMap::scan_from(size_t y, size_t x, size_t depth) {
+bool WorldMap::scan_from(size_t y, size_t x, size_t depth, bool hit_locations, std::set<Coord> seen_this_scan) {
+    bool discovery_made = !m_tile_discovered[y][x];
     m_tile_discovered[y][x] = true;
+    seen_this_scan.insert({ y, x });
 
     if (depth == 0) {
-        return;
+        return discovery_made;
     }
 
-    for (auto pair : neighbors(y, x)) {
-        if (m_tile_discovered[pair.first][pair.second]) {
+    for (const auto &pair : neighbors(y, x)) {
+        if (seen_this_scan.find(pair) != seen_this_scan.end()) {
             continue;
         }
 
-        scan_paths_from(pair.first, pair.second, depth - 1);
+        if (hit_locations && map_tiles()[pair.first][pair.second].type == MapTileLocation) {
+            discovery_made = discovery_made || !m_tile_discovered[pair.first][pair.second];
+            m_tile_discovered[pair.first][pair.second] = true;
+            continue;
+        }
+
+        if (!m_tile_discovered[pair.first][pair.second]) {
+            depth--;
+        }
+
+        if (scan_from(pair.first, pair.second, depth, true, seen_this_scan))  {
+            return true;
+        }
     }
+
+    return discovery_made;
+}
+
+void WorldMap::scan_from(LocationId id, size_t depth) {
+    scan_from(coord_of(id).first, coord_of(id).second, depth, false, {});
 }
 
 #define _EMPTY_ MapTile()
-#define  E__DL  MapTile(MapTileEdgeDownLeft)
-#define  EHORZ  MapTile(MapTileEdgeHorizontal)
-#define  E_RD_  MapTile(MapTileEdgeRightDown)
-#define  E_RDL  MapTile(MapTileEdgeRightDownLeft)
-#define  EU__L  MapTile(MapTileEdgeUpLeft)
-#define  EVERT  MapTile(MapTileEdgeVertical)
-#define  EU_DL  MapTile(MapTileUpDownLeft)
-#define  EUR__  MapTile(MapTileEdgeUpRight)
-#define  EUR_L  MapTile(MapTileEdgeUpRightLeft)
-#define  EURD_  MapTile(MapTileEdgeUpRightDown)
-#define  ECROS  MapTile(MapTileEdgeCross);
-#define L(n)    MapTile(LocationDefinition::get_def(n))
+#define  E__DLT  MapTile(MapTileEdgeDownLeft)
+#define  EHORZT  MapTile(MapTileEdgeHorizontal)
+#define  E_RD_T  MapTile(MapTileEdgeRightDown)
+#define  E_RDLT  MapTile(MapTileEdgeRightDownLeft)
+#define  EU__LT  MapTile(MapTileEdgeUpLeft)
+#define  EVERTT  MapTile(MapTileEdgeVertical)
+#define  EU_DLT  MapTile(MapTileEdgeUpDownLeft)
+#define  EUR__T  MapTile(MapTileEdgeUpRight)
+#define  EUR_LT  MapTile(MapTileEdgeUpRightLeft)
+#define  EURD_T  MapTile(MapTileEdgeUpRightDown)
+#define  ECROST  MapTile(MapTileEdgeCross)
+#define L(n)     MapTile(LocationDefinition::get_def(n))
 
 const Tiles &WorldMap::map_tiles() {
     static Tiles tiles = {{
         { _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, },
-        { _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, L("JC"),  EHORZ ,  EHORZ ,  E__DL , _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, },
-        { _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_,  EVERT , _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, },
-        { _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, L("JF"), _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, },
-        { _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, },
-        { _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, },
-        { _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, },
+        { _EMPTY_, L("JF"),  EHORZT, L("JC"), _EMPTY_, L("MO"),  E__DLT, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, L("TR"), },
+        { _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, _EMPTY_, _EMPTY_,  EURD_T,  E_RDLT,  EHORZT,  E__DLT, _EMPTY_,  EVERTT, },
+        { _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, _EMPTY_,  E_RD_T, L("MZ"),  EVERTT, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, },
+        { _EMPTY_,  EUR__T, L("JT"),  ECROST,  EHORZT,  EU__LT, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, },
+        { _EMPTY_, _EMPTY_, _EMPTY_,  EVERTT, _EMPTY_, _EMPTY_, _EMPTY_, L("MT"), _EMPTY_,  EUR__T,  EHORZT,  EU__LT, },
+        { _EMPTY_, _EMPTY_, _EMPTY_, L("JH"), _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, },
     }};
 
     return tiles;
@@ -67,40 +91,30 @@ bool WorldMap::is_oob(size_t y, size_t x) {
     return y >= MAP_HEIGHT && x >= MAP_WIDTH;
 }
 
-void WorldMap::scan_paths_from(size_t y, size_t x, size_t depth) {
-    m_tile_discovered[y][x] = true;
-
-    if (depth == 0) {
-        return;
-    }
-
-    for (auto pair : neighbors(y, x)) {
-        if (m_tile_discovered[pair.first][pair.second]) {
-            continue;
-        }
-
-        if (map_tiles()[pair.first][pair.second].type == MapTileLocation) {
-            m_tile_discovered[pair.first][pair.second] = true;
-            continue;
-        }
-
-        scan_paths_from(pair.first, pair.second, depth - 1);
-    }
-}
-
 std::vector<WorldMap::Coord> WorldMap::neighbors(size_t y, size_t x) {
-    std::vector<Coord> neighbors = {
-        { y + 1, x     },
-        { y    , x - 1 },
-        { y    , x + 1 },
-        { y - 1, x     }
+    std::map<size_t, Coord> neighbors = {
+        { 0b1000, { y + 1, x }},
+        { 0b0001, { y, x + 1 }},
+        { 0b0010, { y - 1, x }},
+        { 0b0100, { y, x - 1 }},
     };
+    std::vector<Coord> valid_neighbors;
 
-    neighbors.erase(std::remove_if(neighbors.begin(), neighbors.end(), [&](const Coord &pair) {
-        return is_oob(pair.first, pair.second) || map_tiles()[pair.first][pair.second].type == MapTileEmpty;
-    }), neighbors.end());
+    for (const auto &pair : neighbors) {
+        Coord c = pair.second;
 
-    return neighbors;
+        if (is_oob(c.first, c.second) || map_tiles()[c.first][c.second].type == MapTileEmpty) {
+            continue;
+        }
+
+        if (!(map_tiles()[c.first][c.second].type & pair.first) && !(map_tiles()[c.first][c.second].type == MapTileLocation)) {
+            continue;
+        }
+
+        valid_neighbors.push_back(c);
+    }
+
+    return valid_neighbors;
 }
 
 WorldMap::Coord WorldMap::coord_of(LocationId id) {
@@ -121,6 +135,7 @@ MapViewTile::MapViewTile(size_t y, size_t x)
       m_slot(new LocationSlot(WorldMap::map_tiles()[y][x].def, this)),
       m_image_label(new QLabel(this))
 {
+    setAttribute(Qt::WA_Hover);
     setMinimumSize(32, 32);
     setMaximumSize(32, 32);
     m_image_label->setMinimumSize(32, 32);
@@ -128,7 +143,13 @@ MapViewTile::MapViewTile(size_t y, size_t x)
 }
 
 void MapViewTile::refresh() {
-    if (!gw()->game()->map().tile_discovered(m_y, m_x)) {
+    WorldMap &map = gw()->game()->map();
+
+    if (map.cursor_pos().first == m_y && map.cursor_pos().second == m_x) {
+        m_slot->hide();
+        m_image_label->setPixmap(QPixmap(":/assets/img/map/unknown-cursor"));
+        m_image_label->show();
+    } else if (!gw()->game()->map().tile_discovered(m_y, m_x) && !m_hovered) {
         m_slot->hide();
         m_image_label->setPixmap(QPixmap(":/assets/img/map/unknown.png"));
         m_image_label->show();
@@ -144,10 +165,29 @@ void MapViewTile::refresh() {
 
         m_image_label->setPixmap(QPixmap(tile_image_name));
         m_image_label->show();
-    } else {
+    } else if (WorldMap::map_tiles()[m_y][m_x].type & MapTileLocation) {
         m_slot->show();
         m_image_label->hide();
+    } else if (m_hovered) {
+        m_slot->hide();
+        m_image_label->setPixmap(QPixmap(":/assets/img/map/unknown.png"));
+        m_image_label->show();
     }
+}
+
+void MapViewTile::enterEvent(QHoverEvent *) {
+    m_hovered = true;
+    refresh();
+}
+
+void MapViewTile::leaveEvent(QHoverEvent *) {
+    m_hovered = false;
+    refresh();
+}
+
+void MapViewTile::mouseReleaseEvent(QMouseEvent *) {
+    gw()->game()->map().cursor_pos() = { m_y, m_x };
+    refresh();
 }
 
 MapView::MapView() {

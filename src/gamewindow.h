@@ -30,7 +30,7 @@ using ActivityTimers = std::map<CharacterId, AorInt>;
 
 static const QString SAVE_FILE_NAME = "save.rho";
 static const AorUInt SAVE_MAGIC_NUMBER = 2270;
-static const AorInt BACKUP_INTERVAL_MS = 1000 * 6;
+static const AorInt BACKUP_INTERVAL_MS = 1000 * 60;
 
 class LKGameWindow : public QMainWindow {
     Q_OBJECT
@@ -64,6 +64,8 @@ public:
     void refresh_slots();
     void refresh_ui_buttons();
     void refresh_trade_ui();
+    void refresh_material_infostrips();
+    void refresh_global_action_bar();
     void tutorial(const QString &text);
 
     const std::map<ItemDomain, QPushButton *> get_activity_buttons();

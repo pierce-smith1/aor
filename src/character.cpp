@@ -166,18 +166,19 @@ bool Character::can_perform_action(ItemDomain domain) {
         case Eating:
         case Defiling: {
             break;
-        }
-        case Smithing: {
+        } case Smithing: {
             can_do = smithing_result() != EMPTY_CODE;
             call_hooks(HookCanDoActionCheck, { &can_do, &m_energy }, SmithingTool);
             break;
-        }
-        case Foraging:
-        case Mining: {
+        } case Foraging: {
+            can_do = gw()->game()->forageables_left() > 0;
             call_hooks(HookCanDoActionCheck, { &can_do, &m_energy }, domain);
             break;
-        }
-        default: {
+        } case Mining: {
+            can_do = gw()->game()->mineables_left() > 0;
+            call_hooks(HookCanDoActionCheck, { &can_do, &m_energy }, domain);
+            break;
+        } default: {
             bugcheck(AssessmentForUnknownDomain, m_id, domain);
             return false;
         }
@@ -322,6 +323,34 @@ ItemProperties Character::total_material_resources() {
     }
 
     return resources;
+}
+
+std::vector<Item> Character::equipped_items() {
+    std::vector<Item> equipped_items;
+
+    for (auto &pair : tools()) {
+        if (pair.second != EMPTY_ID) {
+            equipped_items.push_back(gw()->game()->inventory().get_item(pair.second));
+        }
+    }
+
+    for (ItemId id : external_items()[Artifact]) {
+        if (id != EMPTY_ID) {
+            equipped_items.push_back(gw()->game()->inventory().get_item(id));
+        }
+    }
+
+    return equipped_items;
+}
+
+std::vector<Item> Character::nonempty_injuries() {
+    std::vector<Item> injuries;
+
+    std::copy_if(m_effects.begin(), m_effects.end(), std::back_inserter(injuries), [=](const Item &effect) {
+        return effect.id != EMPTY_ID;
+    });
+
+    return injuries;
 }
 
 bool Character::push_effect(const Item &effect) {
@@ -487,43 +516,39 @@ void Character::serialize(QIODevice *dev) const {
     IO::write_uint(dev, m_tool_ids.at(MiningTool));
 }
 
-// Transfers ownership
-Character *Character::deserialize(QIODevice *dev) {
-    Character *c = new Character;
-
-    c->m_id = IO::read_uint(dev);
-    c->m_name = IO::read_string(dev);
-    c->m_partner = IO::read_uint(dev);
-    c->m_dead = IO::read_uint(dev);
-    c->m_can_couple = IO::read_uint(dev);
-    c->m_energy = IO::read_uint(dev);
-    c->m_spirit = IO::read_uint(dev);
+void Character::deserialize(QIODevice *dev) {
+    m_id = IO::read_uint(dev);
+    m_name = IO::read_string(dev);
+    m_partner = IO::read_uint(dev);
+    m_dead = IO::read_uint(dev);
+    m_can_couple = IO::read_uint(dev);
+    m_energy = IO::read_uint(dev);
+    m_spirit = IO::read_uint(dev);
 
     AorUInt heritage_size = IO::read_uint(dev);
     for (AorUInt i = 0; i < heritage_size; i++) {
-        c->m_heritage.insert((Color) IO::read_uint(dev));
+        m_heritage.insert((Color) IO::read_uint(dev));
     }
 
     for (AorUInt i = 0; i < MAX_ARRAY_SIZE; i++) {
-        c->m_external_item_ids[Material][i] = IO::read_uint(dev);
-        c->m_external_item_ids[Artifact][i] = IO::read_uint(dev);
+        m_external_item_ids[Material][i] = IO::read_uint(dev);
+        m_external_item_ids[Artifact][i] = IO::read_uint(dev);
     }
 
     for (AorUInt i = 0; i < EFFECT_SLOTS; i++) {
-        c->m_effects[i] = IO::read_item(dev);
+        m_effects[i] = IO::read_item(dev);
     }
 
     AorUInt activities_size = IO::read_uint(dev);
     for (AorUInt i = 0; i < activities_size; i++) {
-        CharacterActivity *a = CharacterActivity::deserialize(dev);
-        c->m_activities.push_back(a);
+        CharacterActivity *a = new CharacterActivity();
+        a->deserialize(dev);
+        m_activities.push_back(a);
     }
 
-    c->m_tool_ids[SmithingTool] = IO::read_uint(dev);
-    c->m_tool_ids[ForagingTool] = IO::read_uint(dev);
-    c->m_tool_ids[MiningTool] = IO::read_uint(dev);
-
-    return c;
+    m_tool_ids[SmithingTool] = IO::read_uint(dev);
+    m_tool_ids[ForagingTool] = IO::read_uint(dev);
+    m_tool_ids[MiningTool] = IO::read_uint(dev);
 }
 
 Inventory &Character::inventory() {
