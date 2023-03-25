@@ -12,6 +12,7 @@
 #include "inventory.h"
 #include "characteractivity.h"
 #include "generators.h"
+#include "clampedresource.h"
 
 class Game;
 
@@ -49,13 +50,9 @@ public:
     void queue_activity(ItemDomain domain, const std::vector<ItemId> &items);
     CharacterActivity *activity();
 
-    AorInt &energy();
-    AorInt &spirit();
-    AorInt max_energy();
-    AorInt max_spirit();
+    ClampedResource &energy();
+    ClampedResource &spirit();
     AorInt base_spirit_cost();
-    void add_energy(AorInt add);
-    void add_spirit(AorInt add);
     AorUInt egg_find_percent_chance();
 
     bool can_perform_action(ItemDomain action);
@@ -104,6 +101,6 @@ private:
     CharacterId m_partner = NOBODY;
     bool m_dead = false;
     bool m_can_couple = false;
-    AorInt m_energy = 40;
-    AorInt m_spirit = 40;
+    ClampedResource m_energy = ClampedResource(40, BASE_MAX_ENERGY, HookCalcMaxEnergy);
+    ClampedResource m_spirit = ClampedResource(40, BASE_MAX_SPIRIT, HookCalcMaxSpirit);
 };

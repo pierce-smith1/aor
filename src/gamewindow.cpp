@@ -21,6 +21,7 @@
 #include "slot/skillslot.h"
 #include "slot/explorerbutton.h"
 #include "slot/weathereffectslot.h"
+#include "slot/studyslot.h"
 
 LKGameWindow *LKGameWindow::the_game_window;
 
@@ -79,6 +80,10 @@ LKGameWindow::LKGameWindow()
         refresh_ui();
     });
 
+    connect(m_window.study_chart_button, &QPushButton::clicked, [=]() {
+        m_game->start_scan();
+    });
+
     install_slots();
 
     QPalette activity_palette;
@@ -101,6 +106,9 @@ LKGameWindow::LKGameWindow()
 
     CharacterActivity::empty_activity = new CharacterActivity();
 
+    CharacterActivity::refresh_ui_bars(selected_char());
+    m_window.map_progress_bar->setValue(0);
+    m_window.lore_bar->setValue(m_game->lore().amount());
 }
 
 bool LKGameWindow::initialized() {
@@ -201,7 +209,11 @@ void LKGameWindow::install_slots() {
         (new WeatherEffectSlot(i))->install();
     }
 
-
+    for (AorUInt i = 0; i < STUDY_SLOTS_PER_DOMAIN; i++) {
+        for (ItemDomain d : { Consumable, Tool, Artifact }) {
+            (new StudySlot(d, i))->install();
+        }
+    }
 }
 
 void LKGameWindow::notify(NotificationType type, const QString &msg) {
@@ -218,9 +230,6 @@ void LKGameWindow::refresh_ui() {
     refresh_material_infostrips();
     refresh_global_action_bar();
     m_map_view->refresh();
-
-    CharacterActivity::refresh_ui_bars(selected_char());
-    m_window.map_progress_bar->setValue(0);
 }
 
 void LKGameWindow::refresh_slots() {
@@ -271,6 +280,8 @@ void LKGameWindow::refresh_ui_buttons() {
         m_window.trade_accept_button->setEnabled(true);
         m_window.trade_unaccept_button->setEnabled(false);
     }
+
+    m_window.study_chart_button->setEnabled(m_game->can_scan());
 }
 
 void LKGameWindow::refresh_trade_ui() {

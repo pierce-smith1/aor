@@ -137,6 +137,7 @@ void CharacterActivity::complete() {
     }
 
     gw()->refresh_ui();
+    refresh_ui_bars(character);
 
     TimedActivity::complete();
 }
@@ -163,12 +164,12 @@ void CharacterActivity::refresh_ui_bars(Character &character) {
     // pass a number to QProgressBar::setValue that is < minValue or > maxValue,
     // nothing happens - leading to UI inconsistencies.
     double spirit_gain = character.spirit_to_gain() * character.activity()->percent_complete();
-    spirit_bar->setMaximum(character.max_spirit());
-    spirit_bar->setValue(clamp(0, character.spirit() + spirit_gain, character.max_spirit()));
+    spirit_bar->setMaximum(character.spirit().max(&character));
+    spirit_bar->setValue(clamp(0, character.spirit().amount() + spirit_gain, character.spirit().max(&character)));
 
     double energy_gain = character.energy_to_gain() * character.activity()->percent_complete();
-    energy_bar->setMaximum(character.max_energy());
-    energy_bar->setValue(clamp(0, character.energy() + energy_gain, character.max_energy()));
+    energy_bar->setMaximum(character.energy().max(&character));
+    energy_bar->setValue(clamp(0, character.energy().amount() + energy_gain, character.energy().max(&character)));
 }
 
 std::vector<Item> CharacterActivity::products() {
@@ -190,9 +191,8 @@ std::vector<Item> CharacterActivity::products() {
 
             discoverable_set.push_back({{ result, 1.0 }});
             break;
-        }
-        case Foraging:
-        case Mining: {
+        } case Foraging:
+          case Mining: {
             Item tool = gw()->game()->inventory().get_item(character().tool_id(m_action));
             const ItemProperties &tool_props = tool.def()->properties;
 
@@ -220,14 +220,11 @@ std::vector<Item> CharacterActivity::products() {
             }
 
             break;
-        }
-        case Eating: {
+        } case Eating: {
             break;
-        }
-        case Defiling: {
+        } case Defiling: {
             break;
-        }
-        case Coupling: {
+        } case Coupling: {
             auto &characters = gw()->game()->characters();
 
             // Coupling actions always end in pairs.
@@ -250,14 +247,12 @@ std::vector<Item> CharacterActivity::products() {
             character().partner() = NOBODY;
 
             break;
-        }
-        case Trading: {
+        } case Trading: {
             for (const Item &item : gw()->game()->accepted_offer()) {
                 discoverable_set.push_back({{ item, 1.0 }});
             }
             break;
-        }
-        default: {
+        } default: {
             bugcheck(ProductsForUnknownDomain, m_char_id, m_action);
             return {};
         }
@@ -297,8 +292,8 @@ void CharacterActivity::exhaust_reagents() {
 void CharacterActivity::exhaust_character() {
     Item tool = gw()->game()->inventory().get_item(character().tool_id(m_action));
 
-    character().add_energy(character().energy_to_gain());
-    character().add_spirit(character().spirit_to_gain());
+    character().energy().add(character().energy_to_gain(), &character());
+    character().spirit().add(character().spirit_to_gain(), &character());
 
     for (Item &effect : character().effects()) {
         if (effect.id == EMPTY_ID) {
@@ -314,11 +309,11 @@ void CharacterActivity::exhaust_character() {
         // We do NOT clear the effect here, since we may need it later
     }
 
-    if (character().energy() == 0) {
+    if (character().energy().amount() == 0) {
         character().push_effect(Item("starving"));
     }
 
-    if (character().spirit() == 0) {
+    if (character().spirit().amount() == 0) {
         character().push_effect(Item("weakness"));
     }
 

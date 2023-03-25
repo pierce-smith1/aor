@@ -12,12 +12,14 @@ template <typename T> using WeightedVector = std::vector<std::pair<T, double>>;
 
 class Item;
 class Character;
+class ClampedResource;
 
 using HookPayload = std::array<std::variant<
     bool *,
     qreal *,
     AorUInt *,
     AorInt *,
+    ClampedResource *,
     QString *,
     std::vector<WeightedVector<Item>> *,
     Character *>, 4>;
@@ -47,4 +49,5 @@ enum HookType : AorUInt {
     HookCalcInjuryChance,
     HookDecideProducts,
     HookPostDecideProducts,
+    HookCalcMaxLore,
 };

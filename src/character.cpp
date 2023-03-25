@@ -86,68 +86,16 @@ CharacterActivity *Character::activity() {
     return m_activities.front();
 }
 
-AorInt &Character::energy() {
-    if (m_energy > max_energy()) {
-        m_energy = max_energy();
-    }
-
-    if (m_dead) {
-        m_energy = 0;
-    }
-
+ClampedResource &Character::energy() {
     return m_energy;
 }
 
-AorInt &Character::spirit() {
-    if (m_spirit > max_spirit()) {
-        m_spirit = max_spirit();
-    }
-
-    if (m_dead) {
-        m_spirit = 0;
-    }
-
+ClampedResource &Character::spirit() {
     return m_spirit;
-}
-
-AorInt Character::max_energy() {
-    AorInt energy = BASE_MAX_ENERGY;
-    call_hooks(HookCalcMaxEnergy, { &energy });
-    return energy;
-}
-
-AorInt Character::max_spirit() {
-    AorInt spirit = BASE_MAX_SPIRIT;
-    call_hooks(HookCalcMaxSpirit, { &spirit });
-    return spirit;
 }
 
 AorInt Character::base_spirit_cost() {
     return 5;
-}
-
-void Character::add_energy(AorInt add) {
-    if (-add > m_energy) {
-        m_energy = 0;
-        return;
-    }
-
-    m_energy += add;
-    if (m_energy > max_energy()) {
-        m_energy = max_energy();
-    }
-}
-
-void Character::add_spirit(AorInt add) {
-    if (-add > m_spirit) {
-        m_spirit = 0;
-        return;
-    }
-
-    m_spirit += add;
-    if (m_spirit > max_spirit()) {
-        m_spirit = max_spirit();
-    }
 }
 
 AorUInt Character::egg_find_percent_chance() {
@@ -203,7 +151,7 @@ AorInt Character::energy_to_gain() {
             break;
         }
         case Coupling: {
-            gain = -max_energy();
+            gain = -energy().max(this);
             break;
         }
         default: {
@@ -425,6 +373,10 @@ bool Character::discover(const Item &item) {
 }
 
 void Character::call_hooks(HookType type, const HookPayload &payload, AorUInt AorInt_domain, const std::vector<Item> &extra_items) {
+    if (m_id == NOBODY || m_dead) {
+        return;
+    }
+
     ItemDomain domain = (ItemDomain) AorInt_domain;
 
     if (domain & Tool) {
@@ -489,8 +441,8 @@ void Character::serialize(QIODevice *dev) const {
     IO::write_uint(dev, m_partner);
     IO::write_uint(dev, m_dead);
     IO::write_uint(dev, m_can_couple);
-    IO::write_uint(dev, m_energy);
-    IO::write_uint(dev, m_spirit);
+    IO::write_uint(dev, m_energy.amount());
+    IO::write_uint(dev, m_spirit.amount());
 
     IO::write_uint(dev, m_heritage.size());
     for (Color c : m_heritage) {
@@ -522,8 +474,8 @@ void Character::deserialize(QIODevice *dev) {
     m_partner = IO::read_uint(dev);
     m_dead = IO::read_uint(dev);
     m_can_couple = IO::read_uint(dev);
-    m_energy = IO::read_uint(dev);
-    m_spirit = IO::read_uint(dev);
+    m_energy.set(IO::read_uint(dev), this);
+    m_spirit.set(IO::read_uint(dev), this);
 
     AorUInt heritage_size = IO::read_uint(dev);
     for (AorUInt i = 0; i < heritage_size; i++) {

@@ -15,6 +15,9 @@
 
 const static AorUInt MAX_EXPLORERS = 12;
 const static AorUInt ACTIONS_UNTIL_WELCHIAN = 400;
+const static AorUInt STUDY_SLOTS_PER_DOMAIN = 2;
+const static AorInt LORE_PER_SCAN = 5;
+const static AorInt BASE_MAX_LORE = 50;
 
 using RemoteOffer = std::array<Item, TRADE_SLOTS>;
 
@@ -31,7 +34,7 @@ using ItemHistory = std::set<ItemCode>;
 using ConsumableWaste = std::map<LocationId, AorUInt>;
 using MineableWaste = std::map<LocationId, AorUInt>;
 using RunningActivities = std::vector<TimedActivity *>;
-using StudiedItems = std::map<ItemDomain, ItemId>;
+using StudiedItems = std::map<ItemDomain, std::array<ItemId, STUDY_SLOTS_PER_DOMAIN>>;
 
 class Game {
 public:
@@ -49,12 +52,12 @@ public:
     ItemHistory &history();
     WorldMap &map();
     LocationId &current_location_id();
-    ItemId &scan_item_id();
     AorUInt &actions_done();
     RunningActivities &running_activities();
     ConsumableWaste &forageable_waste();
     MineableWaste &mineable_waste();
     StudiedItems &studied_items();
+    ClampedResource &lore();
 
     Settings &settings();
 
@@ -72,6 +75,22 @@ public:
     ItemProperties total_smithing_resources(CharacterId character_id);
     ItemProperties total_resources();
     ItemDomain intent_of(ItemId item_id);
+
+    template <typename ActivityType> std::vector<ActivityType *> activities_of_type(ItemDomain type) {
+        std::vector<TimedActivity *> activities;
+        std::vector<ActivityType *> typed_activities;
+
+        auto &acts = m_running_activities;
+        std::copy_if(acts.begin(), acts.end(), std::back_inserter(activities), [=](TimedActivity *act) {
+            return act->type() == type;
+        });
+
+        std::transform(activities.begin(), activities.end(), std::back_inserter(typed_activities), [=](TimedActivity *act) {
+            return dynamic_cast<ActivityType *>(act);
+        });
+
+        return typed_activities;
+    }
 
     void start_scan();
     bool can_scan();
@@ -102,12 +121,12 @@ private:
     ItemHistory m_history;
     AorUInt m_actions_done = 0;
     WorldMap m_map;
-    ItemId m_scan_item_id;
     LocationId m_current_location_id = LocationDefinition::get_def("stochastic_forest").id;
     ConsumableWaste m_consumable_waste;
     MineableWaste m_mineable_waste;
     RunningActivities m_running_activities;
     StudiedItems m_studied_items {};
+    ClampedResource m_lore = ClampedResource(0, BASE_MAX_LORE, HookCalcMaxLore);
 
     Settings m_settings;
 

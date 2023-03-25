@@ -104,7 +104,8 @@ bool ExplorerButton::will_accept_drop(const SlotMessage &message) {
         return false;
     }
 
-    return (character().energy() == character().max_energy()) && (character().activity()->action() == None);
+    return (character().energy().amount() == character().energy().max(&character()))
+        && (character().activity()->action() == None);
 }
 
 void ExplorerButton::accept_message(const SlotMessage &message) {
@@ -134,7 +135,7 @@ void ExplorerButton::accept_message(const SlotMessage &message) {
 
 bool ExplorerButton::is_draggable() {
     return character().can_couple()
-        && character().energy() == character().max_energy()
+        && character().energy().amount() == character().energy().max(&character())
         && !character().activity()->isActive();
 }
 
@@ -144,6 +145,7 @@ void ExplorerButton::on_left_click(QMouseEvent *) {
     }
 
     gw()->selected_char_id() = character().id();
+    CharacterActivity::refresh_ui_bars(character());
 }
 
 PayloadVariant ExplorerButton::user_drop_data() {
@@ -163,8 +165,8 @@ QString ExplorerButton::character_description() {
     QString string;
 
     string += QString("<b><font color=%4>%2</font></b> spirit, <b><font color=%3>%1</font></b> energy<br><br>")
-        .arg(character().energy())
-        .arg(character().spirit())
+        .arg(character().energy().amount())
+        .arg(character().spirit().amount())
         .arg(Colors::qcolor(Cherry).name())
         .arg(Colors::qcolor(Blueberry).name());
 

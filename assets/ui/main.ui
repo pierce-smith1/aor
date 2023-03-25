@@ -1130,7 +1130,7 @@
                  <string/>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_18">
-                 <item row="0" column="2">
+                 <item row="0" column="1">
                   <widget class="QWidget" name="study_consumable_slots" native="true">
                    <layout class="QVBoxLayout" name="verticalLayout_5">
                     <item>
@@ -1149,7 +1149,7 @@
                    </layout>
                   </widget>
                  </item>
-                 <item row="0" column="3">
+                 <item row="0" column="2">
                   <widget class="QWidget" name="study_tool_slots" native="true">
                    <layout class="QVBoxLayout" name="verticalLayout_6">
                     <item>
@@ -1168,9 +1168,9 @@
                    </layout>
                   </widget>
                  </item>
-                 <item row="0" column="4">
+                 <item row="0" column="3">
                   <widget class="QWidget" name="study_artifact_slots" native="true">
-                   <layout class="QHBoxLayout" name="horizontalLayout_5">
+                   <layout class="QVBoxLayout" name="verticalLayout_7">
                     <item>
                      <widget class="QLabel" name="label_4">
                       <property name="text">
@@ -1187,14 +1187,7 @@
                    </layout>
                   </widget>
                  </item>
-                 <item row="3" column="2">
-                  <widget class="QPushButton" name="study_chart_button">
-                   <property name="text">
-                    <string>Chart</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="2" colspan="3">
+                 <item row="1" column="1" colspan="3">
                   <widget class="QLabel" name="label_5">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
@@ -1213,33 +1206,32 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="3" colspan="2">
-                  <widget class="QProgressBar" name="map_progress_bar">
-                   <property name="value">
-                    <number>24</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="2" colspan="3">
-                  <widget class="QProgressBar" name="lore_bar">
-                   <property name="value">
-                    <number>24</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0">
+                 <item row="2" column="1">
                   <widget class="QLabel" name="label_6">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
                    <property name="text">
                     <string/>
                    </property>
                    <property name="pixmap">
                     <pixmap resource="../../images.qrc">:/assets/img/icons/bolt.png</pixmap>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="2">
+                  <widget class="QLabel" name="lore_label">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>TextLabel</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
                    </property>
                   </widget>
                  </item>

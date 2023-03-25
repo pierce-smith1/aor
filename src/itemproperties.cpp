@@ -48,8 +48,8 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
         }},
         { ToolEnergyCost, {
             "Requires <b>%1 energy</b> per use.",
-            {{ HookCanDoActionCheck, HOOK_2(bool, can_do, AorInt, current_energy)
-                *can_do = *can_do && (*current_energy >= static_cast<AorInt>(prop_value));
+            {{ HookCanDoActionCheck, HOOK_2(bool, can_do, ClampedResource, current_energy)
+                *can_do = *can_do && (current_energy->amount() >= static_cast<AorInt>(prop_value));
             }},
             { HookCalcEnergyGain, HOOK_1(AorInt, energy_gain)
                 *energy_gain -= prop_value;

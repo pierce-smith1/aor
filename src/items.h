@@ -58,8 +58,9 @@ enum ItemDomain : AorUInt {
     Untradeable     = 1 << 14,
     Script          = 1 << 15,
     Weather         = 1 << 16, Map = 1 << 16,
-    Scan            = 1 << 17,
+    Study           = 1 << 17,
     Travelling      = 1 << 18,
+    Scan            = 1 << 19,
     All             = ~0ull
 };
 

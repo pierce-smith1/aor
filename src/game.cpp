@@ -70,16 +70,16 @@ StudiedItems &Game::studied_items() {
     return m_studied_items;
 }
 
+ClampedResource &Game::lore() {
+    return m_lore;
+}
+
 Settings &Game::settings() {
     return m_settings;
 }
 
 LocationId &Game::current_location_id() {
     return m_current_location_id;
-}
-
-ItemId &Game::scan_item_id() {
-    return m_scan_item_id;
 }
 
 bool &Game::fast_actions() {
@@ -291,8 +291,10 @@ ItemDomain Game::intent_of(ItemId item_id) {
         intent |= Offering;
     }
 
-    if (item_id == m_scan_item_id) {
-        intent |= Scan;
+    if (std::any_of(m_studied_items.begin(), m_studied_items.end(), [=](auto &pair) {
+        return std::find(pair.second.begin(), pair.second.end(), item_id) != pair.second.end();
+    })) {
+        intent |= Study;
     }
 
     for (Character &character : m_explorers) {
@@ -321,9 +323,7 @@ ItemDomain Game::intent_of(ItemId item_id) {
 }
 
 void Game::start_scan() {
-    AorUInt scan_level = gw()->game()->inventory().get_item(gw()->game()->scan_item_id()).def()->properties[ItemLevel];
-
-    ScanActivity *activity = new ScanActivity(16000 + (16000 * scan_level * 0.6));
+    ScanActivity *activity = new ScanActivity(16000);
     activity->start();
 }
 
@@ -333,7 +333,7 @@ bool Game::can_scan() {
         return activity->type() == Scan && activity->isActive();
     }) != acts.end();
 
-    return !is_scanning && inventory().get_item(m_scan_item_id).def()->properties[ItemLevel] > 0;
+    return !is_scanning && m_lore.amount() >= LORE_PER_SCAN;
 }
 
 bool Game::can_travel(LocationId id) {

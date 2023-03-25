@@ -130,18 +130,13 @@ const static std::vector<CheatCommand> COMMANDS = {
         1,
         [](const QStringList &args) {
             if (args[0] == "?") {
-                qDebug("Current energy is (%lld)", gw()->selected_char().energy());
+                qDebug("Current energy is (%lld)", gw()->selected_char().energy().amount());
                 return;
             }
 
             QS_TO_INT(energy, args[0]);
 
-            if (energy < 0 || energy > 100) {
-                qWarning("New energy value is oob (%lld)", energy);
-                return;
-            }
-
-            gw()->selected_char().energy() = energy;
+            gw()->selected_char().energy().set(energy, &gw()->selected_char());
         }
     },
     {
@@ -150,18 +145,13 @@ const static std::vector<CheatCommand> COMMANDS = {
         1,
         [](const QStringList &args) {
             if (args[0] == "?") {
-                qDebug("Current spirit is (%lld)", gw()->selected_char().spirit());
+                qDebug("Current spirit is (%lld)", gw()->selected_char().spirit().amount());
                 return;
             }
 
             QS_TO_INT(spirit, args[0]);
 
-            if (spirit < 0 || spirit > 100) {
-                qWarning("New spirit value is oob (%lld)", spirit);
-                return;
-            }
-
-            gw()->selected_char().spirit() = spirit;
+            gw()->selected_char().spirit().set(spirit, &gw()->selected_char());
         }
     },
     {
