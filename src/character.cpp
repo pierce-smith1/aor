@@ -119,11 +119,17 @@ bool Character::can_perform_action(ItemDomain domain) {
             call_hooks(HookCanDoActionCheck, { &can_do, &m_energy }, SmithingTool);
             break;
         } case Foraging: {
-            can_do = gw()->game()->forageables_left() > 0;
+            AorInt queued_forages = std::count_if(m_activities.begin(), m_activities.end(), [=](CharacterActivity *a) {
+                return a->action() == Foraging;
+            });
+            can_do = gw()->game()->forageables_left() > queued_forages;
             call_hooks(HookCanDoActionCheck, { &can_do, &m_energy }, domain);
             break;
         } case Mining: {
-            can_do = gw()->game()->mineables_left() > 0;
+            AorInt queued_mines = std::count_if(m_activities.begin(), m_activities.end(), [=](CharacterActivity *a) {
+                return a->action() == Mining;
+            });
+            can_do = gw()->game()->mineables_left() > queued_mines;
             call_hooks(HookCanDoActionCheck, { &can_do, &m_energy }, domain);
             break;
         } default: {

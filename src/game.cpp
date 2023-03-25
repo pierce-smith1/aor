@@ -1,7 +1,7 @@
 #include "game.h"
 #include "gamewindow.h"
 #include "encyclopedia.h"
-#include "scanactivity.h"
+#include "studyactivity.h"
 
 Game::Game()
     : m_game_id(Generators::game_id()), m_tribe_name(Generators::tribe_name()) { }
@@ -70,7 +70,7 @@ StudiedItems &Game::studied_items() {
     return m_studied_items;
 }
 
-ClampedResource &Game::lore() {
+AorInt &Game::lore() {
     return m_lore;
 }
 
@@ -322,22 +322,12 @@ ItemDomain Game::intent_of(ItemId item_id) {
     return static_cast<ItemDomain>(intent);
 }
 
-void Game::start_scan() {
-    ScanActivity *activity = new ScanActivity(16000);
-    activity->start();
-}
-
-bool Game::can_scan() {
-    auto &acts = m_running_activities;
-    bool is_scanning = std::find_if(acts.begin(), acts.end(), [=](TimedActivity *activity) {
-        return activity->type() == Scan && activity->isActive();
-    }) != acts.end();
-
-    return !is_scanning && m_lore.amount() >= LORE_PER_SCAN;
-}
-
 bool Game::can_travel(LocationId id) {
-    return true;
+    if (id == m_current_location_id) {
+        return false;
+    }
+
+    return m_map.path_exists_between(m_current_location_id, id);
 }
 
 void Game::start_travel(LocationId id) {

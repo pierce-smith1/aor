@@ -29,17 +29,19 @@ void TimedActivity::start() {
     QTimer::start();
 }
 
-double TimedActivity::percent_complete() {
+AorInt TimedActivity::percent_complete() {
     if (m_ms_total == 0) {
-        return 0.0;
+        return 0;
     }
 
-    return ((double) (m_ms_total - remainingTime()) / m_ms_total);
+    return (((m_ms_total - remainingTime()) * 100) / m_ms_total);
 }
 
 void TimedActivity::complete() {}
 
 void TimedActivity::update_ui() {}
+
+void TimedActivity::progress() {}
 
 ItemDomain TimedActivity::type() {
     return None;

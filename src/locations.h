@@ -117,6 +117,16 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         }
     },
     {
+        BiomeMesa | 3,
+        "mesa_3", "mesa_3", "MF",
+        "",
+        20 FORAGEABLES, 20 MINEABLES,
+        {
+            { WeatherEffect1, WeatherMark::marker("acid_rain") },
+            { WeatherEffect2, WeatherMark::marker("worm_storms") },
+        }
+    },
+    {
         BiomeRoses | 0,
         "tree_of_roses", "The Tree of Roses", "TR",
         "<i>From the cracks in the sky grows the Tree of Roses - the citadel of</i><br>"

@@ -17,9 +17,10 @@ public:
     AorInt ms_total();
 
     virtual void start();
-    virtual double percent_complete();
+    virtual AorInt percent_complete();
     virtual void complete();
     virtual void update_ui();
+    virtual void progress();
     virtual ItemDomain type();
 
     void serialize(QIODevice *dev) const;

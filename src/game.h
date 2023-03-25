@@ -15,7 +15,7 @@
 
 const static AorUInt MAX_EXPLORERS = 12;
 const static AorUInt ACTIONS_UNTIL_WELCHIAN = 400;
-const static AorUInt STUDY_SLOTS_PER_DOMAIN = 2;
+const static AorUInt STUDY_SLOTS_PER_DOMAIN = 3;
 const static AorInt LORE_PER_SCAN = 5;
 const static AorInt BASE_MAX_LORE = 50;
 
@@ -57,7 +57,7 @@ public:
     ConsumableWaste &forageable_waste();
     MineableWaste &mineable_waste();
     StudiedItems &studied_items();
-    ClampedResource &lore();
+    AorInt &lore();
 
     Settings &settings();
 
@@ -126,7 +126,7 @@ private:
     MineableWaste m_mineable_waste;
     RunningActivities m_running_activities;
     StudiedItems m_studied_items {};
-    ClampedResource m_lore = ClampedResource(0, BASE_MAX_LORE, HookCalcMaxLore);
+    AorInt m_lore = 0;
 
     Settings m_settings;
 

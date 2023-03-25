@@ -301,13 +301,12 @@ const static std::vector<CheatCommand> COMMANDS = {
         }
     },
     {
-        "scan",
-        "Scan with power $0 at the current location.",
-        1,
-        [](const QStringList &args) {
-            QS_TO_INT(power, args[0]);
-
-            gw()->game()->map().scan_from(gw()->game()->current_location_id(), power);
+        "nextrev",
+        "Reveal the next tile on the map.",
+        0,
+        [](const QStringList &) {
+            gw()->game()->map().reveal_progress()++;
+            gw()->refresh_map();
         }
     },
     {

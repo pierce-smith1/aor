@@ -12,24 +12,36 @@ WorldMap::WorldMap() {
     m_known_locations.insert(LocationDefinition::get_def("stochastic_forest").id);
 
     Coord start = coord_of(*m_known_locations.begin());
-    m_tile_discovered[start.first][start.second] = true;
-}
+    m_reveal_order.push_back(start);
 
-WorldMap::Coord &WorldMap::cursor_pos() {
-    return m_cursor_pos;
+    MapMask discover_mask {};
+    while (auto coord = WorldMap::scan_from(start.first, start.second, 1, {}, discover_mask)) {
+        m_reveal_order.push_back(*coord);
+    }
 }
 
 bool WorldMap::tile_discovered(size_t y, size_t x) {
-    return m_tile_discovered[y][x];
+    return std::any_of(m_reveal_order.begin(), m_reveal_order.begin() + m_reveal_progress, [=](const Coord &c) {
+        return c.first == y && c.second == x;
+    });
 }
 
-bool WorldMap::scan_from(size_t y, size_t x, size_t depth, bool hit_locations, std::set<Coord> seen_this_scan) {
-    bool discovery_made = !m_tile_discovered[y][x];
-    m_tile_discovered[y][x] = true;
+AorUInt &WorldMap::reveal_progress() {
+    return m_reveal_progress;
+}
+
+std::optional<WorldMap::Coord> WorldMap::scan_from(size_t y, size_t x, size_t depth, std::set<Coord> seen_this_scan, MapMask &discover_mask) {
+    std::optional<Coord> discovered_coord;
+
+    if (!discover_mask[y][x]) {
+        discovered_coord = std::optional<Coord>({ y, x });
+    }
+
+    discover_mask[y][x] = true;
     seen_this_scan.insert({ y, x });
 
     if (depth == 0) {
-        return discovery_made;
+        return discovered_coord;
     }
 
     for (const auto &pair : neighbors(y, x)) {
@@ -37,26 +49,49 @@ bool WorldMap::scan_from(size_t y, size_t x, size_t depth, bool hit_locations, s
             continue;
         }
 
-        if (hit_locations && map_tiles()[pair.first][pair.second].type == MapTileLocation) {
-            discovery_made = discovery_made || !m_tile_discovered[pair.first][pair.second];
-            m_tile_discovered[pair.first][pair.second] = true;
-            continue;
-        }
-
-        if (!m_tile_discovered[pair.first][pair.second]) {
+        if (!discover_mask[pair.first][pair.second]) {
             depth--;
         }
 
-        if (scan_from(pair.first, pair.second, depth, true, seen_this_scan))  {
-            return true;
+        if (auto coord = scan_from(pair.first, pair.second, depth, seen_this_scan, discover_mask))  {
+            return coord;
         }
     }
 
-    return discovery_made;
+    return discovered_coord;
 }
 
-void WorldMap::scan_from(LocationId id, size_t depth) {
-    scan_from(coord_of(id).first, coord_of(id).second, depth, false, {});
+bool WorldMap::path_exists_between(const Coord &from, const Coord &to, std::set<Coord> seen_this_scan) {
+    if (from == to) {
+        return true;
+    }
+
+    for (const Coord &neighbor : neighbors(from.first, from.second)) {
+        if (neighbor == to) {
+            return true;
+        }
+
+        if (map_tiles()[neighbor.first][neighbor.second].type == MapTileLocation) {
+            continue;
+        }
+
+        if (seen_this_scan.find(neighbor) == seen_this_scan.end()) {
+            seen_this_scan.insert(neighbor);
+            if (path_exists_between(neighbor, to, seen_this_scan)) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+const std::vector<WorldMap::Coord> &WorldMap::reveal_order() {
+    return m_reveal_order;
+}
+
+bool WorldMap::path_exists_between(LocationId from, LocationId to) {
+    return path_exists_between(coord_of(from), coord_of(to));
 }
 
 #define _EMPTY_ MapTile()
@@ -77,7 +112,7 @@ const Tiles &WorldMap::map_tiles() {
     static Tiles tiles = {{
         { _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, },
         { _EMPTY_, L("JF"),  EHORZT, L("JC"), _EMPTY_, L("MO"),  E__DLT, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, L("TR"), },
-        { _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, _EMPTY_, _EMPTY_,  EURD_T,  E_RDLT,  EHORZT,  E__DLT, _EMPTY_,  EVERTT, },
+        { _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, _EMPTY_, _EMPTY_,  EURD_T,  E_RDLT, L("MF"),  E__DLT, _EMPTY_,  EVERTT, },
         { _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, _EMPTY_,  E_RD_T, L("MZ"),  EVERTT, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, },
         { _EMPTY_,  EUR__T, L("JT"),  ECROST,  EHORZT,  EU__LT, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, },
         { _EMPTY_, _EMPTY_, _EMPTY_,  EVERTT, _EMPTY_, _EMPTY_, _EMPTY_, L("MT"), _EMPTY_,  EUR__T,  EHORZT,  EU__LT, },
@@ -114,6 +149,8 @@ std::vector<WorldMap::Coord> WorldMap::neighbors(size_t y, size_t x) {
         valid_neighbors.push_back(c);
     }
 
+    std::shuffle(valid_neighbors.begin(), valid_neighbors.end(), *Generators::rng());
+
     return valid_neighbors;
 }
 
@@ -143,13 +180,7 @@ MapViewTile::MapViewTile(size_t y, size_t x)
 }
 
 void MapViewTile::refresh() {
-    WorldMap &map = gw()->game()->map();
-
-    if (map.cursor_pos().first == m_y && map.cursor_pos().second == m_x) {
-        m_slot->hide();
-        m_image_label->setPixmap(QPixmap(":/assets/img/map/unknown-cursor"));
-        m_image_label->show();
-    } else if (!gw()->game()->map().tile_discovered(m_y, m_x) && !m_hovered) {
+    if (!gw()->game()->map().tile_discovered(m_y, m_x)) {
         m_slot->hide();
         m_image_label->setPixmap(QPixmap(":/assets/img/map/unknown.png"));
         m_image_label->show();
@@ -168,26 +199,7 @@ void MapViewTile::refresh() {
     } else if (WorldMap::map_tiles()[m_y][m_x].type & MapTileLocation) {
         m_slot->show();
         m_image_label->hide();
-    } else if (m_hovered) {
-        m_slot->hide();
-        m_image_label->setPixmap(QPixmap(":/assets/img/map/unknown.png"));
-        m_image_label->show();
     }
-}
-
-void MapViewTile::enterEvent(QHoverEvent *) {
-    m_hovered = true;
-    refresh();
-}
-
-void MapViewTile::leaveEvent(QHoverEvent *) {
-    m_hovered = false;
-    refresh();
-}
-
-void MapViewTile::mouseReleaseEvent(QMouseEvent *) {
-    gw()->game()->map().cursor_pos() = { m_y, m_x };
-    refresh();
 }
 
 MapView::MapView() {

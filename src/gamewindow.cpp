@@ -80,10 +80,6 @@ LKGameWindow::LKGameWindow()
         refresh_ui();
     });
 
-    connect(m_window.study_chart_button, &QPushButton::clicked, [=]() {
-        m_game->start_scan();
-    });
-
     install_slots();
 
     QPalette activity_palette;
@@ -106,9 +102,7 @@ LKGameWindow::LKGameWindow()
 
     CharacterActivity::empty_activity = new CharacterActivity();
 
-    CharacterActivity::refresh_ui_bars(selected_char());
-    m_window.map_progress_bar->setValue(0);
-    m_window.lore_bar->setValue(m_game->lore().amount());
+    refresh_initial();
 }
 
 bool LKGameWindow::initialized() {
@@ -220,6 +214,11 @@ void LKGameWindow::notify(NotificationType type, const QString &msg) {
     m_event_log.events_list->addItem(new GameNotification(type, msg));
 }
 
+void LKGameWindow::refresh_initial() {
+    CharacterActivity::refresh_ui_bars(selected_char());
+    m_window.lore_label->setText(QString("<b>%1</b>").arg(m_game->lore()));
+}
+
 void LKGameWindow::refresh_ui() {
     m_window.player_name_label->setText(QString("Explorer <b>%1</b>").arg(selected_char().name()));
     m_window.tribe_name_label->setText(QString("Expedition <b>%1</b>").arg(m_game->tribe_name()));
@@ -229,7 +228,7 @@ void LKGameWindow::refresh_ui() {
     refresh_trade_ui();
     refresh_material_infostrips();
     refresh_global_action_bar();
-    m_map_view->refresh();
+    refresh_map();
 }
 
 void LKGameWindow::refresh_slots() {
@@ -280,8 +279,6 @@ void LKGameWindow::refresh_ui_buttons() {
         m_window.trade_accept_button->setEnabled(true);
         m_window.trade_unaccept_button->setEnabled(false);
     }
-
-    m_window.study_chart_button->setEnabled(m_game->can_scan());
 }
 
 void LKGameWindow::refresh_trade_ui() {
@@ -353,6 +350,10 @@ void LKGameWindow::refresh_global_action_bar() {
     m_window.global_action_max->setText(QString("<b>%1</b>").arg(ACTIONS_UNTIL_WELCHIAN));
 }
 
+void LKGameWindow::refresh_map() {
+    m_map_view->refresh();
+}
+
 void LKGameWindow::tutorial(const QString &text) {
     QMessageBox tut;
     tut.setText(text);
@@ -418,6 +419,11 @@ void LKGameWindow::load() {
     for (Character &character : m_game->characters()) {
         character.activities().front()->start();
     }
+
+    m_selected_char_id = NOBODY;
+
+    refresh_initial();
+    refresh_ui();
 }
 
 bool LKGameWindow::save_file_exists() {
@@ -475,6 +481,7 @@ void LKGameWindow::timerEvent(QTimerEvent *event) {
     if (event->timerId() == m_refresh_timer_id) {
         for (TimedActivity *activity : m_game->running_activities()) {
             if (activity->isActive()) {
+                activity->progress();
                 activity->update_ui();
             }
         }

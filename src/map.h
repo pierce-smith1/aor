@@ -46,13 +46,16 @@ using Tiles = std::array<std::array<MapTile, MAP_WIDTH>, MAP_HEIGHT>;
 class WorldMap {
 public:
     using Coord = std::pair<size_t, size_t>;
+    using MapMask = std::array<std::array<bool, MAP_WIDTH>, MAP_HEIGHT>;
 
     WorldMap();
 
     Coord &cursor_pos();
 
     bool tile_discovered(size_t y, size_t x);
-    void scan_from(LocationId location_id, size_t power);
+    bool path_exists_between(LocationId from, LocationId to);
+    AorUInt &reveal_progress();
+    const std::vector<Coord> &reveal_order();
 
     void serialize(QIODevice *dev) const;
     static WorldMap deserialize(QIODevice *dev);
@@ -60,14 +63,15 @@ public:
     static const Tiles &map_tiles();
 
 private:
-    bool scan_from(size_t y, size_t x, size_t depth, bool hit_locations, std::set<Coord> seen_this_scan);
+    std::optional<Coord> scan_from(size_t y, size_t x, size_t depth, std::set<Coord> seen_this_scan, MapMask &discover_mask);
+    bool path_exists_between(const Coord &from, const Coord &to, std::set<Coord> seen_this_scan = {});
     bool is_oob(size_t y, size_t x);
     std::vector<Coord> neighbors(size_t y, size_t x);
     Coord coord_of(LocationId location_id);
 
     std::set<LocationId> m_known_locations;
-    std::array<std::array<bool, MAP_WIDTH>, MAP_HEIGHT> m_tile_discovered {};
-    Coord m_cursor_pos = { 0, 0 };
+    std::vector<WorldMap::Coord> m_reveal_order;
+    AorUInt m_reveal_progress = 1;
 };
 
 class MapViewTile : public QWidget {
@@ -75,11 +79,6 @@ public:
     MapViewTile(size_t y, size_t x);
 
     void refresh();
-
-protected:
-    void enterEvent(QHoverEvent *event);
-    void leaveEvent(QHoverEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
 
 private:
     size_t m_y, m_x;

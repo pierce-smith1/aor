@@ -158,16 +158,16 @@ void CharacterActivity::refresh_ui_bars(Character &character) {
     QProgressBar *energy_bar = gw()->window().energy_bar;
 
     activity_bar->setMaximum(100);
-    activity_bar->setValue(character.activity()->percent_complete() * 100);
+    activity_bar->setValue(character.activity()->percent_complete());
 
     // We have to be very particular about clamping values here, since if we
     // pass a number to QProgressBar::setValue that is < minValue or > maxValue,
     // nothing happens - leading to UI inconsistencies.
-    double spirit_gain = character.spirit_to_gain() * character.activity()->percent_complete();
+    double spirit_gain = character.spirit_to_gain() * (character.activity()->percent_complete() / 100.0);
     spirit_bar->setMaximum(character.spirit().max(&character));
     spirit_bar->setValue(clamp(0, character.spirit().amount() + spirit_gain, character.spirit().max(&character)));
 
-    double energy_gain = character.energy_to_gain() * character.activity()->percent_complete();
+    double energy_gain = character.energy_to_gain() * (character.activity()->percent_complete() / 100.0);
     energy_bar->setMaximum(character.energy().max(&character));
     energy_bar->setValue(clamp(0, character.energy().amount() + energy_gain, character.energy().max(&character)));
 }

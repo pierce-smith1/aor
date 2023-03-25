@@ -1,12 +1,11 @@
 #include "studyactivity.h"
 #include "gamewindow.h"
-#include "scanactivity.h"
 
 StudyActivity::StudyActivity(AorInt ms_total, ItemId item_id)
     : TimedActivity(ms_total, ms_total), m_item_id(item_id) {}
 
 void StudyActivity::complete() {
-    gw()->game()->lore().add(lore_to_gain(), &AllCharacters::instance);
+    gw()->game()->lore() += lore_to_gain();
 
     for (auto &pair : gw()->game()->studied_items()) {
         for (ItemId &id : pair.second) {
@@ -16,18 +15,13 @@ void StudyActivity::complete() {
         }
     }
 
+    update_ui();
+
     gw()->game()->inventory().remove_item(m_item_id);
     gw()->refresh_ui();
-    update_ui();
 }
 
 void StudyActivity::update_ui() {
-    auto clamp = [](AorInt min, AorInt value, AorInt max) -> AorInt {
-        return value < min ? min : (value > max ? max : value);
-    };
-
-    AorInt max_lore = gw()->game()->lore().max(&AllCharacters::instance);
-
     auto all_study_acts = gw()->game()->activities_of_type<StudyActivity>(Study);
 
     // We only want one activity to do updating.
@@ -35,14 +29,15 @@ void StudyActivity::update_ui() {
         return;
     }
 
-    AorInt total_gain = std::accumulate(all_study_acts.begin(), all_study_acts.end(), 0, [](AorInt a, StudyActivity *act) {
-        return a + act->lore_to_gain();
+    double total_gain = std::accumulate(all_study_acts.begin(), all_study_acts.end(), 0.0, [=](AorInt a, StudyActivity *act) {
+        return a + (isActive() ? (act->lore_to_gain() * (act->percent_complete() / 100.0)) : 0.0);
     });
 
-    total_gain -= gw()->game()->activities_of_type<ScanActivity>(Scan).size() * LORE_PER_SCAN;
+    gw()->window().lore_label->setText(QString("<b>%1</b>")
+        .arg(gw()->game()->lore() + total_gain));
 
-    gw()->window().lore_bar->setMaximum(max_lore);
-    gw()->window().lore_bar->setValue(clamp(0, gw()->game()->lore().amount() + (total_gain * percent_complete()), max_lore));
+    gw()->game()->map().reveal_progress() = 1 + (gw()->game()->lore() + total_gain) / LORE_PER_SCAN;
+    gw()->refresh_map();
 }
 
 AorInt StudyActivity::lore_to_gain() {

@@ -117,6 +117,8 @@ enum ItemProperty : AorUInt {
     WeatherProperty = 0x20000,
     WeatherEffect1 = WeatherProperty | HoldsItemCode | 1,
     WeatherEffect2 = WeatherProperty | HoldsItemCode | 2,
+    LocationProperty = 0x40000,
+    LocationSpiritCost,
 };
 
 struct PropertyDefinition {

@@ -60,12 +60,14 @@ public:
 
     bool trade_ongoing(GameId tribe);
 
+    void refresh_initial();
     void refresh_ui();
     void refresh_slots();
     void refresh_ui_buttons();
     void refresh_trade_ui();
     void refresh_material_infostrips();
     void refresh_global_action_bar();
+    void refresh_map();
     void tutorial(const QString &text);
 
     const std::map<ItemDomain, QPushButton *> get_activity_buttons();
