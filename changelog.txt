@@ -1,20 +1,22 @@
 
 b2.0.0
 
-[ ] (game) Added exploring! Sacrifice tools and artifacts to map out the world, then pack up once your explorers have enough spirit to survive the passage to a new place. Each location has unique effects on the game and only supports a limited amount of foraging and mining - so don't get too comfortable where you are.
+[ ] (game) Added exploring! Sacrifice tools and artifacts to map out the world, then pack up once your explorers have enough spirit to survive the passage to a new place. Each location has unique effects and special items to find, but they only have a limited number of resources - so don't get too comfortable where you are.
 [ ] (game) Added an end goal! Find and reach the Tree of Roses to bring your adventure to a close.
-[v] (game) Added sounds! Each activity now plays a short soundbite when started
+[v] (game) Added sounds! Each activity now plays a short soundbite when started.
 [ ] (game) Added a new tier of items
 [v] (game) All actions now complete 10x faster
 [ ] (game) Tools no longer have a limited number of uses
-[v] (game) Added a bar showing the global action counter and how many actions you have left before Welchian Fever begins
+[ ] (game) Fleshed out the global action counter into a more comprehensive threat system; this includes a bar showing the current and maximum threat (how long you have left before Welchian Fever begins)
+[ ] (game) The fungus items have been changed from tool products to signature (location specific) items; the Spacefiller has been reworked into the Spearfisher with a new set of powerful consumables
 [v] (game) Added infostrips showing the total number of resources you have in your inventory and in each explorer's material slots
 [v] (game) Added info about explorers' current energy/spirit, equipped items, and injuries to their tooltips
 [v] (game) Raised the maximum number of explorers from 11 to 12
-[v] (game) New games now start with 2 explorers, one of which has mixed heritage
-[ ] (game) Bleeding Wildheart and Norton Ghost Pepper [Leafy Resource]: 0 -> 10
-[v] (game) Seaquake [Item Level]: 3 -> 2
-[v] (game) Fungified Token, Polymore, and Copycap [Item Level]: 4 -> 3
+[v] (game) New games now start with 2 explorers, one of which has dual heritage
+[ ] (game) Item balance:
+    [ ] (game) Bleeding Wildheart and Norton Ghost Pepper [Leafy Resource]: 0 -> 10
+    [v] (game) Seaquake [Item Level]: 3 -> 2
+    [v] (game) Fungified Token, Polymore, and Copycap [Item Level]: 4 -> 3
 [v] (qol) Save files are no longer encrypted (the qol is for really for me)
 [v] (bug) Fixed nasty UI misalignment near the explorer portrait
 [v] (bug) Fixed some more things probably, I wasn't keeping track

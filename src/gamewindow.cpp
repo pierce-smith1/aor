@@ -101,8 +101,6 @@ LKGameWindow::LKGameWindow()
     m_refresh_timer_id = startTimer(ACTIVITY_TICK_RATE_MS);
 
     CharacterActivity::empty_activity = new CharacterActivity();
-
-    refresh_initial();
 }
 
 bool LKGameWindow::initialized() {
@@ -214,11 +212,6 @@ void LKGameWindow::notify(NotificationType type, const QString &msg) {
     m_event_log.events_list->addItem(new GameNotification(type, msg));
 }
 
-void LKGameWindow::refresh_initial() {
-    CharacterActivity::refresh_ui_bars(selected_char());
-    m_window.lore_label->setText(QString("<b>%1</b>").arg(m_game->lore()));
-}
-
 void LKGameWindow::refresh_ui() {
     m_window.player_name_label->setText(QString("Explorer <b>%1</b>").arg(selected_char().name()));
     m_window.tribe_name_label->setText(QString("Expedition <b>%1</b>").arg(m_game->tribe_name()));
@@ -229,6 +222,9 @@ void LKGameWindow::refresh_ui() {
     refresh_material_infostrips();
     refresh_global_action_bar();
     refresh_map();
+
+    CharacterActivity::refresh_ui_bars(selected_char());
+    m_window.lore_label->setText(QString("<b>%1</b>").arg(m_game->lore()));
 }
 
 void LKGameWindow::refresh_slots() {
@@ -344,10 +340,10 @@ void LKGameWindow::refresh_material_infostrips() {
 }
 
 void LKGameWindow::refresh_global_action_bar() {
-    m_window.global_action_bar->setMaximum(ACTIONS_UNTIL_WELCHIAN);
-    m_window.global_action_bar->setValue(m_game->actions_done() > ACTIONS_UNTIL_WELCHIAN ? ACTIONS_UNTIL_WELCHIAN : m_game->actions_done());
-    m_window.global_action_count->setText(QString("<b>%1</b>").arg(m_game->actions_done()));
-    m_window.global_action_max->setText(QString("<b>%1</b>").arg(ACTIONS_UNTIL_WELCHIAN));
+    m_window.global_action_bar->setMaximum(AEGIS_THREAT);
+    m_window.global_action_bar->setValue(m_game->threat() > AEGIS_THREAT ? AEGIS_THREAT : m_game->threat());
+    m_window.global_action_count->setText(QString("<b>%1</b>").arg(m_game->threat()));
+    m_window.global_action_max->setText(QString("<b>%1</b>").arg(AEGIS_THREAT));
 }
 
 void LKGameWindow::refresh_map() {
@@ -422,7 +418,6 @@ void LKGameWindow::load() {
 
     m_selected_char_id = NOBODY;
 
-    refresh_initial();
     refresh_ui();
 }
 

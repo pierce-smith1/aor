@@ -201,7 +201,11 @@ QString ExplorerButton::character_description() {
         case Eating: { string += "<i>Currently eating</i><br>"; break; }
         case Defiling: { string += "<i>Currently defiling</i><br>"; break; }
         case Trading: { string += "<i>Currently trading</i><br>"; break; }
-        case Coupling: {
+        case Travelling: {
+            string += QString("<i>Currently traveling to %1</i><br>")
+                .arg(LocationDefinition::get_def(gw()->game()->next_location_id()).display_name);
+            break;
+        } case Coupling: {
             Character &partner = gw()->game()->character(character().partner());
             string += QString("<i>Having a child with %1</i><br>").arg(partner.name());
             break;

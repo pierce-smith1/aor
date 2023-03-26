@@ -59,7 +59,7 @@ QString CharacterActivity::domain_to_action_string(ItemDomain domain) {
         case Defiling: { return "Defiling"; }
         case Coupling: { return "Coupling"; }
         case Travelling: { return "Traveling"; }
-        default: { bugcheck(NoStringForActionDomain, domain); }
+        default: {}
     }
 
     return "";
@@ -100,33 +100,14 @@ void CharacterActivity::complete() {
     give_bonuses();
     give_injuries();
     std::vector<Item> items = products();
-
-    AorInt item_double_chance = 0;
-    character().call_hooks(HookCalcItemDoubleChance, { &item_double_chance });
-
-    if (Generators::percent_chance(item_double_chance)) {
-        std::vector<Item> items_copy = items;
-        items.insert(end(items), begin(items_copy), end(items_copy));
-    }
-
+    add_bonus_items(items);
     give(items);
     exhaust_reagents();
     clear_injuries();
 
-    gw()->game()->actions_done()++;
+    gw()->game()->threat() += 5;
 
-    Character &character = gw()->game()->character(m_char_id);
-    character.activities().pop_front();
-
-    CharacterActivity *next = character.activities().front();
-    while (next->action() != None) {
-        if (character.can_perform_action(next->action())) {
-            next->start();
-            break;
-        }
-        character.activities().pop_front();
-        next = character.activities().front();
-    }
+    start_next_action();
 
     gw()->game()->check_hatch();
 
@@ -134,10 +115,26 @@ void CharacterActivity::complete() {
         gw()->game()->forageable_waste()[gw()->game()->current_location_id()]++;
     } else if (m_action == Mining) {
         gw()->game()->mineable_waste()[gw()->game()->current_location_id()]++;
+    } else if (m_action == Travelling) {
+        auto &characters = gw()->game()->characters();
+        bool no_others_travelling = std::none_of(characters.begin(), characters.end(), [=](Character &c) {
+            if (c.id() == character().id()) {
+                return false;
+            }
+
+            return std::any_of(c.activities().begin(), c.activities().end(), [=](CharacterActivity *a) {
+                return a->m_action == Travelling;
+            });
+        });
+
+        if (no_others_travelling) {
+            gw()->game()->current_location_id() = gw()->game()->next_location_id();
+            gw()->game()->next_location_id() = NOWHERE;
+        }
     }
 
     gw()->refresh_ui();
-    refresh_ui_bars(character);
+    update_ui();
 
     TimedActivity::complete();
 }
@@ -220,10 +217,6 @@ std::vector<Item> CharacterActivity::products() {
             }
 
             break;
-        } case Eating: {
-            break;
-        } case Defiling: {
-            break;
         } case Coupling: {
             auto &characters = gw()->game()->characters();
 
@@ -253,8 +246,7 @@ std::vector<Item> CharacterActivity::products() {
             }
             break;
         } default: {
-            bugcheck(ProductsForUnknownDomain, m_char_id, m_action);
-            return {};
+            break;
         }
     }
 
@@ -374,8 +366,8 @@ void CharacterActivity::give_injuries() {
     AorInt injury_percent_chance = 0;
     character().call_hooks(HookCalcInjuryChance, { &injury_percent_chance }, BASE_HOOK_DOMAINS | m_action);
 
-    if (gw()->game()->actions_done() > ACTIONS_UNTIL_WELCHIAN) {
-        injury_percent_chance += ((gw()->game()->actions_done() - ACTIONS_UNTIL_WELCHIAN) / 2);
+    if (gw()->game()->threat() > AEGIS_THREAT) {
+        injury_percent_chance += ((gw()->game()->threat() - AEGIS_THREAT) / 2);
         welchian = true;
     }
 
@@ -423,6 +415,30 @@ void CharacterActivity::clear_injuries() {
         }
     }
 }
+
+void CharacterActivity::start_next_action() {
+    character().activities().pop_front();
+    CharacterActivity *next = character().activities().front();
+    while (next->action() != None) {
+        if (character().can_perform_action(next->action())) {
+            next->start();
+            break;
+        }
+        character().activities().pop_front();
+        next = character().activities().front();
+    }
+}
+
+void CharacterActivity::add_bonus_items(std::vector<Item> &items) {
+    AorInt item_double_chance = 0;
+    character().call_hooks(HookCalcItemDoubleChance, { &item_double_chance });
+
+    if (Generators::percent_chance(item_double_chance)) {
+        std::vector<Item> items_copy = items;
+        items.insert(end(items), begin(items_copy), end(items_copy));
+    }
+}
+
 
 void CharacterActivity::serialize(QIODevice *dev) const {
     TimedActivity::serialize(dev);

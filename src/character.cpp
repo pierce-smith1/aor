@@ -45,7 +45,7 @@ ItemProperties Character::heritage_properties() {
 }
 
 void Character::queue_activity(ItemDomain domain, const std::vector<ItemId> &items) {
-    if (domain == None) {
+    if (domain == None || m_id == NOBODY || m_dead) {
         return;
     }
 
@@ -132,8 +132,9 @@ bool Character::can_perform_action(ItemDomain domain) {
             can_do = gw()->game()->mineables_left() > queued_mines;
             call_hooks(HookCanDoActionCheck, { &can_do, &m_energy }, domain);
             break;
+        } case Travelling: {
+            return true;
         } default: {
-            bugcheck(AssessmentForUnknownDomain, m_id, domain);
             return false;
         }
     }
@@ -155,12 +156,10 @@ AorInt Character::energy_to_gain() {
         case Eating: {
             call_hooks(HookCalcBonusConsumableEnergy, { &gain });
             break;
-        }
-        case Coupling: {
+        } case Coupling: {
             gain = -energy().max(this);
             break;
-        }
-        default: {
+        } default: {
             break;
         }
     }
@@ -176,7 +175,7 @@ AorInt Character::spirit_to_gain() {
     CharacterActivity *activity = m_activities.front();
     AorInt gain = 0;
 
-    if (activity->action() == Eating || activity->action() == Defiling) {
+    if (activity->action() == Eating || activity->action() == Defiling || activity->action() == Travelling) {
         call_hooks(HookCalcSpiritGain, { &gain }, BASE_HOOK_DOMAINS, activity->owned_items());
     } else {
         gain -= base_spirit_cost();
@@ -403,6 +402,17 @@ void Character::call_hooks(HookType type, const HookPayload &payload, AorUInt Ao
 
     if (domain & Explorer) {
         heritage_properties().call_hooks(type, payload);
+    }
+
+    if (domain & Weather) {
+        for (AorUInt i = 0; i < WEATHER_EFFECTS; i++) {
+            ItemCode weather = gw()->game()->current_location().properties[(ItemProperty) (WeatherEffect1 + i)];
+            Item::def_of(weather)->properties.call_hooks(type, payload);
+        }
+    }
+
+    if (domain & Travelling) {
+        LocationDefinition::get_def(gw()->game()->next_location_id()).properties.call_hooks(type, payload);
     }
 
     for (const Item &item : extra_items) {

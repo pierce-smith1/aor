@@ -14,7 +14,7 @@
 #include "settings.h"
 
 const static AorUInt MAX_EXPLORERS = 12;
-const static AorUInt ACTIONS_UNTIL_WELCHIAN = 400;
+const static AorUInt AEGIS_THREAT = 400 * 5;
 const static AorUInt STUDY_SLOTS_PER_DOMAIN = 3;
 const static AorInt LORE_PER_SCAN = 5;
 const static AorInt BASE_MAX_LORE = 50;
@@ -52,7 +52,9 @@ public:
     ItemHistory &history();
     WorldMap &map();
     LocationId &current_location_id();
-    AorUInt &actions_done();
+    LocationDefinition current_location();
+    LocationId &next_location_id();
+    AorUInt &threat();
     RunningActivities &running_activities();
     ConsumableWaste &forageable_waste();
     MineableWaste &mineable_waste();
@@ -103,6 +105,7 @@ public:
 
     Character &character(CharacterId id);
     CharacterActivity *activity(ActivityId id);
+    void call_hooks(HookType type, const std::function<HookPayload(Character &)> &payload_provider, AorUInt int_domain = BASE_HOOK_DOMAINS);
 
     void serialize(QIODevice *dev);
     void deserialize(QIODevice *dev);
@@ -119,9 +122,10 @@ private:
     GameId m_game_id;
     QString m_tribe_name;
     ItemHistory m_history;
-    AorUInt m_actions_done = 0;
+    AorUInt m_threat = 0;
     WorldMap m_map;
     LocationId m_current_location_id = LocationDefinition::get_def("stochastic_forest").id;
+    LocationId m_next_location_id = NOWHERE;
     ConsumableWaste m_consumable_waste;
     MineableWaste m_mineable_waste;
     RunningActivities m_running_activities;

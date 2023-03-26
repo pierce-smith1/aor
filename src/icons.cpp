@@ -9,6 +9,7 @@ const std::map<ItemDomain, QPixmap> &Icons::activity_icons() {
         { Eating, QPixmap(":/assets/img/icons/apple.png") },
         { Defiling, QPixmap(":/assets/img/icons/spirit.png") },
         { Coupling, QPixmap(":/assets/img/icons/heart.png") },
+        { Travelling, QPixmap(":/assets/img/icons/arrow.png") },
         { None, QPixmap(":/assets/img/icons/blank.png") },
     };
 
@@ -24,6 +25,7 @@ const std::map<ItemDomain, QPixmap> &Icons::activity_icons_big() {
         { Eating, QPixmap(":/assets/img/icons/apple_big.png") },
         { Defiling, QPixmap(":/assets/img/icons/spirit_big.png") },
         { Coupling, QPixmap(":/assets/img/icons/heart_big.png") },
+        { Travelling, QPixmap(":/assets/img/icons/arrow.png") },
         { None, QPixmap(":/assets/img/icons/blank.png") },
     };
 
@@ -39,6 +41,7 @@ const std::map<ItemDomain, QPixmap> &Icons::activity_portraits() {
         { Eating, QPixmap(":/assets/img/lk/eating.png") },
         { Defiling, QPixmap(":/assets/img/lk/defiling.png") },
         { Coupling, QPixmap(":/assets/img/lk/coupling.png") },
+        { Travelling, QPixmap(":/assets/img/lk/trading.png") },
         { None, QPixmap(":/assets/img/lk/idle.png") },
     };
 

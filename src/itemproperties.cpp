@@ -34,13 +34,11 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
                 if (item_domain & Material) {
                     *spirit_gain += prop_value * 25;
                 }
-            }},
-            { HookCalcActivityTime, HOOK_1(AorInt, activity_ms)
+            }}, { HookCalcActivityTime, HOOK_1(AorInt, activity_ms)
                 if (item_domain & Tool) {
                     *activity_ms *= prop_value == 0 ? 1 : prop_value;
                 }
-            }},
-            { HookCalcInjuryChance, HOOK_1(AorInt, injury_percent_chance)
+            }}, { HookCalcInjuryChance, HOOK_1(AorInt, injury_percent_chance)
                 if (item_domain & Tool) {
                     *injury_percent_chance += 3 + (prop_value * 6);
                 }
@@ -50,8 +48,7 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
             "Requires <b>%1 energy</b> per use.",
             {{ HookCanDoActionCheck, HOOK_2(bool, can_do, ClampedResource, current_energy)
                 *can_do = *can_do && (current_energy->amount() >= static_cast<AorInt>(prop_value));
-            }},
-            { HookCalcEnergyGain, HOOK_1(AorInt, energy_gain)
+            }}, { HookCalcEnergyGain, HOOK_1(AorInt, energy_gain)
                 *energy_gain -= prop_value;
             }}}
         }},
@@ -220,7 +217,23 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
         { SkillClearInjury, {
             "Fully clears up to <b>%1 injury(ies)</b>, starting with the rightmost.",
             {}
-        }}
+        }},
+        { LocationSpiritCost, {
+            "Passage here requires <b>%1 spirit</b> per explorer.",
+            {{ HookCalcSpiritGain, HOOK_1(AorInt, spirit_gain)
+                *spirit_gain -= prop_value;
+            }}, { HookDecideCanTravel, HOOK_2(Character, character, bool, can_travel)
+                *can_travel = *can_travel && character->spirit().amount() >= prop_value;
+            }}}
+        }},
+        { LocationEnergyCost, {
+            "Passage here requires <b>%1 energy</b> per explorer.",
+            {{ HookCalcEnergyGain, HOOK_1(AorInt, energy_gain)
+                *energy_gain -= prop_value;
+            }}, { HookDecideCanTravel, HOOK_2(Character, character, bool, can_travel)
+                *can_travel = *can_travel && character->energy().amount() >= prop_value;
+            }}}
+        }},
     };
 
     return PROPERTY_DESCRIPTIONS;

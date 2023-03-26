@@ -9,6 +9,7 @@ std::map<ItemDomain, QSoundEffect *> Sounds::activity_sounds() {
         { Coupling, get_sound("couple.wav") },
         { Defiling, get_sound("defile.wav") },
         { Trading, get_sound("trade.wav") },
+        { Travelling, get_sound("trade.wav") },
     };
 
     return sounds;

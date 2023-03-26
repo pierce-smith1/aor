@@ -14,7 +14,7 @@ compile() {
     INCFLAGS=$(grep 'INCPATH *=' Makefile.Debug | cut -f 2- -d '-' | tr ' ' ',')
     echo -e "CompileFlags:\n\tAdd: [${INCFLAGS},-std=c++17]" > .clangd
 
-    make debug
+    make -j 12 debug
 
     cd $WHEREAMI/server
     ./build.sh

@@ -75,6 +75,10 @@ bool WorldMap::path_exists_between(const Coord &from, const Coord &to, std::set<
             continue;
         }
 
+        if ((std::find(m_reveal_order.begin(), m_reveal_order.end(), neighbor) - m_reveal_order.begin()) > (AorInt) m_reveal_progress) {
+            continue;
+        }
+
         if (seen_this_scan.find(neighbor) == seen_this_scan.end()) {
             seen_this_scan.insert(neighbor);
             if (path_exists_between(neighbor, to, seen_this_scan)) {

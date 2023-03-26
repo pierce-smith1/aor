@@ -205,7 +205,7 @@ const static std::vector<CheatCommand> COMMANDS = {
             })->id();
 
             Item egg = Item::make_egg(parent_id1, parent_id2);
-            egg.instance_properties.map[InstanceEggFoundActionstamp] = 0;
+            egg.instance_properties.map[InstanceEggFoundThreatstamp] = 0;
             gw()->game()->add_item(egg);
         }
     },
@@ -236,18 +236,18 @@ const static std::vector<CheatCommand> COMMANDS = {
         }
     },
     {
-        "actions",
-        "Change the game's action counter to $0; if $0 is '?', show the current actions instead",
+        "threat",
+        "Change the game's threat to $0; if $0 is '?', show the current threat instead",
         1,
         [](const QStringList &args) {
             if (args[0] == "?") {
-                qDebug("Action counter at (%lld)", gw()->game()->actions_done());
+                qDebug("Threat counter at (%lld)", gw()->game()->threat());
                 return;
             }
 
-            QS_TO_INT(actions, args[0]);
+            QS_TO_INT(threat, args[0]);
 
-            gw()->game()->actions_done() = actions;
+            gw()->game()->threat() = threat;
         }
     },
     {
@@ -302,10 +302,12 @@ const static std::vector<CheatCommand> COMMANDS = {
     },
     {
         "nextrev",
-        "Reveal the next tile on the map.",
-        0,
-        [](const QStringList &) {
-            gw()->game()->map().reveal_progress()++;
+        "Reveal the next $0 tiles on the map.",
+        1,
+        [](const QStringList &args) {
+            QS_TO_INT(tiles, args[0]);
+
+            gw()->game()->map().reveal_progress() += tiles;
             gw()->refresh_map();
         }
     },

@@ -76,7 +76,7 @@ Item Item::make_egg(CharacterId parent1, CharacterId parent2) {
 
     egg.instance_properties.map[InstanceEggParent1] = parent1;
     egg.instance_properties.map[InstanceEggParent2] = parent2;
-    egg.instance_properties.map[InstanceEggFoundActionstamp] = gw()->game()->actions_done();
+    egg.instance_properties.map[InstanceEggFoundThreatstamp] = gw()->game()->threat();
 
     return egg;
 }
@@ -94,9 +94,9 @@ QString Item::instance_properties_to_string() const {
             .arg(gw()->game()->character(instance_properties[InstanceEggParent2]).name());
     }
 
-    if (instance_properties[InstanceEggFoundActionstamp]) {
-        string += QString("Hatches after <b>%1 more actions.</b></i><br>")
-            .arg(ACTIONS_TO_HATCH - (gw()->game()->actions_done() - instance_properties[InstanceEggFoundActionstamp]) + 1);
+    if (instance_properties[InstanceEggFoundThreatstamp]) {
+        string += QString("Hatches after <b>%1 more threat</b> is accumulated.</i><br>")
+            .arg(THREAT_TO_HATCH - (gw()->game()->threat() - instance_properties[InstanceEggFoundThreatstamp]) + 1);
     }
 
     if (instance_properties[InstanceEggFoundFlavor]) {

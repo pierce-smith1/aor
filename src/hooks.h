@@ -49,5 +49,5 @@ enum HookType : AorUInt {
     HookCalcInjuryChance,
     HookDecideProducts,
     HookPostDecideProducts,
-    HookCalcMaxLore,
+    HookDecideCanTravel,
 };

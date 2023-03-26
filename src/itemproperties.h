@@ -63,7 +63,7 @@ enum ItemProperty : AorUInt {
     ToolDiscoverWeight9,
     InstanceEggParent1 = 0x1000,
     InstanceEggParent2,
-    InstanceEggFoundActionstamp,
+    InstanceEggFoundThreatstamp,
     InstanceEggFoundFlavor,
     Cost = 0x2000,
     CostStone,
@@ -119,6 +119,8 @@ enum ItemProperty : AorUInt {
     WeatherEffect2 = WeatherProperty | HoldsItemCode | 2,
     LocationProperty = 0x40000,
     LocationSpiritCost,
+    LocationEnergyCost,
+    LocationPartyRequirement,
 };
 
 struct PropertyDefinition {

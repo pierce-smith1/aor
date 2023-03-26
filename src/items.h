@@ -36,7 +36,7 @@ const static CharacterId NOBODY = 0;
 const static GameId NO_TRIBE = 0;
 const static ActivityId NO_ACTION = 0;
 
-const static AorUInt ACTIONS_TO_HATCH = 25;
+const static AorUInt THREAT_TO_HATCH = 25 * 5;
 
 enum ItemDomain : AorUInt {
     Ordinary        = 0,      None = 0,
@@ -272,11 +272,10 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
             { StoneResource, 50 },
         }
     },
-    /*
     {
         CT_MATERIAL | 6,
         "rubygem", "Rubygem",
-        "<i>These eye-catching stones are deceptively strong and durable, for how pretty they are.</i><br>",
+        "<i>These eye-catching stones are deceptively strong and durable, for how pretty they are.</i><br>"
         "<i>We've been building minecart tracks out of them - they make great rails.</i><br>",
         1 USES, Material,
         {
@@ -288,7 +287,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
     {
         CT_MATERIAL | 7,
         "purl", "Purl",
-        "<i>It looks an awful lot like a pearl, but it isn't one, so we needed to call it something else.</i><br>",
+        "<i>It looks an awful lot like a pearl, but it isn't one, so we needed to call it something else.</i><br>"
         "<i>Despite looking like a precious stone, these things are actually eggs - </i><br>"
         "<i>given enough time, they hatch into a beautiful butterfly.</i><br>",
         1 USES, Material,
@@ -299,14 +298,13 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
     {
         CT_MATERIAL | 8,
         "wolframite_alpha", "Wolframite Alpha",
-        "<i>Technically this is an ore - but the smelting process leaves behind tablets of lore instead of metal.</i><br>",
+        "<i>Technically this is an ore - but the smelting process leaves behind tablets of lore instead of metal.</i><br>"
         "<i>Reading them makes my head spin. Whoever is out there writing these knows everything about everything.</i><br>",
         1 USES, Material,
         {
 
         }
     },
-    */
     {
         CT_TOOL | 0,
         "maven_mallet", "Maven Mallet",

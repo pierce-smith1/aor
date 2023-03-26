@@ -52,8 +52,10 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         "<i>It really makes us see the forest for the trees.</i><br>",
         15 FORAGEABLES, 5 MINEABLES,
         {
-            { WeatherEffect1, WeatherMark::marker("acid_rain") },
-            { WeatherEffect2, WeatherMark::marker("worm_storms") },
+            { WeatherEffect1, WeatherMark::marker("empty") },
+            { WeatherEffect2, WeatherMark::marker("empty") },
+            { LocationSpiritCost, 10 },
+            { LocationEnergyCost, 10 },
         }
     },
     {
@@ -64,6 +66,8 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         {
             { WeatherEffect1, WeatherMark::marker("acid_rain") },
             { WeatherEffect2, WeatherMark::marker("worm_storms") },
+            { LocationSpiritCost, 10 },
+            { LocationEnergyCost, 10 },
         }
     },
     {
@@ -74,6 +78,8 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         {
             { WeatherEffect1, WeatherMark::marker("acid_rain") },
             { WeatherEffect2, WeatherMark::marker("worm_storms") },
+            { LocationSpiritCost, 10 },
+            { LocationEnergyCost, 10 },
         }
     },
     {
@@ -84,6 +90,8 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         {
             { WeatherEffect1, WeatherMark::marker("acid_rain") },
             { WeatherEffect2, WeatherMark::marker("worm_storms") },
+            { LocationSpiritCost, 10 },
+            { LocationEnergyCost, 10 },
         }
     },
     {
@@ -94,6 +102,7 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         {
             { WeatherEffect1, WeatherMark::marker("acid_rain") },
             { WeatherEffect2, WeatherMark::marker("worm_storms") },
+            { LocationSpiritCost, 10 }
         }
     },
     {
@@ -104,6 +113,7 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         {
             { WeatherEffect1, WeatherMark::marker("acid_rain") },
             { WeatherEffect2, WeatherMark::marker("worm_storms") },
+            { LocationSpiritCost, 30 }
         }
     },
     {
@@ -114,6 +124,7 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         {
             { WeatherEffect1, WeatherMark::marker("acid_rain") },
             { WeatherEffect2, WeatherMark::marker("worm_storms") },
+            { LocationSpiritCost, 30 }
         }
     },
     {
@@ -124,6 +135,7 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         {
             { WeatherEffect1, WeatherMark::marker("acid_rain") },
             { WeatherEffect2, WeatherMark::marker("worm_storms") },
+            { LocationSpiritCost, 30 }
         }
     },
     {
@@ -137,6 +149,9 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         {
             { WeatherEffect1, WeatherMark::marker("acid_rain") },
             { WeatherEffect2, WeatherMark::marker("worm_storms") },
+            { LocationSpiritCost, 500 },
+            { LocationEnergyCost, 500 },
+            { LocationPartyRequirement, 8 }
         }
     },
 });

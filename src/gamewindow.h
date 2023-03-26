@@ -60,7 +60,6 @@ public:
 
     bool trade_ongoing(GameId tribe);
 
-    void refresh_initial();
     void refresh_ui();
     void refresh_slots();
     void refresh_ui_buttons();

@@ -46,8 +46,8 @@ GameId &Game::trade_partner() {
     return m_trade_partner;
 }
 
-AorUInt &Game::actions_done() {
-    return m_actions_done;
+AorUInt &Game::threat() {
+    return m_threat;
 }
 
 RunningActivities &Game::running_activities() {
@@ -80,6 +80,14 @@ Settings &Game::settings() {
 
 LocationId &Game::current_location_id() {
     return m_current_location_id;
+}
+
+LocationDefinition Game::current_location() {
+    return LocationDefinition::get_def(m_current_location_id);
+}
+
+LocationId &Game::next_location_id() {
+    return m_next_location_id;
 }
 
 bool &Game::fast_actions() {
@@ -137,7 +145,7 @@ void Game::unregister_activity(TimedActivity *activity) {
 void Game::check_hatch() {
     for (const Item &item : inventory().items()) {
         if (item.code == Item::code_of("fennahian_egg")) {
-            if (actions_done() - item.instance_properties[InstanceEggFoundActionstamp] > ACTIONS_TO_HATCH) {
+            if (m_threat - item.instance_properties[InstanceEggFoundThreatstamp] > THREAT_TO_HATCH) {
                 Heritage heritage;
 
                 if (item.instance_properties[InstanceEggFoundFlavor]) {
@@ -323,15 +331,27 @@ ItemDomain Game::intent_of(ItemId item_id) {
 }
 
 bool Game::can_travel(LocationId id) {
-    if (id == m_current_location_id) {
+    if (id == m_current_location_id || m_next_location_id != NOWHERE) {
         return false;
     }
 
-    return m_map.path_exists_between(m_current_location_id, id);
+    if (std::any_of(m_explorers.begin(), m_explorers.end(), [=](Character &c) {
+        return c.activity()->isActive();
+    })) {
+        return false;
+    }
+
+    bool can_travel = m_map.path_exists_between(m_current_location_id, id);
+    call_hooks(HookDecideCanTravel, [&](Character &c) -> HookPayload { return { &c, &can_travel }; });
+    return can_travel;
 }
 
 void Game::start_travel(LocationId id) {
-    m_current_location_id = id;
+    m_next_location_id = id;
+
+    for (Character &c : m_explorers) {
+        c.queue_activity(Travelling, {});
+    }
 }
 
 AorInt Game::forageables_left(LocationId id) {
@@ -378,12 +398,22 @@ CharacterActivity *Game::activity(ActivityId id) {
     });
 }
 
+void Game::call_hooks(HookType type, const std::function<HookPayload(Character &)> &payload_provider, AorUInt int_domain) {
+    for (Character &c : m_explorers) {
+        if (c.id() == NOBODY || c.dead()) {
+            continue;
+        }
+
+        c.call_hooks(type, payload_provider(c), int_domain);
+    }
+}
+
 void Game::serialize(QIODevice *dev) {
     IO::write_uint(dev, m_accepting_trade);
     IO::write_string(dev, m_tribe_name);
     IO::write_uint(dev, m_trade_partner);
     IO::write_uint(dev, m_game_id);
-    IO::write_uint(dev, m_actions_done);
+    IO::write_uint(dev, m_threat);
 
     for (AorUInt i = 0; i < INVENTORY_SIZE; i++) {
         IO::write_item(dev, m_inventory.items()[i]);
@@ -409,7 +439,7 @@ void Game::deserialize(QIODevice *dev) {
     m_tribe_name = IO::read_string(dev);
     m_trade_partner = IO::read_uint(dev);
     m_game_id = IO::read_uint(dev);
-    m_actions_done = IO::read_uint(dev);
+    m_threat = IO::read_uint(dev);
 
     for (size_t i = 0; i < INVENTORY_SIZE; i++) {
         m_inventory.items()[i] = IO::read_item(dev);

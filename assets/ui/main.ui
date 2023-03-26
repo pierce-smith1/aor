@@ -1214,6 +1214,9 @@
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
+                   <property name="toolTip">
+                    <string/>
+                   </property>
                    <property name="title">
                     <string/>
                    </property>
@@ -1239,6 +1242,9 @@
                     </item>
                     <item>
                      <widget class="QLabel" name="lore_label">
+                      <property name="toolTip">
+                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is our expedition's current &lt;span style=&quot; font-weight:600;&quot;&gt;lore.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Lore is gained by placing consumables, tools, and artifacts in the slots above, where they will slowly produce lore until they are eventually destroyed. Consumables produce &lt;span style=&quot; font-weight:600;&quot;&gt;5&lt;/span&gt; lore per level, tools &lt;span style=&quot; font-weight:600;&quot;&gt;10&lt;/span&gt; lore per level, and artifacts &lt;span style=&quot; font-weight:600;&quot;&gt;15 &lt;/span&gt;lore per level. Multiple items can be studied at once.&lt;/p&gt;&lt;p&gt;For &lt;span style=&quot; font-weight:600;&quot;&gt;every 5 lore&lt;/span&gt;, a &lt;span style=&quot; font-weight:600;&quot;&gt;new tile&lt;/span&gt; is unveiled on the map. Some items and effects also benefit from having higher lore.&lt;/p&gt;&lt;p&gt;Lore is a monotonic resource; it is not spent or lost, except through special items or effects.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                      </property>
                       <property name="text">
                        <string>TextLabel</string>
                       </property>
@@ -1272,6 +1278,9 @@
              <item row="0" column="1">
               <widget class="QScrollArea" name="crawl_area">
                <property name="verticalScrollBarPolicy">
+                <enum>Qt::ScrollBarAlwaysOff</enum>
+               </property>
+               <property name="horizontalScrollBarPolicy">
                 <enum>Qt::ScrollBarAlwaysOff</enum>
                </property>
                <property name="widgetResizable">
