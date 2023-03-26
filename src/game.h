@@ -12,6 +12,7 @@
 #include "hooks.h"
 #include "map.h"
 #include "settings.h"
+#include "serialize.h"
 
 const static AorUInt MAX_EXPLORERS = 12;
 const static AorUInt AEGIS_THREAT = 400 * 5;
@@ -33,10 +34,10 @@ using TradePurchases = std::array<Item, TRADE_SLOTS>;
 using ItemHistory = std::set<ItemCode>;
 using ConsumableWaste = std::map<LocationId, AorUInt>;
 using MineableWaste = std::map<LocationId, AorUInt>;
-using RunningActivities = std::vector<TimedActivity *>;
+using RunningActivities = std::vector<TimedActivity>;
 using StudiedItems = std::map<ItemDomain, std::array<ItemId, STUDY_SLOTS_PER_DOMAIN>>;
 
-class Game {
+class Game : public Serializable {
 public:
     Game();
 
@@ -68,8 +69,7 @@ public:
 
     bool add_character(const QString &name, const std::multiset<Color> &heritage);
     bool add_item(const Item &item);
-    void register_activity(TimedActivity *action);
-    void unregister_activity(TimedActivity *action);
+    TimedActivity &register_activity(TimedActivity &activity);
     void check_hatch();
     void check_tutorial(ItemDomain domain);
     AorInt trade_level();
@@ -77,22 +77,7 @@ public:
     ItemProperties total_smithing_resources(CharacterId character_id);
     ItemProperties total_resources();
     ItemDomain intent_of(ItemId item_id);
-
-    template <typename ActivityType> std::vector<ActivityType *> activities_of_type(ItemDomain type) {
-        std::vector<TimedActivity *> activities;
-        std::vector<ActivityType *> typed_activities;
-
-        auto &acts = m_running_activities;
-        std::copy_if(acts.begin(), acts.end(), std::back_inserter(activities), [=](TimedActivity *act) {
-            return act->type() == type;
-        });
-
-        std::transform(activities.begin(), activities.end(), std::back_inserter(typed_activities), [=](TimedActivity *act) {
-            return dynamic_cast<ActivityType *>(act);
-        });
-
-        return typed_activities;
-    }
+    std::vector<TimedActivity> activities_of_type(ItemDomain type);
 
     void start_scan();
     bool can_scan();
@@ -104,10 +89,10 @@ public:
     AorInt mineables_left();
 
     Character &character(CharacterId id);
-    CharacterActivity *activity(ActivityId id);
+    TimedActivity &activity(ActivityId id);
     void call_hooks(HookType type, const std::function<HookPayload(Character &)> &payload_provider, AorUInt int_domain = BASE_HOOK_DOMAINS);
 
-    void serialize(QIODevice *dev);
+    void serialize(QIODevice *dev) const;
     void deserialize(QIODevice *dev);
 
     static Game *new_game();

@@ -8,6 +8,10 @@ AorInt ClampedResource::amount() const {
     return m_amount;
 }
 
+void ClampedResource::serialize(QIODevice *dev) const {
+    Serialize::serialize(dev, m_amount);
+}
+
 AllCharacters AllCharacters::instance;
 
 void AllCharacters::call_hooks(HookType type, const HookPayload &payload) {

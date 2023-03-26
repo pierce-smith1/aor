@@ -99,8 +99,6 @@ LKGameWindow::LKGameWindow()
 
     m_backup_timer_id = startTimer(BACKUP_INTERVAL_MS);
     m_refresh_timer_id = startTimer(ACTIVITY_TICK_RATE_MS);
-
-    CharacterActivity::empty_activity = new CharacterActivity();
 }
 
 bool LKGameWindow::initialized() {
@@ -235,8 +233,8 @@ void LKGameWindow::refresh_slots() {
 
 void LKGameWindow::refresh_ui_buttons() {
     auto activities = selected_char().activities();
-    bool smithing_already_queued = std::any_of(activities.begin(), activities.end(), [](CharacterActivity *a) {
-        return a->action() == Smithing;
+    bool smithing_already_queued = std::any_of(activities.begin(), activities.end(), [](ActivityId aid) {
+        return gw()->game()->activity(aid).explorer_subtype() == Smithing;
     });
 
     for (ItemDomain domain : { Smithing, Foraging, Mining }) {
@@ -260,7 +258,7 @@ void LKGameWindow::refresh_ui_buttons() {
     m_window.trade_partner_combobox->setEnabled(m_game->trade_partner() == NO_TRIBE);
 
     if (!m_connection.is_connected()
-        || selected_char().activity()->isActive()
+        || selected_char().activity().active
         || trade_ongoing(m_selected_tribe_id)
         || m_window.trade_partner_combobox->count() == 0
         || m_game->foreign_trade_level(m_selected_tribe_id) != m_game->trade_level()
@@ -314,7 +312,7 @@ void LKGameWindow::refresh_trade_ui() {
     }
 
     for (Character &character : m_game->characters()) {
-        if (character.activity()->action() == Trading) {
+        if (character.activity().explorer_subtype() == Trading) {
             window().trade_arrow_label->setPixmap(QPixmap(":/assets/img/icons/arrows.png"));
             window().trade_notification_label->setText(QString("%1 is carrying out this trade...").arg(character.name()));
         }
@@ -413,7 +411,7 @@ void LKGameWindow::load() {
     m_game->deserialize(&m_save_file);
 
     for (Character &character : m_game->characters()) {
-        character.activities().front()->start();
+        character.activity().start();
     }
 
     m_selected_char_id = NOBODY;
@@ -474,12 +472,18 @@ void LKGameWindow::timerEvent(QTimerEvent *event) {
     }
 
     if (event->timerId() == m_refresh_timer_id) {
-        for (TimedActivity *activity : m_game->running_activities()) {
-            if (activity->isActive()) {
-                activity->progress();
-                activity->update_ui();
+        auto &acts = m_game->running_activities();
+
+        for (TimedActivity &activity : acts) {
+            if (activity.active) {
+                activity.progress();
+                activity.update_ui();
             }
         }
+
+        acts.erase(std::remove_if(acts.begin(), acts.end(), [=](TimedActivity &act) {
+            return act.finished;
+        }), acts.end());
     }
 }
 

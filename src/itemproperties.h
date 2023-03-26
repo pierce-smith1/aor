@@ -3,6 +3,7 @@
 #include <QtCore>
 
 #include "hooks.h"
+#include "serialize.h"
 
 class Character;
 
@@ -30,6 +31,7 @@ enum ItemProperty : AorUInt {
     InjuryDefiling,
     InjuryTrading,
     InjuryCoupling, // COCK INJURED
+    InjuryTravelling,
     HeritageMaxEnergyBoost,
     HeritageMaxSpiritBoost,
     HeritageConsumableEnergyBoost,
@@ -134,8 +136,7 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions();
 // This basically just wraps a std::map<ItemPropety, int>,
 // with the crucial change that operator[] is const while retaining the
 // behavior of returning zero-initialized values for non-existant keys.
-class ItemProperties {
-public:
+struct ItemProperties : public Serializable {
     ItemProperties() = default;
     ItemProperties(std::initializer_list<std::pair<const ItemProperty, AorUInt>> map);
     ItemProperties(const std::map<ItemProperty, AorUInt> &map);
@@ -145,4 +146,6 @@ public:
     void call_hooks(HookType type, const HookPayload &payload, AorUInt int_domain = 0) const;
 
     std::map<ItemProperty, AorUInt> map;
+
+    void serialize(QIODevice *dev) const;
 };

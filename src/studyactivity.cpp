@@ -1,36 +1,31 @@
 #include "studyactivity.h"
 #include "gamewindow.h"
 
-StudyActivity::StudyActivity(AorInt ms_total, ItemId item_id)
-    : TimedActivity(ms_total, ms_total), m_item_id(item_id) {}
-
-void StudyActivity::complete() {
-    gw()->game()->lore() += lore_to_gain();
+void StudyActivity::complete(const TimedActivity &activity) {
+    gw()->game()->lore() += lore_to_gain(activity);
 
     for (auto &pair : gw()->game()->studied_items()) {
         for (ItemId &id : pair.second) {
-            if (id == m_item_id) {
+            if (id == activity.owned_item_ids.at(0)) {
                 id = EMPTY_ID;
             }
         }
     }
 
-    update_ui();
-
-    gw()->game()->inventory().remove_item(m_item_id);
+    gw()->game()->inventory().remove_item(activity.owned_item_ids.at(0));
     gw()->refresh_ui();
 }
 
-void StudyActivity::update_ui() {
-    auto all_study_acts = gw()->game()->activities_of_type<StudyActivity>(Study);
+void StudyActivity::update_ui(const TimedActivity &activity) {
+    auto all_study_acts = gw()->game()->activities_of_type(Study);
 
     // We only want one activity to do updating.
-    if (all_study_acts[0] != this) {
+    if (!all_study_acts.empty() && all_study_acts[0].id != activity.id) {
         return;
     }
 
-    double total_gain = std::accumulate(all_study_acts.begin(), all_study_acts.end(), 0.0, [=](AorInt a, StudyActivity *act) {
-        return a + (isActive() ? (act->lore_to_gain() * (act->percent_complete() / 100.0)) : 0.0);
+    double total_gain = std::accumulate(all_study_acts.begin(), all_study_acts.end(), 0.0, [=](AorInt a, TimedActivity &act) {
+        return a + (act.active ? (lore_to_gain(act) * (act.percent_complete() / 100.0)) : 0.0);
     });
 
     gw()->window().lore_label->setText(QString("<b>%1</b>")
@@ -40,8 +35,8 @@ void StudyActivity::update_ui() {
     gw()->refresh_map();
 }
 
-AorInt StudyActivity::lore_to_gain() {
-    Item item = gw()->game()->inventory().get_item(m_item_id);
+AorInt StudyActivity::lore_to_gain(const TimedActivity &activity) {
+    Item item = gw()->game()->inventory().get_item(activity.owned_item_ids.at(0));
 
     if (item.def()->type & Artifact) {
         return item.def()->properties[ItemLevel] * 20;
@@ -50,8 +45,4 @@ AorInt StudyActivity::lore_to_gain() {
     } else {
         return item.def()->properties[ItemLevel] * 5;
     }
-}
-
-ItemDomain StudyActivity::type() {
-    return Study;
 }

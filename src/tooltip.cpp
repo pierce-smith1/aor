@@ -64,7 +64,7 @@ void Tooltip::set(const Item &item) {
     ItemDefinitionPtr this_def = item.def();
     QString character_name;
     if (item.owning_action != NO_ACTION) {
-        character_name = gw()->game()->activity(item.owning_action)->character().name();
+        character_name = gw()->game()->activity(item.owning_action).owner().name();
     }
 
     QString description;

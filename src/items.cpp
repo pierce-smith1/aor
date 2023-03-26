@@ -258,3 +258,11 @@ QString Item::properties_to_string(const ItemProperties &props) {
 
     return string.left(string.size() - 4); // cut off the last <br>
 }
+
+void Item::serialize(QIODevice *dev) const {
+    Serialize::serialize(dev, code);
+    Serialize::serialize(dev, id);
+    Serialize::serialize(dev, uses_left);
+    Serialize::serialize(dev, owning_action);
+    Serialize::serialize(dev, instance_properties);
+}

@@ -19,7 +19,7 @@ void PortraitSlot::refresh() {
 
     QString stylesheet = "border-radius: 5px;";
 
-    if (gw()->selected_char().activity()->action() == Coupling) {
+    if (gw()->selected_char().activity().explorer_subtype() == Coupling) {
         stylesheet += (QString("background: qlineargradient(x1: 0.385, y1: 0.48, x2: 0.3875, y2: 0.482,")
             + "stop: 0 " + Colors::blend(gw()->selected_char().heritage()).name() + ","
             + "stop: 1 " + Colors::blend(gw()->game()->character(gw()->selected_char().partner()).heritage()).name() + ");"
@@ -59,7 +59,7 @@ QPixmap PortraitSlot::pixmap() {
     if (gw()->selected_char().dead()) {
         return QPixmap(":/assets/img/lk/dead.png");
     } else {
-        return Icons::activity_portraits().at(gw()->selected_char().activity()->action());
+        return Icons::activity_portraits().at(gw()->selected_char().activity().explorer_subtype());
     }
 }
 

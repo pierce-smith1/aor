@@ -11,13 +11,13 @@ QueuedActivitySlot::QueuedActivitySlot(size_t n)
 }
 
 bool QueuedActivitySlot::do_hovering() {
-    return activity()->id() != NO_ACTION;
+    return activity().id != NO_ACTION;
 }
 
 std::optional<TooltipInfo> QueuedActivitySlot::tooltip_info() {
     QString item_name;
-    if (activity()->action() == Eating || activity()->action() == Defiling) {
-        Item item = gw()->game()->inventory().get_item(activity()->owned_item_ids()[0]);
+    if (activity().explorer_subtype() == Eating || activity().explorer_subtype() == Defiling) {
+        Item item = gw()->game()->inventory().get_item(activity().owned_item_ids.at(0));
         bool name_starts_with_vowel = item.def()->display_name.toCaseFolded().startsWith('a')
             || item.def()->display_name.toCaseFolded().startsWith('e')
             || item.def()->display_name.toCaseFolded().startsWith('i')
@@ -30,32 +30,32 @@ std::optional<TooltipInfo> QueuedActivitySlot::tooltip_info() {
     }
 
     return std::optional<TooltipInfo>({
-        "<b>" + CharacterActivity::domain_to_action_string(activity()->action()) + "</b>" + item_name,
+        "<b>" + CharacterActivity::domain_to_action_string(activity().explorer_subtype()) + "</b>" + item_name,
         m_n == 0
             ? "Current action"
             : "Queued action",
         m_n == 0
             ? QString("<b>%1</b> is currently doing this.").arg(gw()->selected_char().name())
             : "This action is queued; right click to cancel it.",
-        Icons::activity_icons_big().at(activity()->action()),
+        Icons::activity_icons_big().at(activity().explorer_subtype()),
         {},
         std::optional<QColor>()
     });
 }
 
 QPixmap QueuedActivitySlot::pixmap() {
-    if (activity()->id() == NO_ACTION) {
+    if (activity().id == NO_ACTION) {
         return QPixmap(":assets/img/icons/blank.png");
     } else {
-        return Icons::activity_icons().at(activity()->action());
+        return Icons::activity_icons().at(activity().explorer_subtype());
     }
 }
 
 void QueuedActivitySlot::on_right_click(QMouseEvent *) {
     auto &activities = gw()->selected_char().activities();
-    if (m_n > 0 && activity()->id() != NO_ACTION) {
-        CharacterActivity *removed_activity = activities[m_n];
-        for (ItemId id : removed_activity->owned_item_ids()) {
+    if (m_n > 0 && activity().id != NO_ACTION) {
+        TimedActivity &removed_activity = gw()->game()->activity(activities[m_n]);
+        for (ItemId id : removed_activity.owned_item_ids) {
             gw()->game()->inventory().get_item_ref(id).owning_action = NO_ACTION;
         }
 
@@ -67,12 +67,12 @@ void QueuedActivitySlot::install() {
     gw()->window().activity_queue_layout->addWidget(this);
 }
 
-CharacterActivity *QueuedActivitySlot::activity() {
+TimedActivity &QueuedActivitySlot::activity() {
     if (m_n >= gw()->selected_char().activities().size()) {
-        return CharacterActivity::empty_activity;
+        return TimedActivity::empty_activity;
     }
 
-    return gw()->selected_char().activities()[m_n];
+    return gw()->game()->activity(gw()->selected_char().activities()[m_n]);
 }
 
 

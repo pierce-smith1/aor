@@ -9,6 +9,7 @@
 
 #include "locations.h"
 #include "types.h"
+#include "serialize.h"
 
 class LocationSlot;
 
@@ -43,7 +44,7 @@ struct MapTile {
 
 using Tiles = std::array<std::array<MapTile, MAP_WIDTH>, MAP_HEIGHT>;
 
-class WorldMap {
+class WorldMap : public Serializable {
 public:
     using Coord = std::pair<size_t, size_t>;
     using MapMask = std::array<std::array<bool, MAP_WIDTH>, MAP_HEIGHT>;

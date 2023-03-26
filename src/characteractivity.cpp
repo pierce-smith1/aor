@@ -4,51 +4,6 @@
 #include "die.h"
 #include "sounds.h"
 
-CharacterActivity::CharacterActivity()
-    : TimedActivity(0, 0),
-      m_id(NO_ACTION),
-      m_action(None),
-      m_owned_items(),
-      m_char_id(NOBODY) {}
-
-CharacterActivity::CharacterActivity(
-    CharacterId id,
-    ItemDomain action,
-    const std::vector<ItemId> &owned_items,
-    AorInt ms_total,
-    AorInt ms_left
-)
-    : TimedActivity(ms_total, ms_left),
-      m_id(Generators::activity_id()),
-      m_action(action),
-      m_owned_items(owned_items),
-      m_char_id(id)
-{
-    if (m_action == None) {
-        m_ms_total = 0;
-    }
-}
-
-ActivityId CharacterActivity::id() {
-    return m_id;
-}
-
-ItemDomain &CharacterActivity::action() {
-    return m_action;
-}
-
-const std::vector<ItemId> &CharacterActivity::owned_item_ids() {
-    return m_owned_items;
-}
-
-const std::vector<Item> CharacterActivity::owned_items() {
-    std::vector<Item> items;
-    for (ItemId id : m_owned_items) {
-        items.push_back(gw()->game()->inventory().get_item(id));
-    }
-    return items;
-}
-
 QString CharacterActivity::domain_to_action_string(ItemDomain domain) {
     switch (domain) {
         case Eating: { return "Eating"; }
@@ -65,29 +20,17 @@ QString CharacterActivity::domain_to_action_string(ItemDomain domain) {
     return "";
 }
 
-Character &CharacterActivity::character() {
-    return gw()->game()->character(m_char_id);
-}
-
-void CharacterActivity::start() {
-    TimedActivity::start();
-
-    if (m_action != None && gw()->game()->settings().sounds_on) {
-        Sounds::activity_sounds().at(m_action)->play();
-    }
-}
-
-void CharacterActivity::complete() {
-    if (m_action == None) {
+void CharacterActivity::complete(const TimedActivity &activity) {
+    if (activity.explorer_subtype() == None) {
         return;
     }
 
     gw()->notify(ActionComplete, QString("%1 finished %2.")
-        .arg(character().name())
-        .arg(domain_to_action_string(m_action).toCaseFolded())
+        .arg(activity.owner().name())
+        .arg(domain_to_action_string(activity.explorer_subtype()).toCaseFolded())
     );
 
-    if (m_action == Trading) {
+    if (activity.explorer_subtype() == Trading) {
         gw()->connection().agreement_changed(gw()->game()->trade_partner(), false);
         for (AorUInt i = 0; i < TRADE_SLOTS; i++) {
             gw()->connection().offer_changed(Item(), i);
@@ -96,34 +39,34 @@ void CharacterActivity::complete() {
         gw()->game()->trade_partner() = NO_TRIBE;
     }
 
-    exhaust_character();
-    give_bonuses();
-    give_injuries();
-    std::vector<Item> items = products();
-    add_bonus_items(items);
-    give(items);
-    exhaust_reagents();
-    clear_injuries();
+    exhaust_character(activity);
+    give_bonuses(activity);
+    give_injuries(activity);
+    std::vector<Item> items = products(activity);
+    add_bonus_items(activity, items);
+    give(activity, items);
+    exhaust_reagents(activity);
+    clear_injuries(activity);
 
     gw()->game()->threat() += 5;
 
-    start_next_action();
+    start_next_action(activity);
 
     gw()->game()->check_hatch();
 
-    if (m_action == Foraging) {
+    if (activity.explorer_subtype() == Foraging) {
         gw()->game()->forageable_waste()[gw()->game()->current_location_id()]++;
-    } else if (m_action == Mining) {
+    } else if (activity.explorer_subtype() == Mining) {
         gw()->game()->mineable_waste()[gw()->game()->current_location_id()]++;
-    } else if (m_action == Travelling) {
+    } else if (activity.explorer_subtype() == Travelling) {
         auto &characters = gw()->game()->characters();
         bool no_others_travelling = std::none_of(characters.begin(), characters.end(), [=](Character &c) {
-            if (c.id() == character().id()) {
+            if (c.id() == activity.owner().id()) {
                 return false;
             }
 
-            return std::any_of(c.activities().begin(), c.activities().end(), [=](CharacterActivity *a) {
-                return a->m_action == Travelling;
+            return std::any_of(c.activities().begin(), c.activities().end(), [=](const ActivityId aid) {
+                return gw()->game()->activity(aid).explorer_subtype() == Travelling;
             });
         });
 
@@ -134,14 +77,11 @@ void CharacterActivity::complete() {
     }
 
     gw()->refresh_ui();
-    update_ui();
-
-    TimedActivity::complete();
 }
 
-void CharacterActivity::update_ui() {
-    if (gw()->selected_char_id() == character().id()) {
-        refresh_ui_bars(character());
+void CharacterActivity::update_ui(const TimedActivity &activity) {
+    if (gw()->selected_char_id() == activity.owner_id) {
+        refresh_ui_bars(activity.owner());
     }
 }
 
@@ -155,26 +95,26 @@ void CharacterActivity::refresh_ui_bars(Character &character) {
     QProgressBar *energy_bar = gw()->window().energy_bar;
 
     activity_bar->setMaximum(100);
-    activity_bar->setValue(character.activity()->percent_complete());
+    activity_bar->setValue(character.activity().percent_complete());
 
     // We have to be very particular about clamping values here, since if we
     // pass a number to QProgressBar::setValue that is < minValue or > maxValue,
     // nothing happens - leading to UI inconsistencies.
-    double spirit_gain = character.spirit_to_gain() * (character.activity()->percent_complete() / 100.0);
+    double spirit_gain = character.spirit_to_gain() * (character.activity().percent_complete() / 100.0);
     spirit_bar->setMaximum(character.spirit().max(&character));
     spirit_bar->setValue(clamp(0, character.spirit().amount() + spirit_gain, character.spirit().max(&character)));
 
-    double energy_gain = character.energy_to_gain() * (character.activity()->percent_complete() / 100.0);
+    double energy_gain = character.energy_to_gain() * (character.activity().percent_complete() / 100.0);
     energy_bar->setMaximum(character.energy().max(&character));
     energy_bar->setValue(clamp(0, character.energy().amount() + energy_gain, character.energy().max(&character)));
 }
 
-std::vector<Item> CharacterActivity::products() {
+std::vector<Item> CharacterActivity::products(const TimedActivity &activity) {
     std::vector<WeightedVector<Item>> discoverable_set;
 
-    switch (m_action) {
+    switch (activity.explorer_subtype()) {
         case Smithing: {
-            ItemCode smithing_result = character().smithing_result();
+            ItemCode smithing_result = activity.owner().smithing_result();
 
             if (smithing_result == EMPTY_CODE) {
                 break;
@@ -183,20 +123,20 @@ std::vector<Item> CharacterActivity::products() {
             Item result = Item(smithing_result);
 
             AorInt use_bonus = 0;
-            character().call_hooks(HookCalcBonusProductUse, { &use_bonus });
+            activity.owner().call_hooks(HookCalcBonusProductUse, { &use_bonus });
             result.uses_left += use_bonus;
 
             discoverable_set.push_back({{ result, 1.0 }});
             break;
         } case Foraging:
           case Mining: {
-            Item tool = gw()->game()->inventory().get_item(character().tool_id(m_action));
+            Item tool = gw()->game()->inventory().get_item(activity.owner().tool_id(activity.explorer_subtype()));
             const ItemProperties &tool_props = tool.def()->properties;
 
             if (tool.id == EMPTY_ID) {
-                if (m_action == Foraging) {
+                if (activity.explorer_subtype() == Foraging) {
                     discoverable_set.push_back({{ Item("globfruit"), 1.0 }, { Item("byteberry"), 1.0 }});
-                } else if (m_action == Mining) {
+                } else if (activity.explorer_subtype() == Mining) {
                     discoverable_set.push_back({{ Item("oolite"), 1.0 }, { Item("obsilicon"), 1.0 }});
                 }
                 break;
@@ -212,7 +152,7 @@ std::vector<Item> CharacterActivity::products() {
 
             discoverable_set.push_back(possible_items);
 
-            if (m_action == Foraging && Generators::percent_chance(character().egg_find_percent_chance())) {
+            if (activity.explorer_subtype() == Foraging && Generators::percent_chance(activity.owner().egg_find_percent_chance())) {
                 discoverable_set.push_back({{ Item::make_egg(), 1.0 }});
             }
 
@@ -227,17 +167,17 @@ std::vector<Item> CharacterActivity::products() {
             // Here, we check to see if our partner has already made an egg
             // and break if so.
             auto partner = std::find_if(begin(characters), end(characters), [&](Character &other) {
-                return other.partner() == character().id();
+                return other.partner() == activity.owner().id();
             });
 
             if (partner == end(characters)) {
                 break;
             }
 
-            discoverable_set.push_back({{ Item::make_egg(m_char_id, partner->id()), 1.0 }});
+            discoverable_set.push_back({{ Item::make_egg(activity.owner_id, partner->id()), 1.0 }});
 
             partner->partner() = NOBODY;
-            character().partner() = NOBODY;
+            activity.owner().partner() = NOBODY;
 
             break;
         } case Trading: {
@@ -250,8 +190,8 @@ std::vector<Item> CharacterActivity::products() {
         }
     }
 
-    character().call_hooks(HookDecideProducts, { &discoverable_set, &character() });
-    character().call_hooks(HookPostDecideProducts, { &discoverable_set, &character() });
+    activity.owner().call_hooks(HookDecideProducts, { &discoverable_set, &activity.owner() });
+    activity.owner().call_hooks(HookPostDecideProducts, { &discoverable_set, &activity.owner() });
 
     std::vector<Item> final_items;
 
@@ -262,37 +202,37 @@ std::vector<Item> CharacterActivity::products() {
     return final_items;
 }
 
-void CharacterActivity::exhaust_reagents() {
-    if (m_action == Smithing) {
-        for (ItemId id : character().external_items().at(Material)) {
-            exhaust_item(id);
+void CharacterActivity::exhaust_reagents(const TimedActivity &activity) {
+    if (activity.explorer_subtype() == Smithing) {
+        for (ItemId id : activity.owner().external_items().at(Material)) {
+            exhaust_item(activity, id);
         }
-    } else if (m_action == Trading) {
+    } else if (activity.explorer_subtype() == Trading) {
         for (ItemId &id : gw()->game()->trade_offer()) {
             gw()->game()->inventory().remove_item(id);
             id = EMPTY_ID;
         }
-    } else if (m_action == Eating || m_action == Defiling) {
-        for (const ItemId id : m_owned_items) {
-            exhaust_item(id);
+    } else if (activity.explorer_subtype() == Eating || activity.explorer_subtype() == Defiling) {
+        for (const ItemId id : activity.owned_item_ids) {
+            exhaust_item(activity, id);
         }
     }
 
-    exhaust_item(character().tool_id(m_action));
+    exhaust_item(activity, activity.owner().tool_id(activity.explorer_subtype()));
 }
 
-void CharacterActivity::exhaust_character() {
-    Item tool = gw()->game()->inventory().get_item(character().tool_id(m_action));
+void CharacterActivity::exhaust_character(const TimedActivity &activity) {
+    Item tool = gw()->game()->inventory().get_item(activity.owner().tool_id(activity.explorer_subtype()));
 
-    character().energy().add(character().energy_to_gain(), &character());
-    character().spirit().add(character().spirit_to_gain(), &character());
+    activity.owner().energy().add(activity.owner().energy_to_gain(), &activity.owner());
+    activity.owner().spirit().add(activity.owner().spirit_to_gain(), &activity.owner());
 
-    for (Item &effect : character().effects()) {
+    for (Item &effect : activity.owner().effects()) {
         if (effect.id == EMPTY_ID) {
             continue;
         }
 
-        if (m_action == Eating) {
+        if (activity.explorer_subtype() == Eating) {
             effect.uses_left -= effect.uses_left == 1 ? 1 : 2;
         } else {
             effect.uses_left -= 1;
@@ -301,17 +241,17 @@ void CharacterActivity::exhaust_character() {
         // We do NOT clear the effect here, since we may need it later
     }
 
-    if (character().energy().amount() == 0) {
-        character().push_effect(Item("starving"));
+    if (activity.owner().energy().amount() == 0) {
+        activity.owner().push_effect(Item("starving"));
     }
 
-    if (character().spirit().amount() == 0) {
-        character().push_effect(Item("weakness"));
+    if (activity.owner().spirit().amount() == 0) {
+        activity.owner().push_effect(Item("weakness"));
     }
 
 }
 
-void CharacterActivity::exhaust_item(ItemId id) {
+void CharacterActivity::exhaust_item(const TimedActivity &activity, ItemId id) {
     if (id == EMPTY_ID) {
         return;
     }
@@ -321,20 +261,20 @@ void CharacterActivity::exhaust_item(ItemId id) {
     if (item.uses_left > 0) {
         item.uses_left -= 1;
         if (item.uses_left == 0 && item.code & CT_TOOL) {
-            character().tools().at(m_action) = EMPTY_ID;
+            activity.owner().tools().at(activity.explorer_subtype()) = EMPTY_ID;
             gw()->game()->inventory().remove_item(id);
         } else if (item.uses_left == 0) {
             gw()->game()->inventory().remove_item(id);
         }
     }
 
-    if (m_action == Smithing) {
-        for (ItemId &mid : character().external_items().at(Material)) {
+    if (activity.explorer_subtype() == Smithing) {
+        for (ItemId &mid : activity.owner().external_items().at(Material)) {
             if (id == mid) {
                 mid = EMPTY_ID;
             }
         }
-    } else if (m_action == Trading) {
+    } else if (activity.explorer_subtype() == Trading) {
         for (ItemId &oid : gw()->game()->trade_offer()) {
             if (id == oid) {
                 oid = EMPTY_ID;
@@ -345,26 +285,26 @@ void CharacterActivity::exhaust_item(ItemId id) {
     item.owning_action = NO_ACTION;
 }
 
-void CharacterActivity::give(const std::vector<Item> &items) {
+void CharacterActivity::give(const TimedActivity &activity, const std::vector<Item> &items) {
     for (const Item &item : items) {
-        character().discover(item);
+        activity.owner().discover(item);
     }
 }
 
-void CharacterActivity::give_bonuses() {
-    if (m_action == Eating) {
-        for (const ItemId id : m_owned_items) {
+void CharacterActivity::give_bonuses(const TimedActivity &activity) {
+    if (activity.explorer_subtype() == Eating) {
+        for (const ItemId id : activity.owned_item_ids) {
             Item item = gw()->game()->inventory().get_item(id);
-            character().call_hooks(HookPostEat, { &character() }, BASE_HOOK_DOMAINS, { item });
+            activity.owner().call_hooks(HookPostEat, { &activity.owner() }, BASE_HOOK_DOMAINS, { item });
         }
     }
 }
 
-void CharacterActivity::give_injuries() {
+void CharacterActivity::give_injuries(const TimedActivity &activity) {
     bool welchian = false;
 
     AorInt injury_percent_chance = 0;
-    character().call_hooks(HookCalcInjuryChance, { &injury_percent_chance }, BASE_HOOK_DOMAINS | m_action);
+    activity.owner().call_hooks(HookCalcInjuryChance, { &injury_percent_chance }, BASE_HOOK_DOMAINS | activity.explorer_subtype());
 
     if (gw()->game()->threat() > AEGIS_THREAT) {
         injury_percent_chance += ((gw()->game()->threat() - AEGIS_THREAT) / 2);
@@ -376,7 +316,7 @@ void CharacterActivity::give_injuries() {
     }
 
     if (welchian) {
-        character().push_effect(Item("welchian_fever"));
+        activity.owner().push_effect(Item("welchian_fever"));
         return;
     }
 
@@ -386,7 +326,7 @@ void CharacterActivity::give_injuries() {
             continue;
         }
 
-        switch (m_action) {
+        switch (activity.explorer_subtype()) {
             case Smithing: { if (!def.properties[InjurySmithing]) { continue; } break; }
             case Foraging: { if (!def.properties[InjuryForaging]) { continue; } break; }
             case Mining: { if (!def.properties[InjuryMining]) { continue; } break; }
@@ -394,7 +334,8 @@ void CharacterActivity::give_injuries() {
             case Defiling: { if (!def.properties[InjuryDefiling]) { continue; } break; }
             case Trading: { if (!def.properties[InjuryTrading]) { continue; } break; }
             case Coupling: { if (!def.properties[InjuryCoupling]) { continue; } break; }
-            default: { bugcheck(InjuriesForUnknownDomain, m_char_id, m_action); }
+            case Travelling: { if (!def.properties[InjuryTravelling]) { continue; } break; }
+            default: { bugcheck(InjuriesForUnknownDomain, activity.owner_id, activity.explorer_subtype()); }
         }
 
         possible_weighted_injuries.push_back({ def.code, 1 });
@@ -405,71 +346,36 @@ void CharacterActivity::give_injuries() {
     }
 
     Item final_effect = Item(Generators::sample_with_weights(possible_weighted_injuries));
-    character().push_effect(final_effect);
+    activity.owner().push_effect(final_effect);
 }
 
-void CharacterActivity::clear_injuries() {
-    for (Item &effect : character().effects()) {
+void CharacterActivity::clear_injuries(const TimedActivity &activity) {
+    for (Item &effect : activity.owner().effects()) {
         if (effect.uses_left == 0) {
             effect = Item();
         }
     }
 }
 
-void CharacterActivity::start_next_action() {
-    character().activities().pop_front();
-    CharacterActivity *next = character().activities().front();
-    while (next->action() != None) {
-        if (character().can_perform_action(next->action())) {
-            next->start();
+void CharacterActivity::start_next_action(const TimedActivity &activity) {
+    activity.owner().activities().pop_front();
+    TimedActivity &next = activity.owner().activity();
+    while (next.explorer_subtype() != None) {
+        if (activity.owner().can_perform_action(activity.explorer_subtype())) {
+            next.start();
             break;
         }
-        character().activities().pop_front();
-        next = character().activities().front();
+        activity.owner().activities().pop_front();
+        next = activity.owner().activity();
     }
 }
 
-void CharacterActivity::add_bonus_items(std::vector<Item> &items) {
+void CharacterActivity::add_bonus_items(const TimedActivity &activity, std::vector<Item> &items) {
     AorInt item_double_chance = 0;
-    character().call_hooks(HookCalcItemDoubleChance, { &item_double_chance });
+    activity.owner().call_hooks(HookCalcItemDoubleChance, { &item_double_chance });
 
     if (Generators::percent_chance(item_double_chance)) {
         std::vector<Item> items_copy = items;
         items.insert(end(items), begin(items_copy), end(items_copy));
-    }
-}
-
-
-void CharacterActivity::serialize(QIODevice *dev) const {
-    TimedActivity::serialize(dev);
-
-    IO::write_uint(dev, m_id);
-    IO::write_uint(dev, m_action);
-    IO::write_uint(dev, m_char_id);
-
-    IO::write_uint(dev, m_owned_items.size());
-    for (ItemId id : m_owned_items) {
-        IO::write_uint(dev, id);
-    }
-}
-
-void CharacterActivity::deserialize(QIODevice *dev) {
-    TimedActivity::deserialize(dev);
-
-    m_id = IO::read_uint(dev);
-    m_action = (ItemDomain) IO::read_uint(dev);
-    m_char_id = IO::read_uint(dev);
-
-    AorUInt owned_size = IO::read_uint(dev);
-    for (AorUInt i = 0; i < owned_size; i++) {
-        m_owned_items.push_back(IO::read_uint(dev));
-    }
-}
-
-Activities::reference Activities::front() {
-    if (empty()) {
-        return CharacterActivity::empty_activity;
-    } else {
-        return std::deque<CharacterActivity *>::front();
     }
 }

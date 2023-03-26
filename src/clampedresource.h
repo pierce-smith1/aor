@@ -2,8 +2,9 @@
 
 #include "types.h"
 #include "hooks.h"
+#include "serialize.h"
 
-class ClampedResource {
+class ClampedResource : public Serializable {
 public:
     ClampedResource(AorInt amount, AorInt max, HookType calc_max_hook);
 
@@ -29,8 +30,12 @@ public:
         }
     }
 
+    void serialize(QIODevice *dev) const;
+
 private:
     AorInt m_amount;
+
+    // Can be transient?
     AorInt m_max;
     HookType m_calc_max_hook;
 };

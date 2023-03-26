@@ -32,7 +32,7 @@ using Effects = std::array<Item, EFFECT_SLOTS>;
 using Skills = std::array<Item, MAX_SKILLS>;
 using ToolIds = std::map<ItemDomain, ItemId>;
 
-class Character {
+class Character : public Serializable {
 public:
     explicit Character();
     explicit Character(CharacterId id, const QString &name, const Heritage &heritage);
@@ -48,7 +48,7 @@ public:
     ItemProperties heritage_properties();
 
     void queue_activity(ItemDomain domain, const std::vector<ItemId> &items);
-    CharacterActivity *activity();
+    TimedActivity &activity();
 
     ClampedResource &energy();
     ClampedResource &spirit();

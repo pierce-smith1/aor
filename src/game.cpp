@@ -124,22 +124,9 @@ bool Game::add_item(const Item &item) {
     }
 }
 
-void Game::register_activity(TimedActivity *activity) {
+TimedActivity &Game::register_activity(TimedActivity &activity) {
     m_running_activities.push_back(activity);
-}
-
-void Game::unregister_activity(TimedActivity *activity) {
-    auto &acts = m_running_activities;
-
-    auto activity_to_unregister = std::find_if(acts.begin(), acts.end(), [=](TimedActivity *a) {
-        return a == activity;
-    });
-
-    if (activity_to_unregister == acts.end()) {
-        bugcheck(UnregisterUnknownActivity, activity);
-    }
-
-    acts.erase(activity_to_unregister);
+    return m_running_activities.back();
 }
 
 void Game::check_hatch() {
@@ -321,13 +308,24 @@ ItemDomain Game::intent_of(ItemId item_id) {
             intent |= Tool;
         }
 
-        auto &activity_items = character.activity()->owned_item_ids();
+        const auto &activity_items = character.activity().owned_item_ids;
         if (std::find(activity_items.begin(), activity_items.end(), item_id) != activity_items.end()) {
-            intent |= character.activity()->action();
+            intent |= character.activity().explorer_subtype();
         }
     }
 
     return static_cast<ItemDomain>(intent);
+}
+
+std::vector<TimedActivity> Game::activities_of_type(ItemDomain type) {
+    std::vector<TimedActivity> activities;
+
+    auto &acts = m_running_activities;
+    std::copy_if(acts.begin(), acts.end(), std::back_inserter(activities), [=](TimedActivity &act) {
+        return act.type == type;
+    });
+
+    return activities;
 }
 
 bool Game::can_travel(LocationId id) {
@@ -336,7 +334,7 @@ bool Game::can_travel(LocationId id) {
     }
 
     if (std::any_of(m_explorers.begin(), m_explorers.end(), [=](Character &c) {
-        return c.activity()->isActive();
+        return c.activity().active;
     })) {
         return false;
     }
@@ -382,20 +380,21 @@ Character &Game::character(CharacterId id) {
     return *result;
 }
 
-CharacterActivity *Game::activity(ActivityId id) {
-    auto result = std::find_if(m_explorers.begin(), m_explorers.end(), [=](Character &c) {
-        return std::any_of(c.activities().begin(), c.activities().end(), [=](CharacterActivity *a) {
-            return a->id() == id;
-        });
-    });
-
-    if (result == end(m_explorers)) {
-        bugcheck(ActivityByIdLookupMiss, id);
+TimedActivity &Game::activity(ActivityId id) {
+    if (id == NO_ACTION) {
+        return TimedActivity::empty_activity;
     }
 
-    return *std::find_if(result->activities().begin(), result->activities().end(), [=](CharacterActivity *a) {
-        return a->id() == id;
+    auto activity = std::find_if(m_running_activities.begin(), m_running_activities.end(), [=](TimedActivity &a) {
+        return a.id == id;
     });
+
+    if (activity != m_running_activities.end()) {
+        return *activity;
+    }
+
+    bugcheck(ActivityByIdLookupMiss, id);
+    return TimedActivity::empty_activity;
 }
 
 void Game::call_hooks(HookType type, const std::function<HookPayload(Character &)> &payload_provider, AorUInt int_domain) {
@@ -408,60 +407,50 @@ void Game::call_hooks(HookType type, const std::function<HookPayload(Character &
     }
 }
 
-void Game::serialize(QIODevice *dev) {
-    IO::write_uint(dev, m_accepting_trade);
-    IO::write_string(dev, m_tribe_name);
-    IO::write_uint(dev, m_trade_partner);
-    IO::write_uint(dev, m_game_id);
-    IO::write_uint(dev, m_threat);
-
-    for (AorUInt i = 0; i < INVENTORY_SIZE; i++) {
-        IO::write_item(dev, m_inventory.items()[i]);
-    }
-
-    for (AorUInt i = 0; i < MAX_EXPLORERS; i++) {
-        m_explorers[i].serialize(dev);
-    }
-
-    for (AorUInt i = 0; i < TRADE_SLOTS; i++) {
-        IO::write_uint(dev, m_trade_offer[i]);
-        IO::write_item(dev, m_accepted_offer[i]);
-    }
-
-    IO::write_uint(dev, m_history.size());
-    for (ItemCode code : m_history) {
-        IO::write_uint(dev, code);
-    }
+void Game::serialize(QIODevice *dev) const {
+    Serialize::serialize(dev, m_explorers);
+    Serialize::serialize(dev, m_inventory);
+    Serialize::serialize(dev, m_trade_offer);
+    Serialize::serialize(dev, m_accepting_trade);
+    Serialize::serialize(dev, m_accepted_offer);
+    Serialize::serialize(dev, m_trade_partner);
+    Serialize::serialize(dev, m_game_id);
+    Serialize::serialize(dev, m_tribe_name);
+    Serialize::serialize(dev, m_history);
+    Serialize::serialize(dev, m_threat);
+    Serialize::serialize(dev, m_map);
+    Serialize::serialize(dev, m_current_location_id);
+    Serialize::serialize(dev, m_next_location_id);
+    Serialize::serialize(dev, m_consumable_waste);
+    Serialize::serialize(dev, m_mineable_waste);
+    Serialize::serialize(dev, m_running_activities);
+    Serialize::serialize(dev, m_studied_items);
+    Serialize::serialize(dev, m_lore);
+    Serialize::serialize(dev, m_settings);
 }
 
 void Game::deserialize(QIODevice *dev) {
-    m_accepting_trade = IO::read_uint(dev);
-    m_tribe_name = IO::read_string(dev);
-    m_trade_partner = IO::read_uint(dev);
-    m_game_id = IO::read_uint(dev);
-    m_threat = IO::read_uint(dev);
-
-    for (size_t i = 0; i < INVENTORY_SIZE; i++) {
-        m_inventory.items()[i] = IO::read_item(dev);
-    }
-
-    for (AorUInt i = 0; i < MAX_EXPLORERS; i++) {
-        Character *c = new Character();
-        c->deserialize(dev);
-        m_explorers[i] = *c;
-    }
-
-    for (AorUInt i = 0; i < TRADE_SLOTS; i++) {
-        m_trade_offer[i] = IO::read_uint(dev);
-        m_accepted_offer[i] = IO::read_item(dev);
-    }
-
-    AorUInt size = IO::read_uint(dev);
-    for (AorUInt i = 0; i < size; i++) {
-        m_history.insert(IO::read_uint(dev));
-    }
-
-    m_tribes[NO_TRIBE];
+    /*
+    Serialize::deserialize(dev, &m_explorers);
+    Serialize::deserialize(dev, &m_inventory);
+    Serialize::deserialize(dev, &m_trade_offer);
+    Serialize::deserialize(dev, &m_accepting_trade);
+    Serialize::deserialize(dev, &m_accepted_offer);
+    Serialize::deserialize(dev, &m_trade_partner);
+    Serialize::deserialize(dev, &m_game_id);
+    Serialize::deserialize(dev, &m_tribe_name);
+    Serialize::deserialize(dev, &m_history);
+    Serialize::deserialize(dev, &m_threat);
+    Serialize::deserialize(dev, &m_map);
+    Serialize::deserialize(dev, &m_current_location_id);
+    Serialize::deserialize(dev, &m_next_location_id);
+    Serialize::deserialize(dev, &m_consumable_waste);
+    Serialize::deserialize(dev, &m_mineable_waste);
+    Serialize::deserialize(dev, &m_running_activities);
+    Serialize::deserialize(dev, &m_studied_items);
+    Serialize::deserialize(dev, &m_lore);
+    Serialize::deserialize(dev, &m_settings);
+    */
 }
 
 Game *Game::new_game() {

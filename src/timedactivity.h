@@ -1,31 +1,44 @@
 #pragma once
 
 #include <QTimer>
+#include <deque>
 
 #include "types.h"
 #include "items.h"
 
 const static AorInt ACTIVITY_TICK_RATE_MS = 500;
 
-class TimedActivity : public QTimer {
+class TimedActivity : public Serializable {
 public:
-    TimedActivity(AorInt ms_total, AorInt ms_left);
-    TimedActivity(const TimedActivity &other) = delete;
-    TimedActivity &operator = (const TimedActivity &other) = delete;
-    virtual ~TimedActivity();
+    TimedActivity();
+    TimedActivity(AorInt ms_total, AorInt ms_left, ItemDomain type, std::vector<ItemId> owned_item_ids, CharacterId owner_id = NOBODY);
 
-    AorInt ms_total();
+    void start();
+    AorInt percent_complete() const;
+    void complete();
+    void progress();
+    void update_ui() const;
 
-    virtual void start();
-    virtual AorInt percent_complete();
-    virtual void complete();
-    virtual void update_ui();
-    virtual void progress();
-    virtual ItemDomain type();
+    ItemDomain explorer_subtype() const;
+    Character &owner() const;
+    std::vector<Item> owned_items() const;
 
     void serialize(QIODevice *dev) const;
     void deserialize(QIODevice *dev);
 
-protected:
-    AorInt m_ms_total;
+    ActivityId id = NO_ACTION;
+    AorInt ms_total;
+    AorInt ms_left;
+    bool active = false;
+    bool finished = false;
+    ItemDomain type;
+    std::vector<ItemId> owned_item_ids;
+    CharacterId owner_id = NOBODY;
+
+    static TimedActivity empty_activity;
+};
+
+class Activities : public std::deque<ActivityId> {
+public:
+    value_type front();
 };

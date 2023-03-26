@@ -16,58 +16,23 @@
 class LKGameWindow;
 class Character;
 
-class CharacterActivity : public TimedActivity {
+class CharacterActivity {
 public:
-    CharacterActivity();
-    CharacterActivity(
-        CharacterId id,
-        ItemDomain action,
-        const std::vector<ItemId> &owned_items,
-        AorInt ms_total = 0,
-        AorInt ms_left = 0
-    );
-    CharacterActivity(const CharacterActivity &) = delete;
-    CharacterActivity &operator = (const CharacterActivity &) = delete;
-
-    ActivityId id();
-    ItemDomain &action();
-    const std::vector<ItemId> &owned_item_ids();
-    const std::vector<Item> owned_items();
-    Character &character();
-
-    virtual void start() override;
-    virtual void complete() override;
-    virtual void update_ui() override;
+    static void complete(const TimedActivity &activity);
+    static void update_ui(const TimedActivity &activity);
 
     static void refresh_ui_bars(Character &character);
     static QString domain_to_action_string(ItemDomain domain);
 
-    void serialize(QIODevice *dev) const;
-    void deserialize(QIODevice *dev);
-
-    inline static CharacterActivity *empty_activity;
-
 private:
-    void exhaust_reagents();
-    void exhaust_character();
-    void exhaust_item(ItemId id);
-    std::vector<Item> products();
-    void give(const std::vector<Item> &items);
-    void give_bonuses();
-    void give_injuries();
-    void clear_injuries();
-    void start_next_action();
-    void add_bonus_items(std::vector<Item> &items);
-
-    ActivityId m_id;
-    ItemDomain m_action;
-    std::vector<ItemId> m_owned_items;
-    CharacterId m_char_id;
-
-    friend class Character;
-};
-
-class Activities : public std::deque<CharacterActivity *> {
-public:
-    reference front();
+    static void exhaust_reagents(const TimedActivity &activity);
+    static void exhaust_character(const TimedActivity &activity);
+    static void exhaust_item(const TimedActivity &activity, ItemId id);
+    static std::vector<Item> products(const TimedActivity &activity);
+    static void give(const TimedActivity &activity, const std::vector<Item> &items);
+    static void give_bonuses(const TimedActivity &activity);
+    static void give_injuries(const TimedActivity &activity);
+    static void clear_injuries(const TimedActivity &activity);
+    static void start_next_action(const TimedActivity &activity);
+    static void add_bonus_items(const TimedActivity &activity, std::vector<Item> &items);
 };

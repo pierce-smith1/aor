@@ -20,8 +20,8 @@ void StudySlot::accept_message(const SlotMessage &message) {
     ExternalSlot::accept_message(message);
 
     if (message.type == SlotSetItem) {
-        StudyActivity *activity = new StudyActivity(60000, my_item_id());
-        activity->start();
+        TimedActivity activity(60000, 60000, Study, { my_item_id() });
+        gw()->game()->register_activity(activity).start();
     }
 }
 

@@ -171,6 +171,12 @@ WorldMap::Coord WorldMap::coord_of(LocationId id) {
     return {};
 }
 
+void WorldMap::serialize(QIODevice *dev) const {
+    Serialize::serialize(dev, m_known_locations);
+    Serialize::serialize(dev, m_reveal_order);
+    Serialize::serialize(dev, m_reveal_progress);
+}
+
 MapViewTile::MapViewTile(size_t y, size_t x)
     : m_y(y), m_x(x),
       m_slot(new LocationSlot(WorldMap::map_tiles()[y][x].def, this)),

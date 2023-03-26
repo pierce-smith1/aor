@@ -4,6 +4,7 @@
 
 #include "items.h"
 #include "io.h"
+#include "serialize.h"
 
 const static AorUInt INVENTORY_ROWS = 7;
 const static AorUInt INVENTORY_COLS = 11;
@@ -13,7 +14,7 @@ static Item mock_item = Item();
 
 using Items = std::array<Item, INVENTORY_SIZE>;
 
-class Inventory {
+class Inventory : public Serializable {
 public:
     Items &items();
 
@@ -29,6 +30,8 @@ public:
 
     static bool are_yx_coords_oob(AorUInt y, AorUInt x);
     static size_t inventory_index(AorUInt y, AorUInt x);
+
+    void serialize(QIODevice *dev) const;
 
 private:
     Items m_items;

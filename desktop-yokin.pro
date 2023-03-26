@@ -8,8 +8,8 @@ INCLUDEPATH += .
 CONFIG += debug_and_release
 CONFIG += static
 CONFIG += c++17
-MAKEFLAGS += -j10
 RC_ICONS = assets/icon.ico
+QMAKE_CXXFLAGS += ""
 
 RESOURCES += images.qrc
 FORMS += assets/ui/main.ui

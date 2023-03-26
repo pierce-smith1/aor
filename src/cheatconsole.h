@@ -160,13 +160,13 @@ const static std::vector<CheatCommand> COMMANDS = {
         1,
         [](const QStringList &args) {
             if (args[0] == "?") {
-                qDebug("Amount of ms left in activity is (%d)", gw()->selected_char().activity()->remainingTime());
+                qDebug("Amount of ms left in activity is (%lld)", gw()->selected_char().activity().ms_left);
                 return;
             }
 
             QS_TO_INT(ms, args[0]);
 
-            gw()->selected_char().activity()->setInterval(ms);
+            gw()->selected_char().activity().ms_left = ms;
         }
     },
     {

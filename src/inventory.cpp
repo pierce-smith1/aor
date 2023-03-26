@@ -101,3 +101,7 @@ bool Inventory::are_yx_coords_oob(AorUInt y, AorUInt x) {
 size_t Inventory::inventory_index(AorUInt y, AorUInt x) {
     return y * INVENTORY_COLS + x;
 }
+
+void Inventory::serialize(QIODevice *dev) const {
+    Serialize::serialize(dev, m_items);
+}

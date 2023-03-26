@@ -117,11 +117,11 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
         { PersistentRandomConsumableProducts, {
             "Whenever I eat a consumable, it is <b>replaced with a random item of the same level.</b>",
             {{ HookDecideProducts, HOOK_2(std::vector<WeightedVector<Item>>, discoverables, Character, character)
-                if (character->activity()->action() != Eating) {
+                if (character->activity().explorer_subtype() != Eating) {
                     return;
                 }
 
-                for (const Item &consumable : character->activity()->owned_items()) {
+                for (const Item &consumable : character->activity().owned_items()) {
                     AorUInt level = consumable.def()->properties[ItemLevel];
 
                     if (level == 0) {
@@ -223,7 +223,7 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
             {{ HookCalcSpiritGain, HOOK_1(AorInt, spirit_gain)
                 *spirit_gain -= prop_value;
             }}, { HookDecideCanTravel, HOOK_2(Character, character, bool, can_travel)
-                *can_travel = *can_travel && character->spirit().amount() >= prop_value;
+                *can_travel = *can_travel && (AorUInt) character->spirit().amount() >= prop_value;
             }}}
         }},
         { LocationEnergyCost, {
@@ -231,7 +231,7 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
             {{ HookCalcEnergyGain, HOOK_1(AorInt, energy_gain)
                 *energy_gain -= prop_value;
             }}, { HookDecideCanTravel, HOOK_2(Character, character, bool, can_travel)
-                *can_travel = *can_travel && character->energy().amount() >= prop_value;
+                *can_travel = *can_travel && (AorUInt) character->energy().amount() >= prop_value;
             }}}
         }},
     };
@@ -275,4 +275,8 @@ void ItemProperties::call_hooks(HookType type, const HookPayload &payload, AorUI
 
         hook->second(payload, pair.second, int_domain);
     }
+}
+
+void ItemProperties::serialize(QIODevice *dev) const {
+    Serialize::serialize(dev, map);
 }

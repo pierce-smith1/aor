@@ -62,10 +62,11 @@ void Character::queue_activity(ItemDomain domain, const std::vector<ItemId> &ite
         call_hooks(HookCalcActivityTime, { &activity_ms }, BASE_HOOK_DOMAINS | domain);
     }
 
-    CharacterActivity *new_activity = new CharacterActivity(m_id, domain, items, activity_ms, activity_ms);
-    m_activities.push_back(new_activity);
+    TimedActivity new_activity(activity_ms, activity_ms, (ItemDomain) (Explorer | domain), items, m_id);
+    gw()->game()->register_activity(new_activity);
+    m_activities.push_back(new_activity.id);
     for (ItemId id : items) {
-        inventory().get_item_ref(id).owning_action = new_activity->id();
+        inventory().get_item_ref(id).owning_action = new_activity.id;
     }
 
     // If this was the first activity added, get it started!
@@ -75,15 +76,15 @@ void Character::queue_activity(ItemDomain domain, const std::vector<ItemId> &ite
             gw()->connection().agreement_changed(gw()->selected_tribe_id(), false);
             gw()->game()->accepting_trade() = false;
         }
-        m_activities.front()->start();
+        activity().start();
     }
 
     gw()->refresh_ui_buttons();
     gw()->refresh_slots();
 }
 
-CharacterActivity *Character::activity() {
-    return m_activities.front();
+TimedActivity &Character::activity() {
+    return gw()->game()->activity(m_activities.front());
 }
 
 ClampedResource &Character::energy() {
@@ -119,15 +120,15 @@ bool Character::can_perform_action(ItemDomain domain) {
             call_hooks(HookCanDoActionCheck, { &can_do, &m_energy }, SmithingTool);
             break;
         } case Foraging: {
-            AorInt queued_forages = std::count_if(m_activities.begin(), m_activities.end(), [=](CharacterActivity *a) {
-                return a->action() == Foraging;
+            AorInt queued_forages = std::count_if(m_activities.begin(), m_activities.end(), [=](ActivityId aid) {
+                return gw()->game()->activity(aid).explorer_subtype() == Foraging;
             });
             can_do = gw()->game()->forageables_left() > queued_forages;
             call_hooks(HookCanDoActionCheck, { &can_do, &m_energy }, domain);
             break;
         } case Mining: {
-            AorInt queued_mines = std::count_if(m_activities.begin(), m_activities.end(), [=](CharacterActivity *a) {
-                return a->action() == Mining;
+            AorInt queued_mines = std::count_if(m_activities.begin(), m_activities.end(), [=](ActivityId aid) {
+                return gw()->game()->activity(aid).explorer_subtype() == Mining;
             });
             can_do = gw()->game()->mineables_left() > queued_mines;
             call_hooks(HookCanDoActionCheck, { &can_do, &m_energy }, domain);
@@ -147,12 +148,11 @@ AorInt Character::energy_to_gain() {
         return 0;
     }
 
-    CharacterActivity *activity = m_activities.front();
     AorInt gain = 0;
 
-    call_hooks(HookCalcEnergyGain, { &gain }, BASE_HOOK_DOMAINS | activity->action(), activity->owned_items());
+    call_hooks(HookCalcEnergyGain, { &gain }, BASE_HOOK_DOMAINS | activity().explorer_subtype(), activity().owned_items());
 
-    switch (activity->action()) {
+    switch (activity().explorer_subtype()) {
         case Eating: {
             call_hooks(HookCalcBonusConsumableEnergy, { &gain });
             break;
@@ -172,13 +172,18 @@ AorInt Character::spirit_to_gain() {
         return 0;
     }
 
-    CharacterActivity *activity = m_activities.front();
     AorInt gain = 0;
 
-    if (activity->action() == Eating || activity->action() == Defiling || activity->action() == Travelling) {
-        call_hooks(HookCalcSpiritGain, { &gain }, BASE_HOOK_DOMAINS, activity->owned_items());
-    } else {
-        gain -= base_spirit_cost();
+    switch (activity().explorer_subtype()) {
+        case Eating:
+        case Defiling:
+        case Travelling: {
+            call_hooks(HookCalcSpiritGain, { &gain }, BASE_HOOK_DOMAINS, activity().owned_items());
+            break;
+        } default: {
+            gain -= base_spirit_cost();
+            break;
+        }
     }
 
     return gain;
@@ -452,71 +457,23 @@ Skills &Character::skills() {
 }
 
 void Character::serialize(QIODevice *dev) const {
-    IO::write_uint(dev, m_id);
-    IO::write_string(dev, m_name);
-    IO::write_uint(dev, m_partner);
-    IO::write_uint(dev, m_dead);
-    IO::write_uint(dev, m_can_couple);
-    IO::write_uint(dev, m_energy.amount());
-    IO::write_uint(dev, m_spirit.amount());
-
-    IO::write_uint(dev, m_heritage.size());
-    for (Color c : m_heritage) {
-        IO::write_uint(dev, c);
-    }
-
-    for (AorUInt i = 0; i < MAX_ARRAY_SIZE; i++) {
-        IO::write_uint(dev, m_external_item_ids.at(Material)[i]);
-        IO::write_uint(dev, m_external_item_ids.at(Artifact)[i]);
-    }
-
-    for (const Item &effect : m_effects) {
-        IO::write_item(dev, effect);
-    }
-
-    IO::write_uint(dev, m_activities.size());
-    for (const CharacterActivity *activity : m_activities) {
-        activity->serialize(dev);
-    }
-
-    IO::write_uint(dev, m_tool_ids.at(SmithingTool));
-    IO::write_uint(dev, m_tool_ids.at(ForagingTool));
-    IO::write_uint(dev, m_tool_ids.at(MiningTool));
+    Serialize::serialize(dev, m_id);
+    Serialize::serialize(dev, m_name);
+    Serialize::serialize(dev, m_heritage);
+    Serialize::serialize(dev, m_activities);
+    Serialize::serialize(dev, m_external_item_ids);
+    Serialize::serialize(dev, m_effects);
+    Serialize::serialize(dev, m_tool_ids);
+    Serialize::serialize(dev, m_skills);
+    Serialize::serialize(dev, m_partner);
+    Serialize::serialize(dev, m_dead);
+    Serialize::serialize(dev, m_can_couple);
+    Serialize::serialize(dev, m_energy);
+    Serialize::serialize(dev, m_spirit);
 }
 
-void Character::deserialize(QIODevice *dev) {
-    m_id = IO::read_uint(dev);
-    m_name = IO::read_string(dev);
-    m_partner = IO::read_uint(dev);
-    m_dead = IO::read_uint(dev);
-    m_can_couple = IO::read_uint(dev);
-    m_energy.set(IO::read_uint(dev), this);
-    m_spirit.set(IO::read_uint(dev), this);
+void Character::deserialize(QIODevice *) {
 
-    AorUInt heritage_size = IO::read_uint(dev);
-    for (AorUInt i = 0; i < heritage_size; i++) {
-        m_heritage.insert((Color) IO::read_uint(dev));
-    }
-
-    for (AorUInt i = 0; i < MAX_ARRAY_SIZE; i++) {
-        m_external_item_ids[Material][i] = IO::read_uint(dev);
-        m_external_item_ids[Artifact][i] = IO::read_uint(dev);
-    }
-
-    for (AorUInt i = 0; i < EFFECT_SLOTS; i++) {
-        m_effects[i] = IO::read_item(dev);
-    }
-
-    AorUInt activities_size = IO::read_uint(dev);
-    for (AorUInt i = 0; i < activities_size; i++) {
-        CharacterActivity *a = new CharacterActivity();
-        a->deserialize(dev);
-        m_activities.push_back(a);
-    }
-
-    m_tool_ids[SmithingTool] = IO::read_uint(dev);
-    m_tool_ids[ForagingTool] = IO::read_uint(dev);
-    m_tool_ids[MiningTool] = IO::read_uint(dev);
 }
 
 Inventory &Character::inventory() {

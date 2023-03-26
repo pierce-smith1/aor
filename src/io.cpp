@@ -43,23 +43,6 @@ QString IO::read_string(QIODevice *dev) {
     return data;
 }
 
-Item IO::read_item(QIODevice *dev) {
-    Item item;
-
-    item.code = read_uint(dev);
-    item.id = read_uint(dev);
-    item.uses_left = read_uint(dev);
-    item.owning_action = read_uint(dev);
-
-    AorUInt size = read_uint(dev);
-    for (AorUInt i = 0; i < size; i++) {
-        ItemProperty prop = (ItemProperty) read_uint(dev);
-        item.instance_properties.map[prop] = read_uint(dev);
-    }
-
-    return item;
-}
-
 void IO::write_uint(QIODevice *dev, AorUInt n) {
     char data[8];
 
@@ -86,17 +69,4 @@ void IO::write_byte(QIODevice *dev, char n) {
 void IO::write_string(QIODevice *dev, const QString &n) {
     write_uint(dev, n.size());
     dev->write(n.toUtf8());
-}
-
-void IO::write_item(QIODevice *dev, const Item &n) {
-    write_uint(dev, n.code);
-    write_uint(dev, n.id);
-    write_uint(dev, n.uses_left);
-    write_uint(dev, n.owning_action);
-
-    write_uint(dev, n.instance_properties.map.size());
-    for (const auto &pair : n.instance_properties) {
-        write_uint(dev, pair.first);
-        write_uint(dev, pair.second);
-    }
 }

@@ -14,6 +14,7 @@
 
 #include "itemproperties.h"
 #include "definitionmark.h"
+#include "serialize.h"
 #include "types.h"
 
 #define USES
@@ -614,7 +615,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
     }
 });
 
-struct Item {
+struct Item : public Serializable {
     ItemCode code = 0;
     ItemId id = EMPTY_ID;
     AorUInt uses_left = 0;
@@ -657,4 +658,6 @@ struct Item {
     static QString properties_to_string(const ItemProperties &props);
 
     static Item empty_item;
+
+    void serialize(QIODevice *dev) const;
 };

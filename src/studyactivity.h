@@ -2,16 +2,9 @@
 
 #include "timedactivity.h"
 
-class StudyActivity : public TimedActivity {
+class StudyActivity {
 public:
-    StudyActivity(AorInt ms_total, ItemId item_id);
-
-    void complete() override;
-    void update_ui() override;
-    ItemDomain type() override;
-
-protected:
-    AorInt lore_to_gain();
-
-    ItemId m_item_id;
+    static void complete(const TimedActivity &activity);
+    static void update_ui(const TimedActivity &activity);
+    static AorInt lore_to_gain(const TimedActivity &activity);
 };
