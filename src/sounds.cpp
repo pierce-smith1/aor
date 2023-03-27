@@ -15,6 +15,21 @@ std::map<ItemDomain, QSoundEffect *> Sounds::activity_sounds() {
     return sounds;
 }
 
+QSoundEffect *Sounds::grab_sound() {
+    static QSoundEffect *sound = get_sound("drag.wav");
+    return sound;
+}
+
+QSoundEffect *Sounds::drop_sound() {
+    static QSoundEffect *sound = get_sound("drop.wav");
+    return sound;
+}
+
+QSoundEffect *Sounds::hover_sound() {
+    static QSoundEffect *sound = get_sound("mouse.wav");
+    return sound;
+}
+
 QSoundEffect *Sounds::get_sound(const QString &name) {
     QSoundEffect *sound = new QSoundEffect;
     sound->setSource(QUrl(QString("qrc:///assets/wav/%1").arg(name)));

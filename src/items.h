@@ -312,7 +312,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         "maven_mallet", "Maven Mallet",
         "<i>I built this rudimentary tool with the help of a colorful little bird who gave</i><br>"
         "<i>me an annoyingly long-winded series of directions.</i><br>",
-        5 USES, SmithingTool,
+        0 USES, SmithingTool,
         {
             { ItemLevel, 1 },
             { CostStone, 10 },
@@ -327,7 +327,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         "hashcracker", "Hashcracker",
         "<i>Rhodon is covered in layers of hard Shale-256 - but with a good axe like this,</i><br>"
         "<i>I should be able to brute-force my way through it to find the goodies underneath.</i><br>",
-        8 USES, ForagingTool,
+        0 USES, ForagingTool,
         {
             { ItemLevel, 2 },
             { CostStone, 30 },
@@ -346,7 +346,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         "metamorphic_destructor", "Metamorphic Destructor",
         "<i>It's very important that ore-bearing rocks are destroyed properly, or else you can</i><br>"
         "<i>leak their precious minerals back into the earth.</i><br>",
-        8 USES, MiningTool,
+        0 USES, MiningTool,
         {
             { ItemLevel, 2 },
             { CostStone, 10 },
@@ -364,7 +364,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         CT_TOOL | 3,
         "seaquake", "Seaquake",
         "<i>It makes a very satisfying clang.</i><br>",
-        4 USES, SmithingTool,
+        0 USES, SmithingTool,
         {
             { ItemLevel, 2 },
             { ToolEnergyCost, 30 },
@@ -380,7 +380,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         "defragmenter", "Defragmenter",
         "<i>You very rarely see flat, even bands of rock in Rhodon -</i><br>"
         "<i>as the world fills up, it becomes harder and harder to lay the sediment down sequentially.</i><br>",
-        10 USES, MiningTool,
+        0 USES, MiningTool,
         {
             { ItemLevel, 3 },
             { ToolEnergyCost, 30 },
@@ -399,7 +399,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         "spacefiller", "Spacefiller",
         "<i>The lightless crevices of Rhodon's damp caverns are filled with all sorts of odd fungi.</i><br>"
         "<i>This mushroom-stabbing spear will help give us a taste of what we're missing!</i><br>",
-        5 USES, ForagingTool,
+        0 USES, ForagingTool,
         {
             { ItemLevel, 3 },
             { ToolEnergyCost, 50 },

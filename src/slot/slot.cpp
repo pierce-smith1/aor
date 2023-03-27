@@ -1,6 +1,7 @@
 #include "slot.h"
 
 #include "../items.h"
+#include "../sounds.h"
 
 SlotMessage::SlotMessage(SlotMessageType type, const PayloadVariant &data, Slot *source)
     : PayloadVariant(data), source(source), type(type) {}
@@ -111,6 +112,10 @@ void Slot::mousePressEvent(QMouseEvent *event) {
             drag->setPixmap(Item::pixmap_of(std::get<Item>(message)));
         }
 
+        if (gw()->game()->settings().sounds_on) {
+            Sounds::grab_sound()->play();
+        }
+
         drag->exec();
     }
 }
@@ -143,6 +148,10 @@ void Slot::dropEvent(QDropEvent *event) {
     SlotMessage message = SlotMessage::from_data_string(data->text());
 
     accept_message(message);
+
+    if (gw()->game()->settings().sounds_on) {
+        Sounds::drop_sound()->play();
+    }
 
     gw()->refresh_ui();
 }

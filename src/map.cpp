@@ -114,13 +114,14 @@ bool WorldMap::path_exists_between(LocationId from, LocationId to) {
 
 const Tiles &WorldMap::map_tiles() {
     static Tiles tiles = {{
-        { _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, },
-        { _EMPTY_, L("JE"),  EHORZT, L("JC"), _EMPTY_, L("MO"),  E__DLT, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, L("TR"), },
-        { _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, _EMPTY_, _EMPTY_,  EURD_T,  E_RDLT, L("MF"),  E__DLT, _EMPTY_,  EVERTT, },
-        { _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, _EMPTY_,  E_RD_T, L("MZ"),  EVERTT, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, },
-        { _EMPTY_, L("JT"),  EHORZT,  ECROST,  EHORZT,  EU__LT, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, },
-        { _EMPTY_, _EMPTY_, _EMPTY_,  EVERTT, _EMPTY_, _EMPTY_, _EMPTY_, L("MB"), _EMPTY_,  EUR__T,  EHORZT,  EU__LT, },
-        { _EMPTY_, _EMPTY_, _EMPTY_, L("JF"), _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, },
+        { _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, },
+        { _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, },
+        { _EMPTY_, _EMPTY_, L("JE"),  EHORZT, L("JC"), _EMPTY_, L("MO"),  E__DLT, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, L("TR"), },
+        { _EMPTY_, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, _EMPTY_, _EMPTY_,  EURD_T,  E_RDLT, L("MF"),  E__DLT, _EMPTY_,  EVERTT, },
+        { _EMPTY_, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, _EMPTY_,  E_RD_T, L("MZ"),  EVERTT, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, },
+        { _EMPTY_, _EMPTY_, L("JT"),  EHORZT,  ECROST,  EHORZT,  EU__LT, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, },
+        { _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_,  EVERTT, _EMPTY_, _EMPTY_, _EMPTY_, L("MB"), _EMPTY_,  EUR__T,  EHORZT,  EU__LT, },
+        { _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, L("JF"), _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, },
     }};
 
     return tiles;

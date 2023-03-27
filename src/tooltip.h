@@ -9,6 +9,7 @@
 #include "../ui_tooltip.h"
 #include "items.h"
 #include "gamewindow.h"
+#include "sounds.h"
 
 class Game;
 
@@ -56,6 +57,10 @@ protected:
     virtual void enterEvent(QEvent *event) {
         if (!do_hovering()) {
             return;
+        }
+
+        if (gw()->game()->settings().sounds_on) {
+            Sounds::hover_sound()->play();
         }
 
         QEnterEvent *enter_event = (QEnterEvent *) event;

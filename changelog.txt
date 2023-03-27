@@ -11,7 +11,7 @@ b2.0.0
 [ ] (game) The fungus items have been changed from tool products to signature (location specific) items; the Spacefiller has been reworked into the Spearfisher with a new set of consumables
 [v] (game) Added infostrips showing the total number of resources you have in your inventory and in each explorer's material slots
 [v] (game) Added info about explorers' current energy/spirit, equipped items, and injuries to their tooltips
-[ ] (game) Added icons to explorer buttons indicating if they hold a tool/artifact/injury
+[v] (game) Added icons to explorer buttons indicating if they hold a tool/artifact/injury
 [v] (game) Raised the maximum number of explorers from 11 to 12
 [v] (game) New games now start with 2 explorers, one of which has dual heritage
 [ ] (game) Item balance:

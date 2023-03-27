@@ -127,7 +127,8 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         {
             { WeatherEffect1, WeatherMark::marker("acid_rain") },
             { WeatherEffect2, WeatherMark::marker("worm_storms") },
-            { LocationSpiritCost, 30 }
+            { LocationSpiritCost, 30 },
+            { LocationResourceRequirement, 40 }
         }
     },
     {

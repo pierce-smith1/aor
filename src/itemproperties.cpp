@@ -245,9 +245,15 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
             }}}
         }},
         { LocationResourceRequirement, {
-            "Passage here requires our expedition have at least <b>%1</b> of each resource in our inventory.",
+            "Passage here requires our expedition carry at least <b>%1</b> of each resource.",
             {{ HookDecideCanTravel, HOOK_2(Character, character, bool, can_travel)
-                *can_travel = *can_travel;
+                ItemProperties total = gw()->game()->total_resources();
+                *can_travel = *can_travel
+                    && total[StoneResource] >= prop_value
+                    && total[MetallicResource] >= prop_value
+                    && total[CrystallineResource] >= prop_value
+                    && total[RunicResource] >= prop_value
+                    && total[LeafyResource] >= prop_value;
             }}}
         }}
     };
