@@ -9,7 +9,7 @@ MapTile::MapTile(const LocationDefinition &def)
     : type(MapTileLocation), def(def) {}
 
 WorldMap::WorldMap() {
-    m_known_locations.insert(LocationDefinition::get_def("stochastic_forest").id);
+    m_known_locations.insert(LocationDefinition::get_def("point_entry").id);
 
     Coord start = coord_of(*m_known_locations.begin());
     m_reveal_order.push_back(start);
@@ -115,12 +115,12 @@ bool WorldMap::path_exists_between(LocationId from, LocationId to) {
 const Tiles &WorldMap::map_tiles() {
     static Tiles tiles = {{
         { _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, },
-        { _EMPTY_, L("JF"),  EHORZT, L("JC"), _EMPTY_, L("MO"),  E__DLT, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, L("TR"), },
+        { _EMPTY_, L("JE"),  EHORZT, L("JC"), _EMPTY_, L("MO"),  E__DLT, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, L("TR"), },
         { _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, _EMPTY_, _EMPTY_,  EURD_T,  E_RDLT, L("MF"),  E__DLT, _EMPTY_,  EVERTT, },
         { _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, _EMPTY_,  E_RD_T, L("MZ"),  EVERTT, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, },
-        { _EMPTY_,  EUR__T, L("JT"),  ECROST,  EHORZT,  EU__LT, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, },
-        { _EMPTY_, _EMPTY_, _EMPTY_,  EVERTT, _EMPTY_, _EMPTY_, _EMPTY_, L("MT"), _EMPTY_,  EUR__T,  EHORZT,  EU__LT, },
-        { _EMPTY_, _EMPTY_, _EMPTY_, L("JH"), _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, },
+        { _EMPTY_, L("JT"),  EHORZT,  ECROST,  EHORZT,  EU__LT, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, },
+        { _EMPTY_, _EMPTY_, _EMPTY_,  EVERTT, _EMPTY_, _EMPTY_, _EMPTY_, L("MB"), _EMPTY_,  EUR__T,  EHORZT,  EU__LT, },
+        { _EMPTY_, _EMPTY_, _EMPTY_, L("JF"), _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, },
     }};
 
     return tiles;
@@ -175,6 +175,12 @@ void WorldMap::serialize(QIODevice *dev) const {
     Serialize::serialize(dev, m_known_locations);
     Serialize::serialize(dev, m_reveal_order);
     Serialize::serialize(dev, m_reveal_progress);
+}
+
+void WorldMap::deserialize(QIODevice *dev) {
+    Serialize::deserialize(dev, m_known_locations);
+    Serialize::deserialize(dev, m_reveal_order);
+    Serialize::deserialize(dev, m_reveal_progress);
 }
 
 MapViewTile::MapViewTile(size_t y, size_t x)

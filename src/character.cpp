@@ -472,8 +472,20 @@ void Character::serialize(QIODevice *dev) const {
     Serialize::serialize(dev, m_spirit);
 }
 
-void Character::deserialize(QIODevice *) {
-
+void Character::deserialize(QIODevice *dev) {
+    Serialize::deserialize(dev, m_id);
+    Serialize::deserialize(dev, m_name);
+    Serialize::deserialize(dev, m_heritage);
+    Serialize::deserialize(dev, m_activities);
+    Serialize::deserialize(dev, m_external_item_ids);
+    Serialize::deserialize(dev, m_effects);
+    Serialize::deserialize(dev, m_tool_ids);
+    Serialize::deserialize(dev, m_skills);
+    Serialize::deserialize(dev, m_partner);
+    Serialize::deserialize(dev, m_dead);
+    Serialize::deserialize(dev, m_can_couple);
+    Serialize::deserialize(dev, m_energy);
+    Serialize::deserialize(dev, m_spirit);
 }
 
 Inventory &Character::inventory() {

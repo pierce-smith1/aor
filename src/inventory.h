@@ -32,6 +32,7 @@ public:
     static size_t inventory_index(AorUInt y, AorUInt x);
 
     void serialize(QIODevice *dev) const;
+    void deserialize(QIODevice *dev);
 
 private:
     Items m_items;

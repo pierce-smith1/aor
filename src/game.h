@@ -109,7 +109,7 @@ private:
     ItemHistory m_history;
     AorUInt m_threat = 0;
     WorldMap m_map;
-    LocationId m_current_location_id = LocationDefinition::get_def("stochastic_forest").id;
+    LocationId m_current_location_id = LocationDefinition::get_def("point_entry").id;
     LocationId m_next_location_id = NOWHERE;
     ConsumableWaste m_consumable_waste;
     MineableWaste m_mineable_waste;

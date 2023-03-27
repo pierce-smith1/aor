@@ -266,3 +266,11 @@ void Item::serialize(QIODevice *dev) const {
     Serialize::serialize(dev, owning_action);
     Serialize::serialize(dev, instance_properties);
 }
+
+void Item::deserialize(QIODevice *dev) {
+    Serialize::deserialize(dev, code);
+    Serialize::deserialize(dev, id);
+    Serialize::deserialize(dev, uses_left);
+    Serialize::deserialize(dev, owning_action);
+    Serialize::deserialize(dev, instance_properties);
+}

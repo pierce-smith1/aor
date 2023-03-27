@@ -39,10 +39,10 @@ AorInt StudyActivity::lore_to_gain(const TimedActivity &activity) {
     Item item = gw()->game()->inventory().get_item(activity.owned_item_ids.at(0));
 
     if (item.def()->type & Artifact) {
-        return item.def()->properties[ItemLevel] * 20;
+        return item.def()->properties[ItemLevel] * 12;
     } else if (item.def()->type & Tool) {
-        return item.def()->properties[ItemLevel] * 15;
+        return item.def()->properties[ItemLevel] * 8;
     } else {
-        return item.def()->properties[ItemLevel] * 5;
+        return item.def()->properties[ItemLevel] * 2;
     }
 }

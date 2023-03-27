@@ -93,6 +93,9 @@ void Tooltip::set(const Item &item) {
             } case Offering: {
                 subtext += QString(" <b><font color=green>(Will be traded away)</font></b>");
                 break;
+            } case Study: {
+                subtext += QString(" <b><font color=green>(Being sacrificed for knowledge)</font></b>");
+                break;
             }
         }
     }

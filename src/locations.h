@@ -48,7 +48,7 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         BiomeJungle | 0,
         "stochastic_forest", "Stochastic Forest", "JF",
         "<i>There's a constant sound of cracking bark as the very earth shifts under my feet...</i><br>"
-        "<i>The place the soil sinks seems to be always moving around.</i><br>"
+        "<i>The place the soil sinks seems to be constantly moving around.</i><br>"
         "<i>It really makes us see the forest for the trees.</i><br>",
         15 FORAGEABLES, 5 MINEABLES,
         {
@@ -84,14 +84,14 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
     },
     {
         BiomeJungle | 3,
-        "jungle_3", "jungle_3", "JH",
-        "",
+        "point_entry", "Point Entry", "JE",
+        "<i></i>",
         20 FORAGEABLES, 20 MINEABLES,
         {
-            { WeatherEffect1, WeatherMark::marker("acid_rain") },
-            { WeatherEffect2, WeatherMark::marker("worm_storms") },
-            { LocationSpiritCost, 10 },
-            { LocationEnergyCost, 10 },
+            { WeatherEffect1, WeatherMark::marker("empty") },
+            { WeatherEffect2, WeatherMark::marker("empty") },
+            { LocationSpiritCost, 5 },
+            { LocationEnergyCost, 5 },
         }
     },
     {
@@ -118,9 +118,12 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
     },
     {
         BiomeMesa | 2,
-        "mesa_2", "mesa_2", "MT",
-        "",
-        20 FORAGEABLES, 20 MINEABLES,
+        "the_southbridge", "The Southbridge", "MB",
+        "<i>At one point, the sandy Southbridge led to an ancient city of vaults -</i><br>"
+        "<i>now crumbling and half-swallowed by the desert, this is obviously no longer the case.</i><br>"
+        "<i>The precious artifacts have been seemingly moved elsewhere, but maybe there's a</i><br>"
+        "<i>trace of something in the ruins yet.</i><br>",
+        15 FORAGEABLES, 30 MINEABLES,
         {
             { WeatherEffect1, WeatherMark::marker("acid_rain") },
             { WeatherEffect2, WeatherMark::marker("worm_storms") },
@@ -142,16 +145,17 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         BiomeRoses | 0,
         "tree_of_roses", "The Tree of Roses", "TR",
         "<i>From the cracks in the sky grows the Tree of Roses - the citadel of</i><br>"
-        "<i>steel and petal that holds the line between concrete and abstract.</i><br>"
+        "<i>steel and petal that holds the line between the colliding concrete and abstract.</i><br>"
         "<i>We give everything to the Tree while we are here; we are all its children.</i><br>"
         "<i>For now.</i><br>",
         10 FORAGEABLES, 0 MINEABLES,
         {
             { WeatherEffect1, WeatherMark::marker("acid_rain") },
             { WeatherEffect2, WeatherMark::marker("worm_storms") },
-            { LocationSpiritCost, 500 },
-            { LocationEnergyCost, 500 },
-            { LocationPartyRequirement, 8 }
+            { LocationSpiritCost, 100 },
+            { LocationEnergyCost, 100 },
+            { LocationPartyRequirement, 8 },
+            { LocationResourceRequirement, 200 },
         }
     },
 });

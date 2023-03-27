@@ -1,16 +1,17 @@
 
 b2.0.0
 
-[ ] (game) Added exploring! Sacrifice tools and artifacts to map out the world, then pack up once your explorers have enough spirit to survive the passage to a new place. Each location has unique effects and special items to find, but they only have a limited number of resources - so don't get too comfortable where you are.
-[ ] (game) Added an end goal! Find and reach the Tree of Roses to bring your adventure to a close.
-[v] (game) Added sounds! Each activity now plays a short soundbite when started.
+[v] (game) Added exploring! Dissassemble food, tools and artifacts to learn the map of Rhodon and discover new places, then choose somewhere to move once your explorers have enough resources to make the passage. Each location has unique effects and special items to find, but they only have a limited number of resources - so don't get too comfortable where you are.
+[v] (game) Added an end goal! Find and reach the Tree of Roses to bring your adventure to a close (the ending is a blatant placeholder).
+[v] (game) Added sounds! The UI has gotten clicky and short soundbites are played when activities start.
+[v] (game) Experimenting with the game being significantly faster; all actions now complete 10x as quickly.
 [ ] (game) Added a new tier of items
-[v] (game) All actions now complete 10x faster
 [ ] (game) Tools no longer have a limited number of uses
-[ ] (game) Fleshed out the global action counter into a more comprehensive threat system; this includes a bar showing the current and maximum threat (how long you have left before Welchian Fever begins)
-[ ] (game) The fungus items have been changed from tool products to signature (location specific) items; the Spacefiller has been reworked into the Spearfisher with a new set of powerful consumables
+[v] (game) Fleshed out the global action counter into a more comprehensive threat system; this includes a bar showing the current and maximum threat (how long you have left before Welchian Fever begins)
+[ ] (game) The fungus items have been changed from tool products to signature (location specific) items; the Spacefiller has been reworked into the Spearfisher with a new set of consumables
 [v] (game) Added infostrips showing the total number of resources you have in your inventory and in each explorer's material slots
 [v] (game) Added info about explorers' current energy/spirit, equipped items, and injuries to their tooltips
+[ ] (game) Added icons to explorer buttons indicating if they hold a tool/artifact/injury
 [v] (game) Raised the maximum number of explorers from 11 to 12
 [v] (game) New games now start with 2 explorers, one of which has dual heritage
 [ ] (game) Item balance:
@@ -21,3 +22,4 @@ b2.0.0
 [v] (bug) Fixed nasty UI misalignment near the explorer portrait
 [v] (bug) Fixed some more things probably, I wasn't keeping track
 [v] (bug) Added a bunch of new bugs (you should find them!!!!)
+[ ] Made art for all the new things

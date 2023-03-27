@@ -7,4 +7,5 @@ struct Settings : public Serializable {
     bool sounds_on = true;
 
     void serialize(QIODevice *dev) const;
+    void deserialize(QIODevice *dev);
 };

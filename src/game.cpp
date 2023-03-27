@@ -181,7 +181,7 @@ void Game::check_tutorial(ItemDomain domain) {
                 "<br>"
                 "<b>Materials</b> are used to craft new items.</b><br>"
                 "All materials have some amount of value in one of the <b>five resource types</b>.<br>"
-                "Materials can be dragged AorInto an explorer's <b>smithing slots</b> to use them for crafting - the total value of all materials in her smithing slots determines what item she will make.<br>"
+                "Materials can be dragged into an explorer's <b>smithing slots</b> to use them for crafting - the total value of all materials in her smithing slots determines what item she will make.<br>"
                 "Materials can also be dragged to an explorer's <b>portrait</b> to have her <b>defile</b> it, which will destroy the item to restore <b>25 spirit per item level</b>.<br>"
                 "<br>"
                 "Why don't I check the <b>encyclopedia</b> and see if I can smith <b>a new tool</b>?"
@@ -192,7 +192,7 @@ void Game::check_tutorial(ItemDomain domain) {
             gw()->tutorial(
                 "<b>I just made a smithing tool!</b><br>"
                 "<br>"
-                "When equipped, <b>smithing tools</b> increase the amount of resources I can put AorInto <b>smithing slots</b>.<br>"
+                "When equipped, <b>smithing tools</b> increase the amount of resources I can put into <b>smithing slots</b>.<br>"
                 "The maximum amount of resources a smithing tool can support is referred to as its <b>power</b>.<br>"
                 "Regardless of tool, I can always support at least <b>10 of each resource type</b>.<br>"
                 "<br>"
@@ -206,7 +206,7 @@ void Game::check_tutorial(ItemDomain domain) {
                 "<br>"
                 "When equipped, <b>foraging tools</b> allow me to find new consumables when I forage.<br>"
                 "Each foraging tool has a unique pool of items it can discover; some potentially rarer than others.<br>"
-                "While I hold a foraging tool, I also have a chance to find <b>loose eggs</b> that can <b>hatch AorInto new explorers!</b><br>"
+                "While I hold a foraging tool, I also have a chance to find <b>loose eggs</b> that can <b>hatch into new explorers!</b><br>"
                 "<br>"
                 "Like all tools, foraging tools can <b>only be used a limited number of times</b> before they break."
             );
@@ -339,8 +339,14 @@ bool Game::can_travel(LocationId id) {
         return false;
     }
 
+    // Temporarily set so that hooks can use it.
+    m_next_location_id = id;
+
     bool can_travel = m_map.path_exists_between(m_current_location_id, id);
     call_hooks(HookDecideCanTravel, [&](Character &c) -> HookPayload { return { &c, &can_travel }; });
+
+    m_next_location_id = NOWHERE;
+
     return can_travel;
 }
 
@@ -430,27 +436,27 @@ void Game::serialize(QIODevice *dev) const {
 }
 
 void Game::deserialize(QIODevice *dev) {
-    /*
-    Serialize::deserialize(dev, &m_explorers);
-    Serialize::deserialize(dev, &m_inventory);
-    Serialize::deserialize(dev, &m_trade_offer);
-    Serialize::deserialize(dev, &m_accepting_trade);
-    Serialize::deserialize(dev, &m_accepted_offer);
-    Serialize::deserialize(dev, &m_trade_partner);
-    Serialize::deserialize(dev, &m_game_id);
-    Serialize::deserialize(dev, &m_tribe_name);
-    Serialize::deserialize(dev, &m_history);
-    Serialize::deserialize(dev, &m_threat);
-    Serialize::deserialize(dev, &m_map);
-    Serialize::deserialize(dev, &m_current_location_id);
-    Serialize::deserialize(dev, &m_next_location_id);
-    Serialize::deserialize(dev, &m_consumable_waste);
-    Serialize::deserialize(dev, &m_mineable_waste);
-    Serialize::deserialize(dev, &m_running_activities);
-    Serialize::deserialize(dev, &m_studied_items);
-    Serialize::deserialize(dev, &m_lore);
-    Serialize::deserialize(dev, &m_settings);
-    */
+    Serialize::deserialize(dev, m_explorers);
+    Serialize::deserialize(dev, m_inventory);
+    Serialize::deserialize(dev, m_trade_offer);
+    Serialize::deserialize(dev, m_accepting_trade);
+    Serialize::deserialize(dev, m_accepted_offer);
+    Serialize::deserialize(dev, m_trade_partner);
+    Serialize::deserialize(dev, m_game_id);
+    Serialize::deserialize(dev, m_tribe_name);
+    Serialize::deserialize(dev, m_history);
+    Serialize::deserialize(dev, m_threat);
+    Serialize::deserialize(dev, m_map);
+    Serialize::deserialize(dev, m_current_location_id);
+    Serialize::deserialize(dev, m_next_location_id);
+    Serialize::deserialize(dev, m_consumable_waste);
+    Serialize::deserialize(dev, m_mineable_waste);
+    Serialize::deserialize(dev, m_running_activities);
+    Serialize::deserialize(dev, m_studied_items);
+    Serialize::deserialize(dev, m_lore);
+    Serialize::deserialize(dev, m_settings);
+
+    m_tribes[NO_TRIBE];
 }
 
 Game *Game::new_game() {

@@ -90,7 +90,15 @@ void TimedActivity::serialize(QIODevice *dev) const {
     Serialize::serialize(dev, owner_id);
 }
 
-void TimedActivity::deserialize(QIODevice *) {
+void TimedActivity::deserialize(QIODevice *dev) {
+    Serialize::deserialize(dev, id);
+    Serialize::deserialize(dev, ms_total);
+    Serialize::deserialize(dev, ms_left);
+    Serialize::deserialize(dev, active);
+    Serialize::deserialize(dev, finished);
+    Serialize::deserialize(dev, type);
+    Serialize::deserialize(dev, owned_item_ids);
+    Serialize::deserialize(dev, owner_id);
 }
 
 Activities::value_type Activities::front() {

@@ -99,6 +99,9 @@ LKGameWindow::LKGameWindow()
 
     m_backup_timer_id = startTimer(BACKUP_INTERVAL_MS);
     m_refresh_timer_id = startTimer(ACTIVITY_TICK_RATE_MS);
+
+    CharacterActivity::refresh_ui_bars(selected_char());
+    m_window.lore_label->setText(QString("<b>%1</b>").arg(m_game->lore()));
 }
 
 bool LKGameWindow::initialized() {
@@ -221,8 +224,10 @@ void LKGameWindow::refresh_ui() {
     refresh_global_action_bar();
     refresh_map();
 
+    /*
     CharacterActivity::refresh_ui_bars(selected_char());
     m_window.lore_label->setText(QString("<b>%1</b>").arg(m_game->lore()));
+    */
 }
 
 void LKGameWindow::refresh_slots() {
@@ -416,6 +421,8 @@ void LKGameWindow::load() {
 
     m_selected_char_id = NOBODY;
 
+    CharacterActivity::refresh_ui_bars(selected_char());
+    m_window.lore_label->setText(QString("<b>%1</b>").arg(m_game->lore()));
     refresh_ui();
 }
 

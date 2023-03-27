@@ -31,6 +31,7 @@ public:
     }
 
     void serialize(QIODevice *dev) const;
+    void deserialize(QIODevice *dev);
 
 private:
     AorInt m_amount;

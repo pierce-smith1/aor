@@ -105,3 +105,7 @@ size_t Inventory::inventory_index(AorUInt y, AorUInt x) {
 void Inventory::serialize(QIODevice *dev) const {
     Serialize::serialize(dev, m_items);
 }
+
+void Inventory::deserialize(QIODevice *dev) {
+    Serialize::deserialize(dev, m_items);
+}

@@ -123,6 +123,17 @@ enum ItemProperty : AorUInt {
     LocationSpiritCost,
     LocationEnergyCost,
     LocationPartyRequirement,
+    LocationResourceRequirement,
+    LocationSignatureItem1,
+    LocationSignatureItem2,
+    LocationSignatureItem3,
+    LocationSignatureItem4,
+    LocationSignatureItem5,
+    LocationSignatureItem6,
+    LocationSignatureItem7,
+    LocationSignatureItem8,
+    LocationSignatureItem9,
+    LocationSignaturePercentChance,
 };
 
 struct PropertyDefinition {
@@ -148,4 +159,5 @@ struct ItemProperties : public Serializable {
     std::map<ItemProperty, AorUInt> map;
 
     void serialize(QIODevice *dev) const;
+    void deserialize(QIODevice *dev);
 };

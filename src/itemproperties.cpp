@@ -234,6 +234,22 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
                 *can_travel = *can_travel && (AorUInt) character->energy().amount() >= prop_value;
             }}}
         }},
+        { LocationPartyRequirement, {
+            "Passage here requires our expedition have at least <b>%1 live explorers</b>.",
+            {{ HookDecideCanTravel, HOOK_2(Character, character, bool, can_travel)
+                auto &explorers = gw()->game()->characters();
+                AorUInt live_explorers = std::count_if(explorers.begin(), explorers.end(), [=](Character &c) {
+                    return c.id() != NOBODY && !c.dead();
+                });
+                *can_travel = *can_travel && live_explorers >= prop_value;
+            }}}
+        }},
+        { LocationResourceRequirement, {
+            "Passage here requires our expedition have at least <b>%1</b> of each resource in our inventory.",
+            {{ HookDecideCanTravel, HOOK_2(Character, character, bool, can_travel)
+                *can_travel = *can_travel;
+            }}}
+        }}
     };
 
     return PROPERTY_DESCRIPTIONS;
@@ -279,4 +295,8 @@ void ItemProperties::call_hooks(HookType type, const HookPayload &payload, AorUI
 
 void ItemProperties::serialize(QIODevice *dev) const {
     Serialize::serialize(dev, map);
+}
+
+void ItemProperties::deserialize(QIODevice *dev) {
+    Serialize::deserialize(dev, map);
 }

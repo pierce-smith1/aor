@@ -21,6 +21,7 @@ void StudySlot::accept_message(const SlotMessage &message) {
 
     if (message.type == SlotSetItem) {
         TimedActivity activity(60000, 60000, Study, { my_item_id() });
+        gw()->game()->inventory().get_item_ref(my_item_id()).owning_action = activity.id;
         gw()->game()->register_activity(activity).start();
     }
 }

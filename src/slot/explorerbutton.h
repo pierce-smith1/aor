@@ -26,6 +26,10 @@ public:
 protected:
     QLabel *m_activity_icon;
     QLabel *m_couple_status_icon;
+    QWidget *m_status_icons_widget;
+    QLabel *m_tool_status_icon;
+    QLabel *m_artifact_status_icon;
+    QLabel *m_injury_status_icon;
     QGraphicsColorizeEffect *m_portrait_effect;
 
 private:

@@ -4,6 +4,10 @@
 ExplorerButton::ExplorerButton(size_t n)
     : m_activity_icon(new QLabel(this)),
       m_couple_status_icon(new QLabel(this)),
+      m_status_icons_widget(new QWidget(this)),
+      m_tool_status_icon(new QLabel()),
+      m_artifact_status_icon(new QLabel()),
+      m_injury_status_icon(new QLabel()),
       m_portrait_effect(new QGraphicsColorizeEffect(this)),
       m_n(n)
 {
@@ -13,9 +17,38 @@ ExplorerButton::ExplorerButton(size_t n)
     m_activity_icon->setMaximumSize(16, 16);
     m_activity_icon->setMinimumSize(16, 16);
 
-    m_couple_status_icon->setMaximumSize(48, 48);
-    m_couple_status_icon->setMinimumSize(48, 48);
+    m_couple_status_icon->setMaximumSize(16, 16);
+    m_couple_status_icon->setMinimumSize(16, 16);
     m_couple_status_icon->setPixmap(Icons::activity_icons().at(Coupling));
+
+    m_status_icons_widget->setLayout(new QHBoxLayout());
+    m_status_icons_widget->setMinimumSize(56, 16);
+    m_status_icons_widget->setMaximumSize(56, 16);
+    m_status_icons_widget->layout()->setSpacing(0);
+    m_status_icons_widget->layout()->setContentsMargins(0, 0, 0, 0);
+
+    QLabel *dummy = new QLabel();
+    dummy->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+    dummy->setMaximumSize(56, 16);
+    m_status_icons_widget->layout()->addWidget(dummy);
+    m_status_icons_widget->layout()->addWidget(m_tool_status_icon);
+    m_status_icons_widget->layout()->addWidget(m_artifact_status_icon);
+    m_status_icons_widget->layout()->addWidget(m_injury_status_icon);
+
+    m_tool_status_icon->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+    m_tool_status_icon->setMaximumSize(8, 8);
+    m_tool_status_icon->setMinimumSize(8, 8);
+    m_tool_status_icon->setPixmap(Icons::explorer_button_icons().at(Tool));
+
+    m_artifact_status_icon->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+    m_artifact_status_icon->setMaximumSize(8, 8);
+    m_artifact_status_icon->setMinimumSize(8, 8);
+    m_artifact_status_icon->setPixmap(Icons::explorer_button_icons().at(Artifact));
+
+    m_injury_status_icon->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+    m_injury_status_icon->setMaximumSize(12, 8);
+    m_injury_status_icon->setMinimumSize(12, 8);
+    m_injury_status_icon->setPixmap(Icons::explorer_button_icons().at(Effect));
 }
 
 bool ExplorerButton::do_hovering() {
@@ -60,6 +93,21 @@ std::optional<TooltipInfo> ExplorerButton::tooltip_info() {
 
 void ExplorerButton::refresh() {
     m_item_label->setPixmap(pixmap());
+
+    auto &tools = character().tools();
+    m_tool_status_icon->setPixmap(Icons::explorer_button_icons().at(std::any_of(tools.begin(), tools.end(), [](auto &pair) {
+        return pair.second != EMPTY_ID;
+    }) ? Tool : None));
+
+    auto &artifacts = character().external_items()[Artifact];
+    m_artifact_status_icon->setPixmap(Icons::explorer_button_icons().at(std::any_of(artifacts.begin(), artifacts.end(), [](ItemId id) {
+        return id != EMPTY_ID;
+    }) ? Artifact : None));
+
+    auto &effects = character().effects();
+    m_injury_status_icon->setPixmap(Icons::explorer_button_icons().at(std::any_of(effects.begin(), effects.end(), [](Item &effect) {
+        return effect.id != EMPTY_ID;
+    }) ? Effect : None));
 
     if (character().dead() || character().id() == NOBODY) {
         m_portrait_effect->setStrength(0.0);
@@ -172,16 +220,16 @@ QString ExplorerButton::character_description() {
 
     for (const Item &item : character().equipped_items()) {
         if (item.def()->type & Tool) {
-            string += QString("Holding tool: <b>%1</b><br>").arg(item.def()->display_name);
+            string += QString("<font color=%2>Holding tool: <b>%1</b></font><br>")
+                .arg(item.def()->display_name)
+                .arg(Colors::qcolor(Plum).name());
         }
 
         if (item.def()->type & Artifact) {
-            string += QString("Holding artifact: <b>%1</b><br>").arg(item.def()->display_name);
+            string += QString("<font color=%2>Holding artifact: <b>%1</b></font><br>")
+                .arg(item.def()->display_name)
+                .arg(Colors::qcolor(Blueberry).name());
         }
-    }
-
-    if (character().equipped_items().size() > 0) {
-        string += "<br>";
     }
 
     for (const Item &effect : character().nonempty_injuries()) {
@@ -190,7 +238,7 @@ QString ExplorerButton::character_description() {
             .arg(Colors::qcolor(Cherry).name());
     }
 
-    if (character().nonempty_injuries().size() > 0) {
+    if (character().nonempty_injuries().size() > 0 || character().equipped_items().size() > 0) {
         string += "<br>";
     }
 

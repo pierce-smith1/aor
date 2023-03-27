@@ -12,6 +12,10 @@ void ClampedResource::serialize(QIODevice *dev) const {
     Serialize::serialize(dev, m_amount);
 }
 
+void ClampedResource::deserialize(QIODevice *dev) {
+    Serialize::deserialize(dev, m_amount);
+}
+
 AllCharacters AllCharacters::instance;
 
 void AllCharacters::call_hooks(HookType type, const HookPayload &payload) {

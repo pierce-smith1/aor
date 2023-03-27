@@ -46,7 +46,7 @@ using Tiles = std::array<std::array<MapTile, MAP_WIDTH>, MAP_HEIGHT>;
 
 class WorldMap : public Serializable {
 public:
-    using Coord = std::pair<size_t, size_t>;
+    using Coord = std::pair<AorUInt, AorUInt>;
     using MapMask = std::array<std::array<bool, MAP_WIDTH>, MAP_HEIGHT>;
 
     WorldMap();
@@ -59,7 +59,7 @@ public:
     const std::vector<Coord> &reveal_order();
 
     void serialize(QIODevice *dev) const;
-    static WorldMap deserialize(QIODevice *dev);
+    void deserialize(QIODevice *dev);
 
     static const Tiles &map_tiles();
 

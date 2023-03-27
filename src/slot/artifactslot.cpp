@@ -15,6 +15,11 @@ bool ArtifactSlot::will_accept_drop(const SlotMessage &message) {
     return Item::def_of(item)->type & Artifact;
 }
 
+void ArtifactSlot::accept_message(const SlotMessage &message) {
+    ExternalSlot::accept_message(message);
+    CharacterActivity::refresh_ui_bars(gw()->selected_char());
+}
+
 void ArtifactSlot::install() {
     gw()->window().artifact_layout->addWidget(this);
 }

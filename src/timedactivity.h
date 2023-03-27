@@ -40,5 +40,9 @@ public:
 
 class Activities : public std::deque<ActivityId> {
 public:
+    Activities() = default;
+    template <typename InputIt> Activities(InputIt first, InputIt last)
+        : std::deque<ActivityId>(first, last) {}
+
     value_type front();
 };

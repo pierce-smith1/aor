@@ -1,6 +1,8 @@
 #pragma once
 
 #include <type_traits>
+#include <vector>
+#include <set>
 
 #include "io.h"
 #include "types.h"
@@ -8,164 +10,108 @@
 class Serializable {};
 
 namespace Serialize {
-    template <typename Container, typename = typename Container::value_type> void serialize(QIODevice *dev, const Container &c);
-    template <typename Component, std::enable_if_t<std::is_base_of<Serializable, Component>::value, bool> = true> void serialize(QIODevice *dev, const Component &s);
+    template <typename G, std::enable_if_t<std::is_base_of<Serializable, G>::value, bool> = true> void serialize(QIODevice *dev, const G &game_component);
+    template <typename C, typename = typename C::value_type> void serialize(QIODevice *dev, const C &container);
 
-    template <
-        typename Integer,
-        std::enable_if_t<std::is_integral<Integer>::value, bool> = true
-    > void serialize(QIODevice *dev, const Integer i) {
+    inline void serialize(QIODevice *dev, AorUInt i) {
         IO::write_uint(dev, i);
     }
 
-    template <
-        typename Integer,
-        std::enable_if_t<std::is_base_of<IntWrapper<AorUInt>, Integer>::value, bool> = true
-    > void serialize(QIODevice *dev, const Integer i) {
+    inline void serialize(QIODevice *dev, AorInt i) {
         IO::write_uint(dev, i);
     }
 
-    template <
-        typename Char,
-        std::enable_if_t<std::is_same<Char, QChar>::value, bool> = true
-    > void serialize(QIODevice *dev, const Char &c) {
-        IO::write_byte(dev, c.toLatin1());
-    }
-
-    template <
-        typename Enum,
-        std::enable_if_t<std::is_enum<Enum>::value, bool> = true
-    > void serialize(QIODevice *dev, const Enum i) {
+    inline void serialize(QIODevice *dev, long unsigned i) {
         IO::write_uint(dev, i);
     }
 
-    template <
-        typename Pointer,
-        std::enable_if_t<std::is_pointer<Pointer>::value, bool> = true
-    > void serialize(QIODevice *dev, const Pointer p) {
-        serialize(dev, *p);
+    inline void serialize(QIODevice *dev, bool b) {
+        IO::write_byte(dev, b);
     }
 
-    template <
-        typename Pair,
-        typename = typename Pair::first_type,
-        typename = typename Pair::second_type
-    > void serialize(QIODevice *dev, const Pair &p) {
-        serialize(dev, p.first);
-        serialize(dev, p.second);
+    inline void serialize(QIODevice *dev, const QString &s) {
+        IO::write_string(dev, s);
     }
 
-    template <
-        typename Container,
-        typename
-    > void serialize(QIODevice *dev, const Container &c) {
-        IO::write_uint(dev, c.size());
-        for (const typename Container::value_type &i : c) {
-            serialize(dev, i);
+    template <typename F, typename S> void serialize(QIODevice *dev, const std::pair<F, S> &pair) {
+        serialize(dev, pair.first);
+        serialize(dev, pair.second);
+    }
+
+    template <typename C, typename> void serialize(QIODevice *dev, const C &container) {
+        serialize(dev, (AorUInt) container.size());
+        for (typename C::value_type item : container) {
+            serialize(dev, item);
         }
     }
 
-    template <
-        typename Component,
-        std::enable_if_t<std::is_base_of<Serializable, Component>::value, bool>
-    > void serialize(QIODevice *dev, const Component &s) {
-        s.serialize(dev);
+    template <typename G, std::enable_if_t<std::is_base_of<Serializable, G>::value, bool>> void serialize(QIODevice *dev, const G &game_component) {
+        game_component.serialize(dev);
     }
 
-    template <typename Container, typename = typename Container::value_type> void deserialize(QIODevice *dev, Container *c);
-    template <typename Component, std::enable_if_t<std::is_base_of<Serializable, Component>::value, bool> = true> void deserialize(QIODevice *dev, Component *s);
+    template <typename T, std::size_t N> void deserialize(QIODevice *dev, std::array<T, N> &container);
+    template <typename G, std::enable_if_t<std::is_base_of<Serializable, G>::value, bool> = true> void deserialize(QIODevice *dev, G &component);
 
-    template <
-        typename Integer,
-        std::enable_if_t<std::is_integral<Integer>::value, bool> = true
-    > void deserialize(QIODevice *dev, Integer *i) {
-        *i = IO::read_uint(dev);
+    inline void deserialize(QIODevice *dev, AorUInt &i) {
+        i = IO::read_uint(dev);
     }
 
-    template <
-        typename Integer,
-        std::enable_if_t<std::is_base_of<IntWrapper<AorUInt>, Integer>::value, bool> = true
-    > void deserialize(QIODevice *dev, const Integer *i) {
-        *i = IO::read_uint(dev);
+    inline void deserialize(QIODevice *dev, AorInt &i) {
+        i = IO::read_uint(dev);
     }
 
-    template <
-        typename Char,
-        std::enable_if_t<std::is_same<Char, QChar>::value, bool> = true
-    > void serialize(QIODevice *dev, Char *c) {
-        *c = IO::read_byte(dev);
+    inline void deserialize(QIODevice *dev, IntWrapper<AorUInt> &i) {
+        i = IO::read_uint(dev);
     }
 
-    template <
-        typename Enum,
-        std::enable_if_t<std::is_enum<Enum>::value, bool> = true
-    > void deserialize(QIODevice *dev, Enum *i) {
-        *i = (Enum) IO::read_uint(dev);
+    inline void deserialize(QIODevice *dev, bool &b) {
+        b = IO::read_byte(dev);
     }
 
-    template <
-        typename Pair,
-        typename = typename Pair::first_type,
-        typename = typename Pair::second_type
-    > void deserialize(QIODevice *dev, Pair *p) {
-        deserialize(dev, p->first);
-        deserialize(dev, p->second);
+    inline void deserialize(QIODevice *dev, QString &s) {
+        s = IO::read_string(dev);
     }
 
-    template <
-        typename Container,
-        typename
-    > void deserialize(QIODevice *dev, Container *c) {
+    template <typename E, std::enable_if_t<std::is_enum<E>::value, bool> = true> void deserialize(QIODevice *dev, E &e) {
+        e = (E) IO::read_uint(dev);
+    }
+
+    template <typename F, typename S> void deserialize(QIODevice *dev, std::pair<F, S> &pair) {
+        deserialize(dev, pair.first);
+        deserialize(dev, pair.second);
+    }
+
+    template <typename T, std::size_t N> void deserialize(QIODevice *dev, std::array<T, N> &container) {
+        AorUInt _size;
+        deserialize(dev, _size);
+        for (AorUInt i = 0; i < N; i++) {
+            deserialize(dev, container[i]);
+        }
+    }
+
+    template <typename T> void deserialize(QIODevice *dev, std::vector<T> &container) {
         AorUInt size;
-        deserialize(dev, &size);
-
-        std::vector<typename Container::value_type> items;
+        deserialize(dev, size);
         for (AorUInt i = 0; i < size; i++) {
-            typename Container::value_type t;
-            deserialize(dev, &t);
-            items.push_back(t);
+            T item;
+            deserialize(dev, item);
+            container.push_back(item);
         }
-
-        std::copy(items.begin(), items.end(), std::back_inserter(*c));
     }
 
-    template <
-        typename Component,
-        std::enable_if_t<std::is_base_of<Serializable, Component>::value, bool>
-    > void deserialize(QIODevice *dev, Component *s) {
-        s->deserialize(dev);
+    template <typename C, typename = typename C::value_type> void deserialize(QIODevice *dev, C &container) {
+        std::vector<typename C::value_type> items;
+        deserialize(dev, items);
+        container = C(items.begin(), items.end());
+    }
+
+    template <typename K, typename V> void deserialize(QIODevice *dev, std::map<K, V> &map) {
+        std::vector<std::pair<K, V>> entries;
+        deserialize(dev, entries);
+        map = std::map<K, V>(entries.begin(), entries.end());
+    }
+
+    template <typename G, std::enable_if_t<std::is_base_of<Serializable, G>::value, bool>> void deserialize(QIODevice *dev, G &component) {
+        component.deserialize(dev);
     }
 }
-
-/*
-template <
-    typename Integer,
-    std::enable_if_t<std::is_integral<Integer>::value, bool> = true
-> void serialize(QIODevice *dev, Integer i) {
-    IO::write_uint(dev, i);
-}
-
-template <
-    typename Pair
-> void serialize(QIODevice *dev, Pair &p) {
-    serialize(dev, p.first);
-    serialize(dev, p.second);
-}
-
-template <
-    typename Container,
-    typename Container::Inner
-> void serialize(QIODevice *dev, Container &c) {
-    IO::write_uint(dev, c.size());
-    for (typename Container::Inner i : c) {
-        serialize(dev, i);
-    }
-}
-
-template <
-    typename Component,
-    std::enable_if_t<std::is_base_of<Serializable, Component>::value, bool> = true
-> void serialize(QIODevice *dev, Component &s) {
-    s.serialize(dev);
-}
-*/

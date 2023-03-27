@@ -74,6 +74,13 @@ void CharacterActivity::complete(const TimedActivity &activity) {
             gw()->game()->current_location_id() = gw()->game()->next_location_id();
             gw()->game()->next_location_id() = NOWHERE;
         }
+
+        if (gw()->game()->current_location().id == LocationDefinition::get_def("TR").id) {
+            gw()->tutorial(
+                "<b>Congrats!</b><br>"
+                "Your are winner!<br>"
+            );
+        }
     }
 
     gw()->refresh_ui();

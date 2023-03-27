@@ -55,13 +55,14 @@ enum ItemDomain : AorUInt {
     Portrait        = 1 << 10,
     ForeignOffering = 1 << 11,
     Defiling        = 1 << 12,
-    Coupling        = 1 << 13, Explorer = 1 << 13, Egg = 1 << 13,
+    Coupling        = 1 << 13,
     Untradeable     = 1 << 14,
     Script          = 1 << 15,
     Weather         = 1 << 16, Map = 1 << 16,
     Study           = 1 << 17,
     Travelling      = 1 << 18,
     Scan            = 1 << 19,
+    Explorer        = 1 << 20, Egg = 1 << 20,
     All             = ~0ull
 };
 
@@ -660,4 +661,5 @@ struct Item : public Serializable {
     static Item empty_item;
 
     void serialize(QIODevice *dev) const;
+    void deserialize(QIODevice *dev);
 };
