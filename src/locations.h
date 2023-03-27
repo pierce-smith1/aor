@@ -125,10 +125,12 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         "<i>trace of something in the ruins yet.</i><br>",
         15 FORAGEABLES, 30 MINEABLES,
         {
-            { WeatherEffect1, WeatherMark::marker("acid_rain") },
-            { WeatherEffect2, WeatherMark::marker("worm_storms") },
+            { WeatherEffect1, WeatherMark::marker("empty") },
+            { WeatherEffect2, WeatherMark::marker("empty") },
             { LocationSpiritCost, 30 },
-            { LocationResourceRequirement, 40 }
+            { LocationResourceRequirement, 40 },
+            { LocationSignaturePercentChance, 15 },
+            { LocationSignatureItem1, WeatherMark::marker("ribbon_rollup") },
         }
     },
     {

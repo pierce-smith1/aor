@@ -63,6 +63,7 @@ enum ItemDomain : AorUInt {
     Travelling      = 1 << 18,
     Scan            = 1 << 19,
     Explorer        = 1 << 20, Egg = 1 << 20,
+    Signature       = 1 << 21,
     All             = ~0ull
 };
 
@@ -200,6 +201,17 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
             { LeafyResource, 10 },
             { RunicResource, 20 },
             { ConsumableGivesEffect, ItemMark::marker("double_vision") }
+        }
+    },
+    {
+        CT_CONSUMABLE | 8,
+        "ribbon_rollup", "Ribbon Rollup",
+        "",
+        2 USES, Consumable | Signature,
+        {
+            { ItemLevel, 3 },
+            { RunicResource, 50 },
+            { ConsumableMakesCouplable, 1 }
         }
     },
     {

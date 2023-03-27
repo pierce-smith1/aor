@@ -228,6 +228,7 @@ QString Item::type_to_string(ItemType type) {
     QString string;
 
     if (type & Untradeable) { string += "Untradeable "; }
+    if (type & Signature) { string += "Signature "; }
 
     if (type & Consumable) { string += "Consumable, "; }
     if (type & Material)  { string += "Material, "; }

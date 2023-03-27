@@ -308,9 +308,11 @@ ItemDomain Game::intent_of(ItemId item_id) {
             intent |= Tool;
         }
 
-        const auto &activity_items = character.activity().owned_item_ids;
-        if (std::find(activity_items.begin(), activity_items.end(), item_id) != activity_items.end()) {
-            intent |= character.activity().explorer_subtype();
+        for (ActivityId activity_id : character.activities()) {
+            const auto &activity_items = gw()->game()->activity(activity_id).owned_item_ids;
+            if (std::find(activity_items.begin(), activity_items.end(), item_id) != activity_items.end()) {
+                intent |= character.activity().explorer_subtype();
+            }
         }
     }
 

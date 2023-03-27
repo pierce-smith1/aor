@@ -434,7 +434,8 @@ void LKGameWindow::enter_multiwindow_mode() {
     std::vector<QWidget *> widgets_to_split = {
         findChild<QWidget *>("activities_widget"),
         findChild<QWidget *>("inventory_widget"),
-        findChild<QWidget *>("explorer_widget")
+        findChild<QWidget *>("explorer_widget"),
+        findChild<QWidget *>("global_action_widget")
     };
 
     for (QWidget *widget : widgets_to_split) {
@@ -444,8 +445,6 @@ void LKGameWindow::enter_multiwindow_mode() {
         window->setCentralWidget(widget);
         window->setMenuBar(new MenuBar(this));
         window->show();
-        //window->setMinimumSize(QSize(window->size().width(), window->size().height())); // evil hack to prevent resizing
-        //window->setMaximumSize(QSize(window->size().width(), window->size().height()));
 
         m_multiwindows.push_back(window);
     }
@@ -455,9 +454,10 @@ void LKGameWindow::enter_multiwindow_mode() {
 
 void LKGameWindow::exit_multiwindow_mode() {
     QGridLayout *central_layout = (QGridLayout *) m_window.super_widget->layout();
-    central_layout->addWidget(m_multiwindows[0]->centralWidget(), 0, 0, 1, 2); // BRITTLE AS SHIT OH MAN
-    central_layout->addWidget(m_multiwindows[1]->centralWidget(), 1, 0, 1, 1); // These are pulled directly from ui_main.h
-    central_layout->addWidget(m_multiwindows[2]->centralWidget(), 1, 1, 1, 1); // WARNING: DANGER: TODO: YOU WILL GET FUCKED
+    central_layout->addWidget(m_multiwindows[0]->centralWidget(), 0, 1, 1, 2); // BRITTLE AS SHIT OH MAN
+    central_layout->addWidget(m_multiwindows[1]->centralWidget(), 1, 1, 1, 1); // These are pulled directly from ui_main.h
+    central_layout->addWidget(m_multiwindows[2]->centralWidget(), 1, 2, 1, 1); // WARNING: DANGER: TODO: YOU WILL GET FUCKED
+    central_layout->addWidget(m_multiwindows[3]->centralWidget(), 0, 0, 2, 1);
 
     for (QWidget *window : m_multiwindows) {
         window->hide();

@@ -163,6 +163,20 @@ std::vector<Item> CharacterActivity::products(const TimedActivity &activity) {
                 discoverable_set.push_back({{ Item::make_egg(), 1.0 }});
             }
 
+            LocationDefinition current_location = gw()->game()->current_location();
+            if (Generators::percent_chance(current_location.properties[LocationSignaturePercentChance])) {
+                WeightedVector<Item> signatures;
+
+                for (ItemProperty i = LocationSignatureItem1; i <= LocationSignatureItem9; i = (ItemProperty) (i + 1)) {
+                    Item signature = Item(current_location.properties[i]);
+                    if (signature.id != EMPTY_ID) {
+                        signatures.push_back({ signature, 1.0 });
+                    }
+                }
+
+                discoverable_set.push_back(signatures);
+            }
+
             break;
         } case Coupling: {
             auto &characters = gw()->game()->characters();

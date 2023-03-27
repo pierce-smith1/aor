@@ -147,7 +147,7 @@
                <x>0</x>
                <y>0</y>
                <width>769</width>
-               <height>400</height>
+               <height>373</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_7"/>
@@ -511,10 +511,16 @@
           </item>
           <item row="0" column="0">
            <widget class="QWidget" name="player_widget" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="minimumSize">
              <size>
               <width>300</width>
-              <height>300</height>
+              <height>0</height>
              </size>
             </property>
             <property name="maximumSize">
@@ -1267,7 +1273,7 @@
            <widget class="QGroupBox" name="crawling_box">
             <property name="minimumSize">
              <size>
-              <width>600</width>
+              <width>0</width>
               <height>0</height>
              </size>
             </property>
@@ -1281,7 +1287,7 @@
                 <enum>Qt::ScrollBarAlwaysOff</enum>
                </property>
                <property name="horizontalScrollBarPolicy">
-                <enum>Qt::ScrollBarAlwaysOff</enum>
+                <enum>Qt::ScrollBarAsNeeded</enum>
                </property>
                <property name="widgetResizable">
                 <bool>true</bool>
@@ -1291,8 +1297,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>543</width>
-                  <height>360</height>
+                  <width>501</width>
+                  <height>387</height>
                  </rect>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_12"/>
