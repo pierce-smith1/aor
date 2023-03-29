@@ -24,6 +24,8 @@ public:
     static void refresh_ui_bars(Character &character);
     static QString domain_to_action_string(ItemDomain domain);
 
+    static void discover_waste_item(Character &character, ItemDomain domain, std::vector<WeightedVector<Item>> &discoverable_set);
+
 private:
     static void exhaust_reagents(const TimedActivity &activity);
     static void exhaust_character(const TimedActivity &activity);
@@ -32,6 +34,7 @@ private:
     static void give(const TimedActivity &activity, const std::vector<Item> &items);
     static void give_bonuses(const TimedActivity &activity);
     static void give_injuries(const TimedActivity &activity);
+    static void increase_threat(const TimedActivity &activity);
     static void clear_injuries(const TimedActivity &activity);
     static void start_next_action(const TimedActivity &activity);
     static void add_bonus_items(const TimedActivity &activity, std::vector<Item> &items);

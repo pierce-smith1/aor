@@ -64,6 +64,7 @@ enum ItemDomain : AorUInt {
     Scan            = 1 << 19,
     Explorer        = 1 << 20, Egg = 1 << 20,
     Signature       = 1 << 21,
+    Curse           = 1 << 22,
     All             = ~0ull
 };
 
@@ -167,9 +168,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         "fungified_token", "Fungified Token",
         "<i>It seems to be an ancient currency, overgrown with an intoxicating fungus.</i><br>"
         "<i>Surely this would have made it useless. If only they had some sort of non-fungifiable token...</i><br>",
-        1 USES, Consumable,
+        3 USES, Consumable | Signature,
         {
-            { ItemLevel, 3 },
+            { ItemLevel, 5 },
             { LeafyResource, 10 },
             { ConsumableEnergyBoost, 20 },
             { ConsumableGivesEffect, ItemMark::marker("obsessive_checksum_disorder") }
@@ -181,9 +182,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         "<i>Also known as \"curly bracket fungi\", it naturally lives on the bark of syntax trees;</i><br>"
         "<i>However it loves to grow on paper, and it will even rearrange the words on the page to fit its modular organization scheme.</i><br>"
         "<i>I wish it would go away.</i><br>",
-        1 USES, Consumable,
+        3 USES, Consumable | Signature,
         {
-            { ItemLevel, 3 },
+            { ItemLevel, 5 },
             { LeafyResource, 10 },
             { RunicResource, 20 },
             { ConsumableEnergyBoost, 20 },
@@ -195,9 +196,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         "copycap", "Copycap",
         "<i>The roots of this fungus seem to grasp an object and form a complete copy of it elsewhere.</i><br>"
         "<i>It will happily destroy whatever's in its way to complete this ritual.</i><br>",
-        1 USES, Consumable,
+        3 USES, Consumable | Signature,
         {
-            { ItemLevel, 3 },
+            { ItemLevel, 5 },
             { LeafyResource, 10 },
             { RunicResource, 20 },
             { ConsumableGivesEffect, ItemMark::marker("double_vision") }
@@ -209,9 +210,35 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         "",
         2 USES, Consumable | Signature,
         {
-            { ItemLevel, 3 },
+            { ItemLevel, 5 },
             { RunicResource, 50 },
             { ConsumableMakesCouplable, 1 }
+        }
+    },
+    {
+        CT_CONSUMABLE | 9,
+        "conconium", "Conconium",
+        "<i>It turns out that the memory center of the brain has certain areas that are strictly off-limits.</i><br>"
+        "<i>This plant lets you access them - and pay the terrible price for doing so.</i>",
+        2 USES, Signature | Consumable,
+        {
+            { ItemLevel, 5 },
+            { LeafyResource, 50 },
+            { ConsumableKills, 1 },
+            { ConsumableGeneratesRandomItems, 6 }
+        }
+    },
+    {
+        CT_CONSUMABLE | 9,
+        "honeykey", "Honeykey",
+        "<i>The hive's honey is revered not just for its sweetness, but its awesome regenerative power.</i><br>"
+        "<i>Droplets on the ground cause the world itself to regrow around it.</i><br>",
+        1 USES, Consumable | Signature,
+        {
+            { ItemLevel, 5 },
+            { LeafyResource, 50 },
+            { ConsumableClearsNumEffects, 4 },
+            { ConsumableRegeneratesLocation, 10 }
         }
     },
     {
@@ -311,12 +338,16 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
     },
     {
         CT_MATERIAL | 8,
-        "wolframite_alpha", "Wolframite Alpha",
-        "<i>Technically this is an ore - but the smelting process leaves behind tablets of lore instead of metal.</i><br>"
-        "<i>Reading them makes my head spin. Whoever is out there writing these knows everything about everything.</i><br>",
-        1 USES, Material,
+        "pentium_bar", "Pentium Bar",
+        "<i>It's a beautiful metal; easy to work with too, since it is always on the verge of melting, making it trivial to cast.</i><br>"
+        "<i>The heat it naturally exudes WILL ignite gunpowder. I learned that the hard way.</i><br>",
+        1 USES, Material | Signature,
         {
-
+            { ItemLevel, 5 },
+            { StoneResource, 35 },
+            { MetallicResource, 35 },
+            { CrystallineResource, 35 },
+            { RunicResource, 35 }
         }
     },
     {
@@ -455,6 +486,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
             { CostCrystalline, 50 },
         }
     },
+    /*
     {
         CT_TOOL | 8,
         "encursed_shovel", "Encursed Shovel",
@@ -466,6 +498,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
 
         }
     },
+    */
     {
         CT_ARTIFACT | 0,
         "recovered_journal", "Recovered Journal",
@@ -488,6 +521,19 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         {
             { ItemLevel, 3 },
             { PersistentMaxEnergyBoost, 40 }
+        }
+    },
+    {
+        CT_ARTIFACT | 2,
+        "wolframite_alpha", "Wolframite Alpha",
+        "<i>Technically, this is an ore - but the smelting process leaves behind these strange tablets instead of metal.</i><br>"
+        "<i>I've learned a lot about quantum chromodynamics, combinatorics, and what my friends say behind my back.</i><br>",
+        0 USES, Artifact,
+        {
+            { ItemLevel, 4 },
+            { PropertyIfLore, HeritageConsumableEnergyBoost },
+            { PropertyLoreRequirement, 200 },
+            { PropertyIfLoreValue, 20 },
         }
     },
     {
@@ -541,10 +587,10 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         CT_EFFECT | 4,
         "obsessive_checksum_disorder", "Obsessive Checksum Disorder",
         "<i>Did you touch this? Did you touch it??? DID YOU TOUCH IT?!?</i><br>",
-        5 USES, Effect,
+        6 USES, Effect,
         {
             { ItemLevel, 2 },
-            { PersistentEnergyPenalty, 20 },
+            { PersistentEnergyPenalty, 10 },
             { PersistentDiscoveryNotRandom, 1 }
         }
     },
@@ -552,11 +598,10 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         CT_EFFECT | 5,
         "dynamic_digestion", "Dynamic Digestion",
         "<i>Damn, I'm starving. I could eat ANYTHING.</i><br>",
-        2 USES, Effect,
+        10 USES, Effect,
         {
             { ItemLevel, 2 },
-            { PersistentSpiritPenalty, 30 },
-            { PersistentEnergyPenalty, 10 },
+            { PersistentSpiritPenalty, 10 },
             { PersistentRandomConsumableProducts, 1 }
         }
     },
@@ -564,10 +609,21 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         CT_EFFECT | 6,
         "double_vision", "Double Vision",
         "<i>I can see all 1.7976931348623157 × 10^308 meters of reality!</i><br>",
-        3 USES, Effect,
+        6 USES, Effect,
         {
             { ItemLevel, 2 },
             { HeritageItemDoubleChance, 100 }
+        }
+    },
+    {
+        CT_EFFECT | 7,
+        "trematrap", "Trematrap",
+        "<i>The parasite wrapped around my spine filters messages being sent through my nervous system.</i>"
+        "<i>When the brain tells the body it's time to die I can just, well, ignore it.</i>",
+        10 USES, Effect,
+        {
+            { ItemLevel, 5 },
+            { PersistentCannotDie, 1 }
         }
     },
     {
@@ -590,23 +646,41 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
     },
     {
         CT_WEATHER | 0,
-        "acid_rain", "ACID Rain",
-        "<i>Ironically, this is a good thing.</i><br>"
-        "<i>The constant downpour of flesh-eating rain has really forced us to become more consistent, reliable workers.</i><br>",
+        "acid_stingers", "ACID Stingers",
+        "<i>The bees make for fantastic workers - they are consistent, reliable, and professional.</i><br>"
+        "<i>Being stung by their venom told us why -</i><br>"
+        "<i>there's </i>something<i> in there that makes you endlessly more productive.</i><br>",
         0 USES, Weather,
         {
             { ItemLevel, 1 },
-            { PersistentMaxEnergyBoost, 20 }
+            { PersistentForageBonusChance, 50 },
         }
     },
     {
         CT_WEATHER | 1,
-        "worm_storms", "Worm Storms",
-        "<i>230 dead as storm batters Rhodon</i><br>",
+        "harmony", "Harmony",
+        "<i>I see the towering pines, needles pointing to the twinkling stars;</i><br>"
+        "<i>the fluttering butterflies, speaking with the language of the wind;</i><br>"
+        "<i>the flocking birds, streaking patterns in the sky;</i><br>"
+        "<i>And the suncradled grasses, swaying like feathers on the open plains.</i><br>"
+        "<i>And I feel something incredible is just getting started.</i><br>",
         0 USES, Weather,
         {
             { ItemLevel, 1 },
-            { PersistentEnergyPenalty, 5 }
+            { PersistentThreatDecrease, 2 }
+        }
+    },
+    {
+        CT_WEATHER | 2,
+        "unstable_division", "Unstable Division",
+        "<i>Pentium, as an element, is marginally unstable, and slightly skews the calculations of the universe -</i><br>"
+        "<i>It's perfectly safe most of the time, but if you aren't careful you may end up falling down the</i><br>"
+        "<i>stairs because your stride was a </i>little longer<i> than it should have been,</i><br>"
+        "<i>or your foot got nudged </i>ever so slightly<i> to the right.</i><br>",
+        0 USES, Weather,
+        {
+            { ItemLevel, 1 },
+            { PersistentChaoticCalculations, 1 }
         }
     },
     {
@@ -622,9 +696,24 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
     {
         CT_OTHER | 1,
         "welchian_rune", "Welchian Rune",
-        "<i> ??? </i>",
+        "<i></i><br>",
         0 USES, Untradeable,
         {}
+    },
+    {
+        CT_OTHER | 2,
+        "corrupting_nematode", "Corrupting Nematode",
+        "<i><font color=#ff3300>Waves of need shall come this way</font></i><br>"
+        "<i><font color=#ff3300>All I love shall die this day</font></i><br>"
+        "<i><font color=#ff3300>All I seek here shall decay</font></i><br>"
+        "<i><font color=#ff3300>Neath shade of roses, my flesh shall stay.</font></i><br>",
+        0 USES, Signature | Curse,
+        {
+            { ItemLevel, 1 },
+            { InventoryInfectsItems, 20 },
+            { InventoryMaxEnergyBoost, 10 },
+            { InventoryMaxSpiritBoost, 10 }
+        }
     }
 });
 
@@ -650,7 +739,7 @@ struct Item : public Serializable {
     QString to_data_string() const;
     static Item from_data_string(const QString &data_string);
 
-    void call_hooks(HookType type, const HookPayload &payload) const;
+    void call_hooks(HookType type, const HookPayload &payload, ItemProperty allowed_prop_type = (ItemProperty) ~InventoryProperty) const;
 
     static ItemDefinitionPtr def_of(ItemCode id);
     static ItemDefinitionPtr def_of(const QString &name);

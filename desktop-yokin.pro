@@ -9,7 +9,8 @@ CONFIG += debug_and_release
 CONFIG += static
 CONFIG += c++17
 RC_ICONS = assets/icon.ico
-QMAKE_CXXFLAGS += "-Wfatal-errors"
+QMAKE_CXXFLAGS += "-g -pg -Wfatal-errors"
+QMAKE_LFLAGS += "-pg"
 
 RESOURCES += images.qrc
 FORMS += assets/ui/main.ui

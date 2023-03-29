@@ -15,6 +15,9 @@ enum ItemProperty : AorUInt {
     ConsumableSpiritBoost,
     ConsumableClearsNumEffects,
     ConsumableMakesCouplable,
+    ConsumableRegeneratesLocation,
+    ConsumableKills,
+    ConsumableGeneratesRandomItems,
     PersistentMaxEnergyBoost,
     PersistentMaxSpiritBoost,
     PersistentSpeedBonus,
@@ -23,6 +26,10 @@ enum ItemProperty : AorUInt {
     PersistentSpiritPenalty,
     PersistentRandomConsumableProducts,
     PersistentDiscoveryNotRandom,
+    PersistentForageBonusChance,
+    PersistentThreatDecrease,
+    PersistentCannotDie,
+    PersistentChaoticCalculations,
     InjurySmithing,
     InjuryForaging,
     InjuryMining,
@@ -40,20 +47,9 @@ enum ItemProperty : AorUInt {
     HeritageMaterialValueBonus,
     HeritageActivitySpeedBonus,
     HeritageItemDoubleChance,
-    HoldsItemCode = 0x0800, // indicates that the property holds an item code, see itemmark.h
-    ConsumableGivesEffect,
-    // WARNING: Item generation behavior in actions.cpp requires that there
-    // are exactly 9 ToolCanDiscovers, exactly 9 ToolDiscoverWeights, and
-    // that the ToolDiscoverWeights comes directly after the ToolCanDiscovers!
-    ToolCanDiscover1,
-    ToolCanDiscover2,
-    ToolCanDiscover3,
-    ToolCanDiscover4,
-    ToolCanDiscover5,
-    ToolCanDiscover6,
-    ToolCanDiscover7,
-    ToolCanDiscover8,
-    ToolCanDiscover9,
+    PropertyIfLore,
+    PropertyLoreRequirement,
+    PropertyIfLoreValue,
     ToolDiscoverWeight1,
     ToolDiscoverWeight2,
     ToolDiscoverWeight3,
@@ -63,6 +59,17 @@ enum ItemProperty : AorUInt {
     ToolDiscoverWeight7,
     ToolDiscoverWeight8,
     ToolDiscoverWeight9,
+    HoldsItemCode = 0x0800, // indicates that the property holds an item code, see itemmark.h
+    ConsumableGivesEffect,
+    ToolCanDiscover1,
+    ToolCanDiscover2,
+    ToolCanDiscover3,
+    ToolCanDiscover4,
+    ToolCanDiscover5,
+    ToolCanDiscover6,
+    ToolCanDiscover7,
+    ToolCanDiscover8,
+    ToolCanDiscover9,
     InstanceEggParent1 = 0x1000,
     InstanceEggParent2,
     InstanceEggFoundThreatstamp,
@@ -124,7 +131,6 @@ enum ItemProperty : AorUInt {
     LocationEnergyCost,
     LocationPartyRequirement,
     LocationResourceRequirement,
-    LocationSignaturePercentChance,
     LocationSignatureItem1 = LocationProperty | HoldsItemCode | 1,
     LocationSignatureItem2 = LocationProperty | HoldsItemCode | 2,
     LocationSignatureItem3 = LocationProperty | HoldsItemCode | 3,
@@ -134,6 +140,10 @@ enum ItemProperty : AorUInt {
     LocationSignatureItem7 = LocationProperty | HoldsItemCode | 7,
     LocationSignatureItem8 = LocationProperty | HoldsItemCode | 8,
     LocationSignatureItem9 = LocationProperty | HoldsItemCode | 9,
+    InventoryProperty = 0x80000,
+    InventoryInfectsItems,
+    InventoryMaxSpiritBoost,
+    InventoryMaxEnergyBoost,
 };
 
 struct PropertyDefinition {
@@ -154,7 +164,7 @@ struct ItemProperties : public Serializable {
     AorUInt operator[](ItemProperty prop) const;
     std::map<ItemProperty, AorUInt>::const_iterator begin() const;
     std::map<ItemProperty, AorUInt>::const_iterator end() const;
-    void call_hooks(HookType type, const HookPayload &payload, AorUInt int_domain = 0) const;
+    void call_hooks(HookType type, const HookPayload &payload, AorUInt int_domain = 0, ItemProperty allowed_prop_type = (ItemProperty) ~InventoryProperty) const;
 
     std::map<ItemProperty, AorUInt> map;
 

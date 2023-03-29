@@ -24,7 +24,7 @@ const static AorUInt BASE_MAX_ENERGY = 50;
 const static AorUInt BASE_MAX_SPIRIT = 50;
 const static AorUInt BASE_MAX_RESOURCE = 10;
 
-const static AorUInt BASE_HOOK_DOMAINS = Artifact | Effect | Explorer | Weather | Travelling;
+const static AorUInt BASE_HOOK_DOMAINS = Artifact | Effect | Explorer | Weather | Travelling | Resident;
 
 using Heritage = std::multiset<Color>;
 using ExternalItemIds = std::map<ItemDomain, std::array<ItemId, MAX_ARRAY_SIZE>>;

@@ -14,6 +14,7 @@ public:
 
 private:
     QString location_description();
+    QString location_subtext();
 
     LocationDefinition m_location_def;
 };

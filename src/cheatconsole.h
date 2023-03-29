@@ -318,6 +318,39 @@ const static std::vector<CheatCommand> COMMANDS = {
         [](const QStringList &args) {
             gw()->game()->current_location_id() = LocationDefinition::get_def(args[0]).id;
         }
+    },
+    {
+        "waste",
+        "Print the number of waste actions taken at the current location.",
+        0,
+        [](const QStringList &) {
+            qDebug("waste: %lld", gw()->game()->waste_action_counts()[gw()->game()->current_location_id()]);
+        }
+    },
+    {
+        "sigwhen",
+        "Print the number of waste actions needed to find the $0th signature item at the current location.",
+        1,
+        [](const QStringList &args) {
+            QS_TO_INT(n, args[0]);
+
+            qDebug("sigwhen: %lld", gw()->game()->signature_requirements()[gw()->game()->current_location_id()][n]);
+        }
+    },
+    {
+        "lore",
+        "Change the game's lore to $0; if $0 is '?' show the current lore instead",
+        1,
+        [](const QStringList &args) {
+            if (args[0] == "?") {
+                qDebug("Lore at (%lld)", gw()->game()->lore());
+                return;
+            }
+
+            QS_TO_INT(lore, args[0]);
+
+            gw()->game()->lore() = lore;
+        }
     }
 };
 

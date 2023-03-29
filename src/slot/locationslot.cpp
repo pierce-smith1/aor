@@ -17,7 +17,7 @@ bool LocationSlot::do_hovering() {
 std::optional<TooltipInfo> LocationSlot::tooltip_info() {
     return std::optional<TooltipInfo>({
         QString("<b>%1</b>").arg(m_location_def.display_name),
-        QString("Location"),
+        location_subtext(),
         location_description(),
         Item::pixmap_of("byteberry"),
         {},
@@ -58,15 +58,42 @@ QString LocationSlot::location_description() {
         description += "<i>Our expedition is currently travelling here.</i><br><br>";
     }
 
-    description += QString("<font color=%2><b>%1</b></font> forageables left here.<br>")
-        .arg(gw()->game()->forageables_left(m_location_def.id))
-        .arg(Colors::qcolor(Cucumber).name());
+    if (AorUInt forageables_left = gw()->game()->forageables_left(m_location_def.id)) {
+        description += QString("<font color=%2><b>%1</b></font> forageables left here.<br>")
+            .arg(forageables_left)
+            .arg(Colors::qcolor(Cucumber).name());
+    } else {
+        description += QString("<b>The land is bare.</b><br>");
+    }
 
-    description += QString("<font color=%2><b>%1</b></font> mineables left here.")
-        .arg(gw()->game()->mineables_left(m_location_def.id))
-        .arg(Colors::qcolor(Plum).name());
+    if (AorUInt mineables_left = gw()->game()->mineables_left(m_location_def.id)) {
+        description += QString("<font color=%2><b>%1</b></font> mineables left here.<br>")
+            .arg(mineables_left)
+            .arg(Colors::qcolor(Plum).name());
+    } else {
+        description += QString("<b>The earth is wasted.</b><br>");
+    }
 
+    if (AorUInt signatures_left = gw()->game()->signatures_left(m_location_def.id)) {
+        description += QString("<font color=%2><b>%1</b></font> signature items left here.<br>")
+            .arg(signatures_left)
+            .arg(Colors::qcolor(Cherry).name());
+    }
+
+    description += "<br>";
     description += Item::properties_to_string(m_location_def.properties);
 
     return description;
+}
+
+QString LocationSlot::location_subtext() {
+    if (m_location_def.id & BiomeJungle) {
+        return "Overgrown Vista";
+    } else if (m_location_def.id & BiomeMesa) {
+        return "Windblown Vista";
+    } else if (m_location_def.id & BiomeRoses) {
+        return "Rose Vista";
+    } else {
+        return "Vista";
+    }
 }

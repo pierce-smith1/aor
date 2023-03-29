@@ -26,6 +26,18 @@
     t3 * n3 = extract_payload<t3 *>(payload, 2); \
     t4 * n4 = extract_payload<t4 *>(payload, 3);
 
+void geometric_shift(AorInt *value, AorInt extra_noise) {
+    AorUInt seed = gw()->game()->game_id() * gw()->game()->game_id() + extra_noise;
+    bool decrease = seed & 1;
+    for (AorUInt i = 4; i < 64; i += 4) {
+        if (((seed & (0xf << (i - 4))) >> (i - 4)) > 4) {
+            *value += decrease ? -1 : 1;
+        } else {
+            break;
+        }
+    }
+}
+
 const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
     const static std::map<ItemProperty, PropertyDefinition> PROPERTY_DESCRIPTIONS = {
         { ItemLevel, {
@@ -76,6 +88,53 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
             "Gives the ability to <b><font color=purple>have a child</font></b> with another explorer.",
             {{ HookPostEat, HOOK_1(Character, character)
                 character->can_couple() = true;
+            }}}
+        }},
+        { ConsumableRegeneratesLocation, {
+            "Regenerates <b>%1 forageables</b> and <b>the signature item(s)</b> wherever it is eaten.",
+            {{ HookPostEat, HOOK_1(Character, character)
+                LocationId here_id = gw()->game()->current_location_id();
+                LocationDefinition here = LocationDefinition::get_def(here_id);
+
+                gw()->game()->forageable_waste()[here_id] -= prop_value;
+
+                AorUInt waste_left = gw()->game()->forageables_left() + gw()->game()->mineables_left();
+                AorUInt current_actions = gw()->game()->waste_action_counts()[here_id];
+                for (AorUInt i = 0; i < 9; i++) {
+                    if (here.properties[(ItemProperty) (LocationSignatureItem1 + i)] == 0) {
+                        continue;
+                    }
+
+                    gw()->game()->signature_requirements()[here_id][i] = current_actions + Generators::uint() % waste_left;
+                }
+            }}}
+        }},
+        { ConsumableKills, {
+            "<b>Lethal when consumed.</b>",
+            {{ HookPostEat, HOOK_1(Character, character)
+                bool should_die = true;
+                character->call_hooks(HookCalcShouldDie, { &should_die });
+                character->dead() = should_die;
+            }}}
+        }},
+        { ConsumableGeneratesRandomItems, {
+            "Creates <b>%1 random items</b> when consumed.",
+            {{ HookPostEat, HOOK_1(Character, character)
+                std::vector<ItemDefinition> possible_items;
+
+                auto &defs = ITEM_DEFINITIONS;
+                auto inserter = std::back_inserter(possible_items);
+                std::copy_if(defs.begin(), defs.end(), inserter, [=](const ItemDefinition &def) {
+                    bool type_ok = (def.code & CT_CONSUMABLE) || (def.code & CT_MATERIAL) || (def.code & CT_TOOL) || (def.code & CT_ARTIFACT);
+                    bool can_generate = def.properties[ConsumableGeneratesRandomItems];
+
+                    return type_ok && !can_generate;
+                });
+
+                for (AorUInt i = 0; i < prop_value; i++) {
+                    std::shuffle(possible_items.begin(), possible_items.end(), *Generators::rng());
+                    character->discover(Item(possible_items[0]));
+                }
             }}}
         }},
         { PersistentMaxEnergyBoost, {
@@ -160,6 +219,43 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
                 }
             }}}
         }},
+        { PersistentForageBonusChance, {
+            "I have a <b>%1% chance</b> of discovering an additional item when foraging.",
+            {{ HookDecideProducts, HOOK_2(std::vector<WeightedVector<Item>>, discoverables, Character, character)
+                if (character->activity().explorer_subtype() == Foraging && Generators::percent_chance(prop_value)) {
+                    CharacterActivity::discover_waste_item(*character, Foraging, *discoverables);
+                }
+            }}}
+        }},
+        { PersistentThreatDecrease, {
+            "My actions generate <b>%1 less threat</b> (but not less than 1).",
+            {{ HookCalcThreatGain, HOOK_1(AorInt, threat)
+                *threat -= prop_value;
+                if (*threat < 1) {
+                    *threat = 1;
+                }
+            }}}
+        }},
+        { PersistentCannotDie, {
+            "<b>I cannot die.</b>",
+            {{ HookCalcShouldDie, HOOK_1(bool, should_die)
+                *should_die = false;
+            }}}
+        }},
+        { PersistentChaoticCalculations, {
+            "Game calculations are <b>slightly wrong</b>.",
+            {{ HookCalcMaxEnergy, HOOK_1(AorInt, energy_gain)
+                geometric_shift(energy_gain, 0x197420);
+            }}, { HookCalcMaxSpirit, HOOK_1(AorInt, spirit_gain)
+                geometric_shift(spirit_gain, 0x22705);
+            }}, { HookCalcEnergyGain, HOOK_1(AorInt, energy_gain)
+                geometric_shift(energy_gain, 0x265404);
+            }}, { HookCalcSpiritGain, HOOK_1(AorInt, spirit_gain)
+                geometric_shift(spirit_gain, 0x343);
+            }}, { HookCalcBonusConsumableEnergy, HOOK_1(AorInt, energy_gain)
+                geometric_shift(energy_gain, 0x1);
+            }}}
+        }},
         { HeritageMaxEnergyBoost, {
             "I have <b>+%1 max energy</b>.",
             {{ HookCalcMaxEnergy, HOOK_1(AorInt, energy_gain)
@@ -209,7 +305,7 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
             }}}
         }},
         { ConsumableGivesEffect, {
-            "<b>This doesn't look very good for me...</b>",
+            "Gives an injury: <b>%1.</b>",
             {{ HookPostEat, HOOK_1(Character, character)
                 character->push_effect(Item(prop_value));
             }}}
@@ -255,7 +351,45 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
                     && total[RunicResource] >= prop_value
                     && total[LeafyResource] >= prop_value;
             }}}
-        }}
+        }},
+        { InventoryInfectsItems, {
+            "After an action is taken, there is a <b>%1% chance</b> the corruption will spread.",
+            {{ HookPostActivity, HOOK_1(Character, character)
+                if (Generators::percent_chance(prop_value)) {
+                    std::vector<Item> non_cursed_items;
+                    auto &items = gw()->game()->inventory().items();
+                    std::copy_if(items.begin(), items.end(), std::back_inserter(non_cursed_items), [=](const Item &item) {
+                        return !(item.def()->type & Curse);
+                    });
+
+                    if (non_cursed_items.empty()) {
+                        return;
+                    }
+
+                    std::shuffle(non_cursed_items.begin(), non_cursed_items.end(), *Generators::rng());
+
+                    Item curse = Item("corrupting_nematode");
+                    curse.id = non_cursed_items[0].id; // evil
+                    gw()->game()->inventory().get_item_ref(curse.id) = curse;
+                }
+            }}}
+        }},
+        { InventoryMaxEnergyBoost, {
+            "While this is in the inventory, all explorers have <b>+%1 max energy.</b>",
+            {{ HookCalcMaxEnergy, HOOK_1(AorInt, energy_gain)
+                *energy_gain += prop_value;
+            }}}
+        }},
+        { InventoryMaxSpiritBoost, {
+            "While this is in the inventory, all explorers have <b>+%1 max spirit.</b>",
+            {{ HookCalcMaxSpirit, HOOK_1(AorInt, spirit_gain)
+                *spirit_gain += prop_value;
+            }}}
+        }},
+        { PropertyIfLore, {
+            "If we have at <b>least %1 lore</b>, %2",
+            {}
+        }},
     };
 
     return PROPERTY_DESCRIPTIONS;
@@ -283,8 +417,20 @@ std::map<ItemProperty, AorUInt>::const_iterator ItemProperties::end() const {
     return map.end();
 }
 
-void ItemProperties::call_hooks(HookType type, const HookPayload &payload, AorUInt int_domain) const {
+void ItemProperties::call_hooks(HookType type, const HookPayload &payload, AorUInt int_domain, ItemProperty allowed_prop_type) const {
     for (const auto &pair : *this) {
+        if (!(pair.first & allowed_prop_type)) {
+            continue;
+        }
+
+        if (pair.first == PropertyIfLore) {
+            if ((AorUInt) gw()->game()->lore() >= (*this)[PropertyLoreRequirement]) {
+                ItemProperties({{ (ItemProperty) pair.second, (*this)[PropertyIfLoreValue] }})
+                    .call_hooks(type, payload, int_domain, allowed_prop_type);
+            }
+            continue;
+        }
+
         auto prop_def = property_definitions().find(pair.first);
         if (prop_def == property_definitions().end()) {
             continue;

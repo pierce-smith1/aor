@@ -15,7 +15,7 @@
 #include "serialize.h"
 
 const static AorUInt MAX_EXPLORERS = 12;
-const static AorUInt AEGIS_THREAT = 400 * 5;
+const static AorUInt AEGIS_THREAT = 800 * 5;
 const static AorUInt STUDY_SLOTS_PER_DOMAIN = 3;
 const static AorInt LORE_PER_SCAN = 5;
 const static AorInt BASE_MAX_LORE = 50;
@@ -34,6 +34,8 @@ using TradePurchases = std::array<Item, TRADE_SLOTS>;
 using ItemHistory = std::set<ItemCode>;
 using ConsumableWaste = std::map<LocationId, AorUInt>;
 using MineableWaste = std::map<LocationId, AorUInt>;
+using WasteActionCounts = std::map<LocationId, AorUInt>;
+using SignatureRequirements = std::map<LocationId, std::array<AorUInt, 9>>;
 using RunningActivities = std::vector<TimedActivity>;
 using StudiedItems = std::map<ItemDomain, std::array<ItemId, STUDY_SLOTS_PER_DOMAIN>>;
 
@@ -59,6 +61,8 @@ public:
     RunningActivities &running_activities();
     ConsumableWaste &forageable_waste();
     MineableWaste &mineable_waste();
+    WasteActionCounts &waste_action_counts();
+    SignatureRequirements &signature_requirements();
     StudiedItems &studied_items();
     AorInt &lore();
 
@@ -87,6 +91,8 @@ public:
     AorInt forageables_left();
     AorInt mineables_left(LocationId id);
     AorInt mineables_left();
+    AorUInt signatures_left(LocationId id);
+    Item next_signature(LocationId id);
 
     Character &character(CharacterId id);
     TimedActivity &activity(ActivityId id);
@@ -113,6 +119,8 @@ private:
     LocationId m_next_location_id = NOWHERE;
     ConsumableWaste m_consumable_waste;
     MineableWaste m_mineable_waste;
+    WasteActionCounts m_waste_action_counts;
+    SignatureRequirements m_signature_requirements;
     RunningActivities m_running_activities;
     StudiedItems m_studied_items {};
     AorInt m_lore = 0;

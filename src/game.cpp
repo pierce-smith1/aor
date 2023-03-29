@@ -4,7 +4,7 @@
 #include "studyactivity.h"
 
 Game::Game()
-    : m_game_id(Generators::game_id()), m_tribe_name(Generators::tribe_name()) { }
+    : m_game_id(Generators::game_id()), m_tribe_name(Generators::tribe_name()) {}
 
 Characters &Game::characters() {
     return m_explorers;
@@ -64,6 +64,14 @@ ConsumableWaste &Game::forageable_waste() {
 
 MineableWaste &Game::mineable_waste() {
     return m_mineable_waste;
+}
+
+WasteActionCounts &Game::waste_action_counts() {
+    return m_waste_action_counts;
+}
+
+SignatureRequirements &Game::signature_requirements() {
+    return m_signature_requirements;
 }
 
 StudiedItems &Game::studied_items() {
@@ -232,6 +240,15 @@ void Game::check_tutorial(ItemDomain domain) {
             );
             break;
         }
+        case Signature: {
+            gw()->tutorial(
+                "<b>I just found a signature item!</b><br>"
+                "<br>"
+                "Signature items are <b>limited, location-specific</b> items. Each location usually has only one, and they are typically <b>exceedingly unique and powerful.</b><br>"
+                "They are found randomly after <b>either</b> foraging or mining, regardless of what they are.<br>"
+                "The items are not tied to the location once found - I can bring them elsewhere or even trade them away."
+            );
+        }
         default: {
             break;
         }
@@ -376,6 +393,36 @@ AorInt Game::mineables_left() {
     return mineables_left(m_current_location_id);
 }
 
+AorUInt Game::signatures_left(LocationId id) {
+    AorUInt left = 0;
+    LocationDefinition location = LocationDefinition::get_def(id);
+
+    for (AorUInt i = 0; i < 9; i++) {
+        ItemProperty signature_property = (ItemProperty) (LocationSignatureItem1 + i);
+        if (location.properties[signature_property] == 0) {
+            continue;
+        }
+
+        if (m_waste_action_counts[id] < m_signature_requirements[id][i]) {
+            left++;
+        }
+    }
+
+    return left;
+}
+
+Item Game::next_signature(LocationId id) {
+    LocationDefinition location = LocationDefinition::get_def(id);
+
+    for (AorUInt i = 0; i < 9; i++) {
+        if (m_waste_action_counts[id] == m_signature_requirements[id][i]) {
+            return Item(location.properties[(ItemProperty) (LocationSignatureItem1 + i)]);
+        }
+    }
+
+    return Item();
+}
+
 Character &Game::character(CharacterId id) {
     auto result = std::find_if(m_explorers.begin(), m_explorers.end(), [=](Character &c) {
         return c.id() == id;
@@ -431,6 +478,8 @@ void Game::serialize(QIODevice *dev) const {
     Serialize::serialize(dev, m_next_location_id);
     Serialize::serialize(dev, m_consumable_waste);
     Serialize::serialize(dev, m_mineable_waste);
+    Serialize::serialize(dev, m_waste_action_counts);
+    Serialize::serialize(dev, m_signature_requirements);
     Serialize::serialize(dev, m_running_activities);
     Serialize::serialize(dev, m_studied_items);
     Serialize::serialize(dev, m_lore);
@@ -453,6 +502,8 @@ void Game::deserialize(QIODevice *dev) {
     Serialize::deserialize(dev, m_next_location_id);
     Serialize::deserialize(dev, m_consumable_waste);
     Serialize::deserialize(dev, m_mineable_waste);
+    Serialize::deserialize(dev, m_waste_action_counts);
+    Serialize::deserialize(dev, m_signature_requirements);
     Serialize::deserialize(dev, m_running_activities);
     Serialize::deserialize(dev, m_studied_items);
     Serialize::deserialize(dev, m_lore);
@@ -466,6 +517,15 @@ Game *Game::new_game() {
 
     g->add_character(Generators::yokin_name(), { Generators::color(), Generators::color() });
     g->add_character(Generators::yokin_name(), { Generators::color() });
+
+    for (const LocationDefinition &location : LOCATION_DEFINITIONS) {
+        for (AorUInt i = 0; i < 9; i++) {
+            AorUInt requirement = (location.properties[(ItemProperty) (LocationSignatureItem1 + i)] == 0)
+                ? -1
+                : Generators::uint() % location.mineables + location.forageables;
+            g->signature_requirements()[location.id][i] = requirement;
+        }
+    }
 
     g->m_tribes[NO_TRIBE];
 

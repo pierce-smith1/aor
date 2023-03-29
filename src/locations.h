@@ -46,11 +46,25 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
     },
     {
         BiomeJungle | 0,
-        "stochastic_forest", "Stochastic Forest", "JF",
-        "<i>There's a constant sound of cracking bark as the very earth shifts under my feet...</i><br>"
-        "<i>The place the soil sinks seems to be constantly moving around.</i><br>"
-        "<i>It really makes us see the forest for the trees.</i><br>",
-        15 FORAGEABLES, 5 MINEABLES,
+        "registry_hive", "Registry Hive", "JH",
+        "<i>These busy bees have built quite the hive!</i><br>"
+        "<i>They use cube honeycombs, naturally -</i><br>"
+        "<i>some are filled with delicious honey, but most are just filled with smaller hives,</i><br>"
+        "<i>buzzing with smaller and smaller bees.</i><br>",
+        15 FORAGEABLES, 10 MINEABLES,
+        {
+            { WeatherEffect1, WeatherMark::marker("acid_stingers") },
+            { WeatherEffect2, WeatherMark::marker("empty") },
+            { LocationSpiritCost, 10 },
+            { LocationEnergyCost, 10 },
+            { LocationSignatureItem1, WeatherMark::marker("honeykey") },
+        }
+    },
+    {
+        BiomeJungle | 1,
+        "chameleon_cluster", "Chameleon Cluster", "JC",
+        "",
+        20 FORAGEABLES, 20 MINEABLES,
         {
             { WeatherEffect1, WeatherMark::marker("empty") },
             { WeatherEffect2, WeatherMark::marker("empty") },
@@ -59,25 +73,13 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         }
     },
     {
-        BiomeJungle | 1,
-        "chameleon_cluster", "Chameleon Cluster", "JC",
-        "My own feathers are changing color!",
-        20 FORAGEABLES, 20 MINEABLES,
-        {
-            { WeatherEffect1, WeatherMark::marker("acid_rain") },
-            { WeatherEffect2, WeatherMark::marker("worm_storms") },
-            { LocationSpiritCost, 10 },
-            { LocationEnergyCost, 10 },
-        }
-    },
-    {
         BiomeJungle | 2,
-        "jungle_2", "Jungle in Time", "JT",
+        "registry_hive", "Registry Hive", "JT",
         "",
         20 FORAGEABLES, 20 MINEABLES,
         {
-            { WeatherEffect1, WeatherMark::marker("acid_rain") },
-            { WeatherEffect2, WeatherMark::marker("worm_storms") },
+            { WeatherEffect1, WeatherMark::marker("empty") },
+            { WeatherEffect2, WeatherMark::marker("empty") },
             { LocationSpiritCost, 10 },
             { LocationEnergyCost, 10 },
         }
@@ -85,10 +87,11 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
     {
         BiomeJungle | 3,
         "point_entry", "Point Entry", "JE",
-        "<i></i>",
+        "<i>If you start me up</i><br>"
+        "<i>If you start me up, I'll never stop</i><br>",
         20 FORAGEABLES, 20 MINEABLES,
         {
-            { WeatherEffect1, WeatherMark::marker("empty") },
+            { WeatherEffect1, WeatherMark::marker("harmony") },
             { WeatherEffect2, WeatherMark::marker("empty") },
             { LocationSpiritCost, 5 },
             { LocationEnergyCost, 5 },
@@ -96,13 +99,21 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
     },
     {
         BiomeMesa | 0,
-        "mesa_0", "mesa_0", "MZ",
-        "",
-        20 FORAGEABLES, 20 MINEABLES,
+        "pentium_mines", "Pentium Mines", "MZ",
+        "<i>While some of Rhodon's fledgling natives choose the much more questionably effective Xeon-Itanium alloys,</i><br>"
+        "<i>the flexible and powerful Pentium remains a crucial metal in nearly everything they build.</i><br>"
+        "<i>Luckily, these creatures seem to be deathly afraid of us, leaving us to use their mines at will -</i><br>"
+        "<i>a near limitless source of this valuable metal.</i><br>",
+        10 FORAGEABLES, 50 MINEABLES,
         {
-            { WeatherEffect1, WeatherMark::marker("acid_rain") },
-            { WeatherEffect2, WeatherMark::marker("worm_storms") },
-            { LocationSpiritCost, 10 }
+            { WeatherEffect1, WeatherMark::marker("unstable_division") },
+            { WeatherEffect2, WeatherMark::marker("empty") },
+            { LocationSpiritCost, 15 },
+            { LocationSignatureItem1, WeatherMark::marker("pentium_bar") },
+            { LocationSignatureItem2, WeatherMark::marker("pentium_bar") },
+            { LocationSignatureItem3, WeatherMark::marker("pentium_bar") },
+            { LocationSignatureItem4, WeatherMark::marker("pentium_bar") },
+            { LocationSignatureItem5, WeatherMark::marker("pentium_bar") },
         }
     },
     {
@@ -111,9 +122,9 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         "",
         20 FORAGEABLES, 20 MINEABLES,
         {
-            { WeatherEffect1, WeatherMark::marker("acid_rain") },
-            { WeatherEffect2, WeatherMark::marker("worm_storms") },
-            { LocationSpiritCost, 30 }
+            { WeatherEffect1, WeatherMark::marker("empty") },
+            { WeatherEffect2, WeatherMark::marker("empty") },
+            { LocationSpiritCost, 30 },
         }
     },
     {
@@ -129,36 +140,39 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
             { WeatherEffect2, WeatherMark::marker("empty") },
             { LocationSpiritCost, 30 },
             { LocationResourceRequirement, 40 },
-            { LocationSignaturePercentChance, 15 },
             { LocationSignatureItem1, WeatherMark::marker("ribbon_rollup") },
         }
     },
     {
         BiomeMesa | 3,
-        "mesa_3", "mesa_3", "MF",
-        "",
+        "page_fault", "Page Fault", "MF",
+        "<i>This great fracture in the earth is the result of several tectonic frames sliding past one another.</i><br>"
+        "<i>At the bottom, the chasm expands into a bottomless segmentation fault...</i><br>"
+        "<i>there's no crawling out of that one.</i><br>",
         20 FORAGEABLES, 20 MINEABLES,
         {
-            { WeatherEffect1, WeatherMark::marker("acid_rain") },
-            { WeatherEffect2, WeatherMark::marker("worm_storms") },
-            { LocationSpiritCost, 30 }
+            { WeatherEffect1, WeatherMark::marker("empty") },
+            { WeatherEffect2, WeatherMark::marker("empty") },
+            { LocationSpiritCost, 30 },
+            { LocationEnergyCost, 30 },
+            { LocationSignatureItem1, WeatherMark::marker("corrupting_nematode") }
         }
     },
     {
         BiomeRoses | 0,
         "tree_of_roses", "The Tree of Roses", "TR",
-        "<i>From the cracks in the sky grows the Tree of Roses - the citadel of</i><br>"
-        "<i>steel and petal that holds the line between the colliding concrete and abstract.</i><br>"
-        "<i>We give everything to the Tree while we are here; we are all its children.</i><br>"
-        "<i>For now.</i><br>",
-        10 FORAGEABLES, 0 MINEABLES,
+        "<i>From the cracks in the sky grows the Tree of Roses - the misty citadel of</i><br>"
+        "<i>steel and petal that holds the line between the natural and the abstract.</i><br>"
+        "<i>Our existence here strains the Tree, and its ours...</i><br>"
+        "<i>but we are here to make this home, so we must persevere.</i><br>",
+        0 FORAGEABLES, 0 MINEABLES,
         {
-            { WeatherEffect1, WeatherMark::marker("acid_rain") },
-            { WeatherEffect2, WeatherMark::marker("worm_storms") },
+            { WeatherEffect1, WeatherMark::marker("empty") },
+            { WeatherEffect2, WeatherMark::marker("empty") },
             { LocationSpiritCost, 100 },
             { LocationEnergyCost, 100 },
-            { LocationPartyRequirement, 8 },
-            { LocationResourceRequirement, 200 },
+            { LocationPartyRequirement, 6 },
+            { LocationResourceRequirement, 250 },
         }
-    },
+    }
 });

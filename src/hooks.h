@@ -50,4 +50,6 @@ enum HookType : AorUInt {
     HookDecideProducts,
     HookPostDecideProducts,
     HookDecideCanTravel,
+    HookCalcThreatGain,
+    HookCalcShouldDie,
 };

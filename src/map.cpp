@@ -121,7 +121,7 @@ const Tiles &WorldMap::map_tiles() {
         { _EMPTY_, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, _EMPTY_,  E_RD_T, L("MZ"),  EVERTT, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, },
         { _EMPTY_, _EMPTY_, L("JT"),  EHORZT,  ECROST,  EHORZT,  EU__LT, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, _EMPTY_,  EVERTT, },
         { _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_,  EVERTT, _EMPTY_, _EMPTY_, _EMPTY_, L("MB"), _EMPTY_,  EUR__T,  EHORZT,  EU__LT, },
-        { _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, L("JF"), _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, },
+        { _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, L("JH"), _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, _EMPTY_, },
     }};
 
     return tiles;

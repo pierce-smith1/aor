@@ -71,3 +71,5 @@ desktop-yokin
 *.kra-autosave*
 save.rho*
 assets/img/items/sil/*
+gmon.out
+prof.stats

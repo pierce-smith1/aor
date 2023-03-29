@@ -147,8 +147,8 @@ Item Item::from_data_string(const QString &data_string) {
     return item;
 }
 
-void Item::call_hooks(HookType type, const HookPayload &payload) const {
-    def_of(code)->properties.call_hooks(type, payload, def()->type);
+void Item::call_hooks(HookType type, const HookPayload &payload, ItemProperty allowed_prop_type) const {
+    def_of(code)->properties.call_hooks(type, payload, def()->type, allowed_prop_type);
 }
 
 QPixmap Item::pixmap_of(ItemCode id) {
@@ -238,6 +238,8 @@ QString Item::type_to_string(ItemType type) {
     if (type & Skill) { string += "Skill, "; }
     if (type & Artifact) { string += "Artifact, "; }
     if (type & Effect) { string += "Injury, "; }
+    if (type & Weather) { string += "Environment Effect, "; }
+    if (type & Curse) { string += "Curse, "; }
 
     // Chop off the last comma and space
     return string.left(string.length() - 2);
@@ -252,9 +254,24 @@ QString Item::properties_to_string(const ItemProperties &props) {
         }
 
         if (property_definitions().find(pair.first) != end(property_definitions())) {
-            string += property_definitions().at(pair.first).description.arg(pair.second);
+            QString description;
+
+            const PropertyDefinition &def = property_definitions().at(pair.first);
+
+            if (pair.first & HoldsItemCode) {
+                description = def.description.arg(Item::def_of(pair.second)->display_name);
+            } else if (pair.first == PropertyIfLore) {
+                ItemProperties target_properties = {{ (ItemProperty) pair.second, props[PropertyIfLoreValue] }};
+                description = def.description.arg(props[PropertyLoreRequirement]).arg(properties_to_string(target_properties));
+            } else {
+                description = def.description.arg(pair.second);
+            }
+
+            if (!description.isEmpty()) {
+                string += description;
+                string += "<br>";
+            }
         }
-        string += "<br>";
     }
 
     return string.left(string.size() - 4); // cut off the last <br>

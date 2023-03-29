@@ -1,3 +1,5 @@
+#include <cstdlib>
+
 #include "characteractivity.h"
 #include "slot/externalslot.h"
 #include "gamewindow.h"
@@ -47,8 +49,7 @@ void CharacterActivity::complete(const TimedActivity &activity) {
     give(activity, items);
     exhaust_reagents(activity);
     clear_injuries(activity);
-
-    gw()->game()->threat() += 5;
+    increase_threat(activity);
 
     start_next_action(activity);
 
@@ -83,6 +84,7 @@ void CharacterActivity::complete(const TimedActivity &activity) {
         }
     }
 
+    activity.owner().call_hooks(HookPostActivity, { &activity.owner() });
     gw()->refresh_ui();
 }
 
@@ -137,46 +139,8 @@ std::vector<Item> CharacterActivity::products(const TimedActivity &activity) {
             break;
         } case Foraging:
           case Mining: {
-            Item tool = gw()->game()->inventory().get_item(activity.owner().tool_id(activity.explorer_subtype()));
-            const ItemProperties &tool_props = tool.def()->properties;
-
-            if (tool.id == EMPTY_ID) {
-                if (activity.explorer_subtype() == Foraging) {
-                    discoverable_set.push_back({{ Item("globfruit"), 1.0 }, { Item("byteberry"), 1.0 }});
-                } else if (activity.explorer_subtype() == Mining) {
-                    discoverable_set.push_back({{ Item("oolite"), 1.0 }, { Item("obsilicon"), 1.0 }});
-                }
-                break;
-            }
-
-            WeightedVector<Item> possible_items;
-
-            Item::for_each_tool_discover([&](ItemProperty product_prop, ItemProperty weight_prop) {
-                if (tool_props[weight_prop] != 0) {
-                    possible_items.push_back({ Item(tool_props[product_prop]), tool_props[weight_prop] });
-                }
-            });
-
-            discoverable_set.push_back(possible_items);
-
-            if (activity.explorer_subtype() == Foraging && Generators::percent_chance(activity.owner().egg_find_percent_chance())) {
-                discoverable_set.push_back({{ Item::make_egg(), 1.0 }});
-            }
-
-            LocationDefinition current_location = gw()->game()->current_location();
-            if (Generators::percent_chance(current_location.properties[LocationSignaturePercentChance])) {
-                WeightedVector<Item> signatures;
-
-                for (ItemProperty i = LocationSignatureItem1; i <= LocationSignatureItem9; i = (ItemProperty) (i + 1)) {
-                    Item signature = Item(current_location.properties[i]);
-                    if (signature.id != EMPTY_ID) {
-                        signatures.push_back({ signature, 1.0 });
-                    }
-                }
-
-                discoverable_set.push_back(signatures);
-            }
-
+            discover_waste_item(activity.owner(), activity.explorer_subtype(), discoverable_set);
+            gw()->game()->waste_action_counts()[gw()->game()->current_location_id()]++;
             break;
         } case Coupling: {
             auto &characters = gw()->game()->characters();
@@ -221,6 +185,41 @@ std::vector<Item> CharacterActivity::products(const TimedActivity &activity) {
     }
 
     return final_items;
+}
+
+void CharacterActivity::discover_waste_item(Character &character, ItemDomain domain, std::vector<WeightedVector<Item>> &discoverable_set) {
+    Item tool = gw()->game()->inventory().get_item(character.tool_id(domain));
+    const ItemProperties &tool_props = tool.def()->properties;
+
+    if (tool.id == EMPTY_ID) {
+        if (domain == Foraging) {
+            discoverable_set.push_back({{ Item("globfruit"), 1.0 }, { Item("byteberry"), 1.0 }});
+        } else if (domain == Mining) {
+            discoverable_set.push_back({{ Item("oolite"), 1.0 }, { Item("obsilicon"), 1.0 }});
+        }
+    } else {
+        WeightedVector<Item> possible_items;
+
+        Item::for_each_tool_discover([&](ItemProperty product_prop, ItemProperty weight_prop) {
+            if (tool_props[weight_prop] != 0) {
+                possible_items.push_back({ Item(tool_props[product_prop]), tool_props[weight_prop] });
+            }
+        });
+
+        discoverable_set.push_back(possible_items);
+
+        if (domain == Foraging && Generators::percent_chance(character.egg_find_percent_chance())) {
+            discoverable_set.push_back({{ Item::make_egg(), 1.0 }});
+        }
+    }
+
+    LocationId here_id = gw()->game()->current_location_id();
+    LocationDefinition here = LocationDefinition::get_def(here_id);
+
+    Item signature_item = gw()->game()->next_signature(here_id);
+    if (signature_item.id != EMPTY_ID) {
+        discoverable_set.push_back({{ signature_item, 1.0 }});
+    }
 }
 
 void CharacterActivity::exhaust_reagents(const TimedActivity &activity) {
@@ -370,6 +369,12 @@ void CharacterActivity::give_injuries(const TimedActivity &activity) {
     activity.owner().push_effect(final_effect);
 }
 
+void CharacterActivity::increase_threat(const TimedActivity &activity) {
+    AorInt threat = 5;
+    activity.owner().call_hooks(HookCalcThreatGain, { &threat });
+    gw()->game()->threat() += threat;
+}
+
 void CharacterActivity::clear_injuries(const TimedActivity &activity) {
     for (Item &effect : activity.owner().effects()) {
         if (effect.uses_left == 0) {
@@ -397,6 +402,11 @@ void CharacterActivity::add_bonus_items(const TimedActivity &activity, std::vect
 
     if (Generators::percent_chance(item_double_chance)) {
         std::vector<Item> items_copy = items;
+        std::transform(items_copy.begin(), items_copy.end(), items_copy.begin(), [=](Item item) {
+            Item new_item = item;
+            new_item.id = Generators::item_id();
+            return new_item;
+        });
         items.insert(end(items), begin(items_copy), end(items_copy));
     }
 }

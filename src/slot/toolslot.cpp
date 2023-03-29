@@ -11,6 +11,10 @@ bool ToolSlot::will_accept_drop(const SlotMessage &message) {
         return false;
     }
 
+    if (gw()->selected_char().activity().active) {
+        return false;
+    }
+
     return Item::def_of(get_item(message))->type & m_tool_type;
 }
 

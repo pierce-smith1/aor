@@ -336,7 +336,9 @@ bool Character::push_effect(const Item &effect) {
         return item.id != EMPTY_ID;
     });
 
-    if (current_effects == EFFECT_SLOTS - 1) {
+    bool should_die = current_effects == EFFECT_SLOTS - 1;
+    call_hooks(HookCalcShouldDie, { &should_die });
+    if (should_die) {
         gw()->notify(Warning, QString("%1 has been lost to the world.")
             .arg(m_name)
         );
@@ -418,6 +420,12 @@ void Character::call_hooks(HookType type, const HookPayload &payload, AorUInt Ao
 
     if (domain & Travelling) {
         LocationDefinition::get_def(gw()->game()->next_location_id()).properties.call_hooks(type, payload);
+    }
+
+    if (domain & Resident) {
+        for (const Item &item : gw()->game()->inventory().items()) {
+            item.call_hooks(type, payload, InventoryProperty);
+        }
     }
 
     for (const Item &item : extra_items) {

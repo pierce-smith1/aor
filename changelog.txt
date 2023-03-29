@@ -6,7 +6,7 @@ b2.0.0
 [v] (game) Added sounds! The UI has gotten clicky and short soundbites are played when activities start.
 [v] (game) Experimenting with the game being significantly faster; all actions now complete 10x as quickly.
 [ ] (game) Added a new tier of items
-[ ] (game) Tools no longer have a limited number of uses
+[v] (game) Tools no longer have a limited number of uses
 [v] (game) Fleshed out the global action counter into a more comprehensive threat system; this includes a bar showing the current and maximum threat (how long you have left before Welchian Fever begins)
 [ ] (game) The fungus items have been changed from tool products to signature (location specific) items; the Spacefiller has been reworked into the Spearfisher with a new set of consumables
 [v] (game) Added infostrips showing the total number of resources you have in your inventory and in each explorer's material slots
@@ -15,11 +15,22 @@ b2.0.0
 [v] (game) Raised the maximum number of explorers from 11 to 12
 [v] (game) New games now start with 2 explorers, one of which has dual heritage
 [ ] (game) Item balance:
-    [ ] (game) Bleeding Wildheart and Norton Ghost Pepper [Leafy Resource]: 0 -> 10
-    [v] (game) Seaquake [Item Level]: 3 -> 2
-    [v] (game) Fungified Token, Polymore, and Copycap [Item Level]: 4 -> 3
+    [ ] (buff) Bleeding Wildheart and Norton Ghost Pepper [Leafy Resource]: 0 -> 10
+    [v] (buff) Seaquake [Item Level]: 3 -> 2
+    [v] (buff) Fungified Token, Polymore, and Copycap [Item Level]: 4 -> 5
+    [v] (buff) Fungified Token, Polymore, and Copycap [Item Uses]: 1 -> 3
+    [v] (buff) Obsessive Checksum Discorder [Energy Penalty]: 20 -> 10
+    [v] (buff) Obsessive Checksum Discorder [Item Uses]: 5 -> 6
+    [v] (buff) Dynamic Digestion [Spirit Penalty]: 20 -> 10
+    [v] (buff) Dynamic Digestion [Energy Penalty]: 10 -> 0
+    [v] (buff) Dynamic Digestion [Item Uses]: 2 -> 10
+    [v] (buff) Double Vision [Item Uses]: 3 -> 6
 [v] (qol) Save files are no longer encrypted (the qol is for really for me)
 [v] (bug) Fixed nasty UI misalignment near the explorer portrait
 [v] (bug) Fixed some more things probably, I wasn't keeping track
 [v] (bug) Added a bunch of new bugs (you should find them!!!!)
 [ ] Made art for all the new things
+    (bug) Known issues:
+        Multiwindow mode is still extremely ugly, and has only gotten worse with the threat bar; it also could still use a re-arranging to fit the explorer windows next to the portrait.
+        Based on my testing, there seems to have been a significant performance regression. Does everyone experience stuttering and hanging?
+        With the change to tools, the Plum Fennahians' bonus is effectively useless.
