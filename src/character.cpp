@@ -83,6 +83,11 @@ void Character::queue_activity(ItemDomain domain, const std::vector<ItemId> &ite
     gw()->refresh_slots();
 }
 
+void Character::die() {
+    m_dead = true;
+    call_hooks(HookPostDeath, { this });
+}
+
 TimedActivity &Character::activity() {
     return gw()->game()->activity(m_activities.front());
 }
@@ -323,11 +328,11 @@ bool Character::push_effect(const Item &effect) {
             "<b>I just suffered an injury...</b><br>"
             "<br>"
             "<b>Injuries</b> inflict our explorers with negative effects.<br>"
-            "They are encountered randomly after taking actions, and are more frequent when using higher level tools.<br>"
-            "They may also be triggered by certain events, such as running out of energy or spirit.<br>"
+            "They are triggered by certain events, such as running out of energy or spirit,<br>"
+            "and can happen randomly under certain conditions.<br>"
             "They heal over time, and can be healed faster by eating <b>consumables</b>.<br>"
             "<br>"
-            "Injuries should not be left to fester; once an explorer fills all her injury slots, she will <b>die</b>. Please don't let this happen."
+            "Injuries should not be left to fester; once an explorer fills all her injury slots, she will <b>die</b>."
         );
     }
     gw()->game()->history().insert(effect.code);
@@ -342,7 +347,7 @@ bool Character::push_effect(const Item &effect) {
         gw()->notify(Warning, QString("%1 has been lost to the world.")
             .arg(m_name)
         );
-        m_dead = true;
+        die();
     }
 
     for (AorUInt i = 0; i < EFFECT_SLOTS; i++) {
@@ -408,29 +413,18 @@ void Character::call_hooks(HookType type, const HookPayload &payload, AorUInt Ao
     }
 
     if (domain & Explorer) {
-        heritage_properties().call_hooks(type, payload);
-    }
-
-    if (domain & Weather) {
-        for (AorUInt i = 0; i < WEATHER_EFFECTS; i++) {
-            ItemCode weather = gw()->game()->current_location().properties[(ItemProperty) (WeatherEffect1 + i)];
-            Item::def_of(weather)->properties.call_hooks(type, payload);
-        }
+        heritage_properties().call_hooks(type, payload, Item());
     }
 
     if (domain & Travelling) {
-        LocationDefinition::get_def(gw()->game()->next_location_id()).properties.call_hooks(type, payload);
-    }
-
-    if (domain & Resident) {
-        for (const Item &item : gw()->game()->inventory().items()) {
-            item.call_hooks(type, payload, InventoryProperty);
-        }
+        LocationDefinition::get_def(gw()->game()->next_location_id()).properties.call_hooks(type, payload, Item());
     }
 
     for (const Item &item : extra_items) {
         item.call_hooks(type, payload);
     }
+
+    gw()->game()->call_global_hooks(type, payload, AorInt_domain);
 }
 
 bool Character::clear_last_effect() {

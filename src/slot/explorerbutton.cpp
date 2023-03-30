@@ -267,10 +267,7 @@ QString ExplorerButton::character_description() {
     }
 
     ItemProperties heritage_props = Colors::blend_heritage(character().heritage());
+    string += Item::properties_to_string(heritage_props);
 
-    for (const auto &pair : heritage_props) {
-        string += property_definitions().at(pair.first).description.arg(pair.second) + "<br>";
-    }
-
-    return string.left(string.size() - 4);
+    return string;
 }

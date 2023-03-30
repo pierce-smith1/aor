@@ -62,26 +62,34 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
     },
     {
         BiomeJungle | 1,
-        "chameleon_cluster", "Chameleon Cluster", "JC",
-        "",
-        20 FORAGEABLES, 20 MINEABLES,
+        "Mycrocelium Oasis", "Mycrocelium Oasis", "JC",
+        "<i>Visible from any outlook, powerful points of azure light beam from</i><br>"
+        "<i>luminescent mushrooms in the jungle below.</i><br>"
+        "<i>Word around here is that these fungal growths excel wherever there's access to</i><br>"
+        "<i>at least 365 days of rain from the clouds.</i><br>",
+        30 FORAGEABLES, 20 MINEABLES,
         {
-            { WeatherEffect1, WeatherMark::marker("empty") },
+            { WeatherEffect1, WeatherMark::marker("unaligned_terrain") },
             { WeatherEffect2, WeatherMark::marker("empty") },
             { LocationSpiritCost, 10 },
             { LocationEnergyCost, 10 },
+            { LocationSignatureItem1, WeatherMark::marker("fungified_token") },
+            { LocationSignatureItem2, WeatherMark::marker("polymore") },
+            { LocationSignatureItem3, WeatherMark::marker("copycap") },
         }
     },
     {
         BiomeJungle | 2,
-        "registry_hive", "Registry Hive", "JT",
-        "",
+        "sigtermite_nest", "Sigtermite Nest", "JT",
+        "<i>Sigtermites are responsible for cleaning up those who misbehave;</i><br>"
+        "<i>just don't kick the nests, don't step on the plants, and you won't be terminated.</i><br>",
         20 FORAGEABLES, 20 MINEABLES,
         {
-            { WeatherEffect1, WeatherMark::marker("empty") },
+            { WeatherEffect1, WeatherMark::marker("detritus_reapers") },
             { WeatherEffect2, WeatherMark::marker("empty") },
             { LocationSpiritCost, 10 },
             { LocationEnergyCost, 10 },
+            { LocationSignatureItem1, WeatherMark::marker("binary_pesticide") },
         }
     },
     {
@@ -91,10 +99,11 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         "<i>If you start me up, I'll never stop</i><br>",
         20 FORAGEABLES, 20 MINEABLES,
         {
-            { WeatherEffect1, WeatherMark::marker("harmony") },
+            { WeatherEffect1, WeatherMark::marker("empty") },
             { WeatherEffect2, WeatherMark::marker("empty") },
             { LocationSpiritCost, 5 },
             { LocationEnergyCost, 5 },
+            { LocationSignatureItem1, WeatherMark::marker("virtualized_fruit") }
         }
     },
     {
@@ -118,13 +127,15 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
     },
     {
         BiomeMesa | 1,
-        "mesa_1", "mesa_1", "MO",
-        "",
-        20 FORAGEABLES, 20 MINEABLES,
+        "rocking_obelisk", "Rocking Obelisk", "MO",
+        "<i>An obsilicon monument dedicated to worship of that most holy panacea;</i><br>"
+        "<i>turning it off, then back on again.</i><br>",
+        30 FORAGEABLES, 30 MINEABLES,
         {
-            { WeatherEffect1, WeatherMark::marker("empty") },
-            { WeatherEffect2, WeatherMark::marker("empty") },
+            { WeatherEffect1, WeatherMark::marker("unified_egg_firmware_interface") },
+            { WeatherEffect2, WeatherMark::marker("unaligned_terrain") },
             { LocationSpiritCost, 30 },
+            { LocationSignatureItem1, WeatherMark::marker("advanced_coniine_and_phoratoxin_iris") },
         }
     },
     {
@@ -136,22 +147,22 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         "<i>trace of something in the ruins yet.</i><br>",
         15 FORAGEABLES, 30 MINEABLES,
         {
-            { WeatherEffect1, WeatherMark::marker("empty") },
+            { WeatherEffect1, WeatherMark::marker("nonvolatile_compounds") },
             { WeatherEffect2, WeatherMark::marker("empty") },
             { LocationSpiritCost, 30 },
             { LocationResourceRequirement, 40 },
-            { LocationSignatureItem1, WeatherMark::marker("ribbon_rollup") },
+            { LocationSignatureItem1, WeatherMark::marker("amniotic_cable") },
         }
     },
     {
         BiomeMesa | 3,
         "page_fault", "Page Fault", "MF",
         "<i>This great fracture in the earth is the result of several tectonic frames sliding past one another.</i><br>"
-        "<i>At the bottom, the chasm expands into a bottomless segmentation fault...</i><br>"
+        "<i>Far down enough, the chasm expands into a bottomless segmentation fault...</i><br>"
         "<i>there's no crawling out of that one.</i><br>",
         20 FORAGEABLES, 20 MINEABLES,
         {
-            { WeatherEffect1, WeatherMark::marker("empty") },
+            { WeatherEffect1, WeatherMark::marker("unaligned_terrain") },
             { WeatherEffect2, WeatherMark::marker("empty") },
             { LocationSpiritCost, 30 },
             { LocationEnergyCost, 30 },

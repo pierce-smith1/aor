@@ -16,7 +16,8 @@ enum Color : AorUInt {
     Blueberry,
     Plum,
     Cucumber,
-    Lime
+    Lime,
+    Sugarplum,
 };
 
 namespace Colors {

@@ -15,6 +15,12 @@ TimedActivity::TimedActivity(AorInt ms_total, AorInt ms_left, ItemDomain type, s
     : id(Generators::activity_id()), ms_total(ms_total), ms_left(ms_left), type(type), owned_item_ids(owned_item_ids), owner_id(owner_id) {}
 
 void TimedActivity::start() {
+    if (ms_total == 0 || ms_left == 0) {
+        active = false;
+        finished = true;
+        return;
+    }
+
     if (type == None || explorer_subtype() == None || ms_total == 0 || ms_left == 0) {
         return;
     }

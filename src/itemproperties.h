@@ -18,6 +18,7 @@ enum ItemProperty : AorUInt {
     ConsumableRegeneratesLocation,
     ConsumableKills,
     ConsumableGeneratesRandomItems,
+    ConsumableCopiesRandomItems,
     PersistentMaxEnergyBoost,
     PersistentMaxSpiritBoost,
     PersistentSpeedBonus,
@@ -30,6 +31,20 @@ enum ItemProperty : AorUInt {
     PersistentThreatDecrease,
     PersistentCannotDie,
     PersistentChaoticCalculations,
+    PersistentEggsHaveColor,
+    PersistentLoreMultiplier,
+    PersistentEggPowerBoost, // JANK TODO: This only works on artifacts!
+    PersistentInjuryPercentChance,
+    PersistentDeathGivesLore,
+    HeritageMaxEnergyBoost,
+    HeritageMaxSpiritBoost,
+    HeritageConsumableEnergyBoost,
+    HeritageSmithProductUsageBoost,
+    HeritageInjuryResilience,
+    HeritageMaterialValueBonus,
+    HeritageActivitySpeedBonus,
+    HeritageItemDoubleChance,
+    HeritageSpiritRetention,
     InjurySmithing,
     InjuryForaging,
     InjuryMining,
@@ -39,14 +54,6 @@ enum ItemProperty : AorUInt {
     InjuryTrading,
     InjuryCoupling, // COCK INJURED
     InjuryTravelling,
-    HeritageMaxEnergyBoost,
-    HeritageMaxSpiritBoost,
-    HeritageConsumableEnergyBoost,
-    HeritageSmithProductUsageBoost,
-    HeritageInjuryResilience,
-    HeritageMaterialValueBonus,
-    HeritageActivitySpeedBonus,
-    HeritageItemDoubleChance,
     PropertyIfLore,
     PropertyLoreRequirement,
     PropertyIfLoreValue,
@@ -61,6 +68,7 @@ enum ItemProperty : AorUInt {
     ToolDiscoverWeight9,
     HoldsItemCode = 0x0800, // indicates that the property holds an item code, see itemmark.h
     ConsumableGivesEffect,
+    ConsumableGivesEffectToAll,
     ToolCanDiscover1,
     ToolCanDiscover2,
     ToolCanDiscover3,
@@ -164,7 +172,13 @@ struct ItemProperties : public Serializable {
     AorUInt operator[](ItemProperty prop) const;
     std::map<ItemProperty, AorUInt>::const_iterator begin() const;
     std::map<ItemProperty, AorUInt>::const_iterator end() const;
-    void call_hooks(HookType type, const HookPayload &payload, AorUInt int_domain = 0, ItemProperty allowed_prop_type = (ItemProperty) ~InventoryProperty) const;
+    void call_hooks(
+        HookType type,
+        const HookPayload &payload,
+        Item caller,
+        AorUInt int_domain = 0,
+        ItemProperty allowed_prop_type = (ItemProperty) ~InventoryProperty
+    ) const;
 
     std::map<ItemProperty, AorUInt> map;
 

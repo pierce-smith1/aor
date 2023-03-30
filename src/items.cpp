@@ -148,7 +148,7 @@ Item Item::from_data_string(const QString &data_string) {
 }
 
 void Item::call_hooks(HookType type, const HookPayload &payload, ItemProperty allowed_prop_type) const {
-    def_of(code)->properties.call_hooks(type, payload, def()->type, allowed_prop_type);
+    def_of(code)->properties.call_hooks(type, payload, *this, def()->type, allowed_prop_type);
 }
 
 QPixmap Item::pixmap_of(ItemCode id) {
@@ -263,6 +263,8 @@ QString Item::properties_to_string(const ItemProperties &props) {
             } else if (pair.first == PropertyIfLore) {
                 ItemProperties target_properties = {{ (ItemProperty) pair.second, props[PropertyIfLoreValue] }};
                 description = def.description.arg(props[PropertyLoreRequirement]).arg(properties_to_string(target_properties));
+            } else if (pair.first == PersistentEggsHaveColor) {
+                description = def.description.arg(Colors::name((Color) pair.second));
             } else {
                 description = def.description.arg(pair.second);
             }

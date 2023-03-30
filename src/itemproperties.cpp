@@ -8,19 +8,19 @@
 
 #define HOOK_0 [](const HookPayload &, AorUInt prop_value) {}
 
-#define HOOK_1(t1, n1) [](const HookPayload &payload, AorUInt prop_value, AorUInt item_domain) { \
+#define HOOK_1(t1, n1) [](const HookPayload &payload, AorUInt prop_value, AorUInt item_domain, Item caller) { \
     t1 * n1 = extract_payload<t1 *>(payload, 0);
 
-#define HOOK_2(t1, n1, t2, n2) [](const HookPayload &payload, AorUInt prop_value, AorUInt item_domain) { \
+#define HOOK_2(t1, n1, t2, n2) [](const HookPayload &payload, AorUInt prop_value, AorUInt item_domain, Item caller) { \
     t1 * n1 = extract_payload<t1 *>(payload, 0); \
     t2 * n2 = extract_payload<t2 *>(payload, 1);
 
-#define HOOK_3(t1, n1, t2, n2, t3, n3) [](const HookPayload &payload, AorUInt prop_value, AorUInt item_domain) { \
+#define HOOK_3(t1, n1, t2, n2, t3, n3) [](const HookPayload &payload, AorUInt prop_value, AorUInt item_domain, Item caller) { \
     t1 * n1 = extract_payload<t1 *>(payload, 0); \
     t2 * n2 = extract_payload<t2 *>(payload, 1); \
     t3 * n3 = extract_payload<t3 *>(payload, 2);
 
-#define HOOK_4(t1, n1, t2, n2, t3, n3, t4, n4) [](const HookPayload &payload, AorUInt prop_value, AorUInt item_domain) { \
+#define HOOK_4(t1, n1, t2, n2, t3, n3, t4, n4) [](const HookPayload &payload, AorUInt prop_value, AorUInt item_domain, Item caller) { \
     t1 * n1 = extract_payload<t1 *>(payload, 0); \
     t2 * n2 = extract_payload<t2 *>(payload, 1); \
     t3 * n3 = extract_payload<t3 *>(payload, 2); \
@@ -49,10 +49,6 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
             }}, { HookCalcActivityTime, HOOK_1(AorInt, activity_ms)
                 if (item_domain & Tool) {
                     *activity_ms *= prop_value == 0 ? 1 : prop_value;
-                }
-            }}, { HookCalcInjuryChance, HOOK_1(AorInt, injury_percent_chance)
-                if (item_domain & Tool) {
-                    *injury_percent_chance += 3 + (prop_value * 6);
                 }
             }}}
         }},
@@ -114,11 +110,14 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
             {{ HookPostEat, HOOK_1(Character, character)
                 bool should_die = true;
                 character->call_hooks(HookCalcShouldDie, { &should_die });
-                character->dead() = should_die;
+
+                if (should_die) {
+                    character->die();
+                }
             }}}
         }},
         { ConsumableGeneratesRandomItems, {
-            "Creates <b>%1 random items</b> when consumed.",
+            "Creates <b>%1 random item(s)</b> when consumed.",
             {{ HookPostEat, HOOK_1(Character, character)
                 std::vector<ItemDefinition> possible_items;
 
@@ -135,6 +134,21 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
                     std::shuffle(possible_items.begin(), possible_items.end(), *Generators::rng());
                     character->discover(Item(possible_items[0]));
                 }
+            }}}
+        }},
+        { ConsumableCopiesRandomItems, {
+            "Creates a copy of <b>%1 random item(s)</b> in the inventory when consumed.",
+            {{ HookPostEat, HOOK_1(Character, character)
+                std::vector<Item> inventory_items;
+
+                auto &inventory = gw()->game()->inventory().items();
+                auto inserter = std::back_inserter(inventory_items);
+                std::copy_if(inventory.begin(), inventory.end(), inserter, [=](Item &item) {
+                    return item.id != EMPTY_ID;
+                });
+
+                std::shuffle(inventory_items.begin(), inventory_items.end(), *Generators::rng());
+                character->discover(inventory_items[0]);
             }}}
         }},
         { PersistentMaxEnergyBoost, {
@@ -256,6 +270,53 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
                 geometric_shift(energy_gain, 0x1);
             }}}
         }},
+        { PersistentEggsHaveColor, {
+            "Eggs hatch into <b>%1 Fennahians</b> (regardless of their parents.)",
+            {{ HookJustHatched, HOOK_2(Character, character, Item, egg)
+                character->heritage() = { (Color) prop_value };
+            }}}
+        }},
+        { PersistentLoreMultiplier, {
+            "We gain <b>%1x more lore</b> from studying items.",
+            {{ HookCalcLoreGain, HOOK_1(AorInt, lore_gain)
+                *lore_gain *= prop_value;
+            }}}
+        }},
+        { PersistentEggPowerBoost, {
+            "My children hatch with <b>%1x more powerful color traits.</b>",
+            {{ HookJustHatched, HOOK_2(Character, child, Item, egg)
+                auto &characters = gw()->game()->characters();
+                auto mother = std::find_if(characters.begin(), characters.end(), [&](Character &c) {
+                    auto &artifacts = c.external_items()[Artifact];
+                    return std::find_if(artifacts.begin(), artifacts.end(), [&](ItemId id) {
+                        return id == caller.id;
+                    }) != artifacts.end();
+                });
+
+                if (mother == characters.end()) {
+                    return;
+                }
+
+                if (egg->instance_properties[InstanceEggParent1] == mother->id() || egg->instance_properties[InstanceEggParent2] == mother->id()) {
+                    Heritage heritage = child->heritage();
+                    for (AorUInt i = 0; i < (prop_value - 1); i++) {
+                        std::copy(heritage.begin(), heritage.end(), std::inserter(child->heritage(), child->heritage().end()));
+                    }
+                }
+            }}}
+        }},
+        { PersistentInjuryPercentChance, {
+            "There is a <b>+%1% chance</b> I will <b>suffer an injury</b> after taking an action.",
+            {{ HookCalcInjuryChance, HOOK_1(AorInt, injury_percent_chance)
+                *injury_percent_chance += prop_value;
+            }}}
+        }},
+        { PersistentDeathGivesLore, {
+            "Whenever an explorer dies, gain <b>+%1 lore.</b>",
+            {{ HookPostDeath, HOOK_1(Character, character)
+                gw()->game()->lore() += prop_value;
+            }}}
+        }},
         { HeritageMaxEnergyBoost, {
             "I have <b>+%1 max energy</b>.",
             {{ HookCalcMaxEnergy, HOOK_1(AorInt, energy_gain)
@@ -304,10 +365,33 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
                 *item_double_chance += prop_value;
             }}}
         }},
+        { HeritageSpiritRetention, {
+            "I lose <b>%1% less spirit</b> from actions (but not less than 1).",
+            {{ HookCalcSpiritGain, HOOK_1(AorInt, spirit_gain)
+                if (*spirit_gain < 0) {
+                    *spirit_gain += prop_value;
+                    if (*spirit_gain > -1) {
+                        *spirit_gain = -1;
+                    }
+                }
+            }}}
+        }},
         { ConsumableGivesEffect, {
             "Gives an injury: <b>%1.</b>",
             {{ HookPostEat, HOOK_1(Character, character)
                 character->push_effect(Item(prop_value));
+            }}}
+        }},
+        { ConsumableGivesEffectToAll, {
+            "Gives an injury to <b>all</b> explorers: <b>%1.</b>",
+            {{ HookPostEat, HOOK_1(Character, character)
+                for (Character &c : gw()->game()->characters()) {
+                    if (c.id() == NOBODY || c.dead()) {
+                        continue;
+                    }
+
+                    c.push_effect(Item(prop_value));
+                }
             }}}
         }},
         { SkillClearInjury, {
@@ -417,7 +501,7 @@ std::map<ItemProperty, AorUInt>::const_iterator ItemProperties::end() const {
     return map.end();
 }
 
-void ItemProperties::call_hooks(HookType type, const HookPayload &payload, AorUInt int_domain, ItemProperty allowed_prop_type) const {
+void ItemProperties::call_hooks(HookType type, const HookPayload &payload, Item caller, AorUInt int_domain, ItemProperty allowed_prop_type) const {
     for (const auto &pair : *this) {
         if (!(pair.first & allowed_prop_type)) {
             continue;
@@ -426,7 +510,7 @@ void ItemProperties::call_hooks(HookType type, const HookPayload &payload, AorUI
         if (pair.first == PropertyIfLore) {
             if ((AorUInt) gw()->game()->lore() >= (*this)[PropertyLoreRequirement]) {
                 ItemProperties({{ (ItemProperty) pair.second, (*this)[PropertyIfLoreValue] }})
-                    .call_hooks(type, payload, int_domain, allowed_prop_type);
+                    .call_hooks(type, payload, caller, int_domain, allowed_prop_type);
             }
             continue;
         }
@@ -441,7 +525,7 @@ void ItemProperties::call_hooks(HookType type, const HookPayload &payload, AorUI
             continue;
         }
 
-        hook->second(payload, pair.second, int_domain);
+        hook->second(payload, pair.second, int_domain, caller);
     }
 }
 

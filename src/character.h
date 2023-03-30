@@ -48,6 +48,7 @@ public:
     ItemProperties heritage_properties();
 
     void queue_activity(ItemDomain domain, const std::vector<ItemId> &items);
+    void die();
     TimedActivity &activity();
 
     ClampedResource &energy();

@@ -19,11 +19,12 @@ using HookPayload = std::array<std::variant<
     qreal *,
     AorUInt *,
     AorInt *,
+    Item *,
     ClampedResource *,
     QString *,
     std::vector<WeightedVector<Item>> *,
     Character *>, 4>;
-using Hook = std::function<void(const HookPayload &, AorUInt, AorUInt)>;
+using Hook = std::function<void(const HookPayload &, AorUInt, AorUInt, Item)>;
 
 template <typename T> T extract_payload(const HookPayload &payload, size_t index) {
     if (!std::holds_alternative<T>(payload[index])) {
@@ -52,4 +53,7 @@ enum HookType : AorUInt {
     HookDecideCanTravel,
     HookCalcThreatGain,
     HookCalcShouldDie,
+    HookJustHatched,
+    HookCalcLoreGain,
+    HookPostDeath,
 };

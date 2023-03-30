@@ -16,6 +16,7 @@
 #include "definitionmark.h"
 #include "serialize.h"
 #include "types.h"
+#include "colors.h"
 
 #define USES
 #define LEVEL
@@ -206,20 +207,40 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
     },
     {
         CT_CONSUMABLE | 8,
-        "ribbon_rollup", "Ribbon Rollup",
-        "",
-        2 USES, Consumable | Signature,
+        "virtualized_fruit", "Virtualized Fruit",
+        "<i>But that is the thing with many eaters; most of the time they are</i><br>"
+        "<i>napping or doing something else, and thus, you can snatch that peach</i><br>"
+        "<i>away and give it to someone else for a while. And thus we create the</i><br>"
+        "<i>illusion of many virtual peaches, one peach for each person!</i><br>"
+        "<br>"
+        "<i>    - from Operating Systems: Three Easy Pieces</i><br>",
+        8 USES, Consumable | Signature,
         {
             { ItemLevel, 5 },
             { RunicResource, 50 },
-            { ConsumableMakesCouplable, 1 }
+            { LeafyResource, 50 },
+            { ConsumableEnergyBoost, 100 },
+            { ConsumableSpiritBoost, 100 },
         }
     },
     {
         CT_CONSUMABLE | 9,
-        "conconium", "Conconium",
-        "<i>It turns out that the memory center of the brain has certain areas that are strictly off-limits.</i><br>"
-        "<i>This plant lets you access them - and pay the terrible price for doing so.</i>",
+        "binary_pesticide", "Binary Pesticide",
+        "<i>A potent de-bugging tool, binary pesticide not only kills unwanted bugs,</i><br>"
+        "<i>but lets you decide the exact time and nature of their death.</i><br>"
+        "<i>It's usable on any living creature, in fact... hm. That gives me an idea.</i><br>",
+        1 USES, Signature | Consumable,
+        {
+            { ItemLevel, 5 },
+            { ConsumableGivesEffectToAll, ItemMark::marker("spinal_trap") },
+        }
+    },
+    {
+        CT_CONSUMABLE | 10,
+        "advanced_coniine_and_phoratoxin_iris", "Advanced Coniine and Phoratoxin Iris",
+        "<i>The first half of the great cycle of life is turning it off.</i><br>"
+        "<i>This divine flower promises lucrative rewards for participating in its ritual,</i><br>"
+        "<i>if we are prepared to pay its price.</i><br>",
         2 USES, Signature | Consumable,
         {
             { ItemLevel, 5 },
@@ -229,16 +250,43 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         }
     },
     {
-        CT_CONSUMABLE | 9,
+        CT_CONSUMABLE | 11,
         "honeykey", "Honeykey",
         "<i>The hive's honey is revered not just for its sweetness, but its awesome regenerative power.</i><br>"
-        "<i>Droplets on the ground cause the world itself to regrow around it.</i><br>",
+        "<i>Droplets spilled on the ground cause the world itself to regrow around it.</i><br>",
         1 USES, Consumable | Signature,
         {
             { ItemLevel, 5 },
             { LeafyResource, 50 },
             { ConsumableClearsNumEffects, 4 },
             { ConsumableRegeneratesLocation, 10 }
+        }
+    },
+    {
+        CT_CONSUMABLE | 12,
+        "haskeel", "Haskeel",
+        "<i>The haskeel has a very unusual life cycle;</i><br>"
+        "<i>rather than growing up, it just gets replaced by another, older version</i><br>"
+        "<i>of itself every so often.</i><br>",
+        1 USES, Consumable,
+        {
+            { ItemLevel, 3 },
+            { ConsumableEnergyBoost, 50 },
+            { ConsumableSpiritBoost, 20 },
+            { ConsumableCopiesRandomItems, 1 }
+        }
+    },
+    {
+        CT_CONSUMABLE | 13,
+        "shellfish", "Shellfish",
+        "<i>The shellfish is especially edible and easy to fish for compared</i><br>"
+        "<i>to the sea's other shelled creatures -</i><br>"
+        "<i>bashsnails have stingers that'll shellshock you, and almsquids</i><br>"
+        "<i>just taste like ash.</i><br>",
+        1 USES, Consumable,
+        {
+            { ItemLevel, 3 },
+            { ConsumableEnergyBoost, 80 }
         }
     },
     {
@@ -327,13 +375,16 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
     },
     {
         CT_MATERIAL | 7,
-        "purl", "Purl",
-        "<i>It looks an awful lot like a pearl, but it isn't one, so we needed to call it something else.</i><br>"
-        "<i>Despite looking like a precious stone, these things are actually eggs - </i><br>"
-        "<i>given enough time, they hatch into a beautiful butterfly.</i><br>",
+        "rusted_bar", "Rusted Bar",
+        "<i>The \"rust\" is actually not wear or weathering - it's a symbiotic, moss-like</i><br>"
+        "<i>organism that ensures the metal it lives on is always being used safely.</i><br>"
+        "<i>It helps keep us in check, but some of our smiths consider it so gravely annoying</i><br>"
+        "<i>that they will boil it off in the blazing magma seas of the underground.</i><br>",
         1 USES, Material,
         {
-
+            { ItemLevel, 4 },
+            { MetallicResource, 50 },
+            { LeafyResource, 30 },
         }
     },
     {
@@ -439,21 +490,21 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
     },
     {
         CT_TOOL | 5,
-        "spacefiller", "Spacefiller",
-        "<i>The lightless crevices of Rhodon's damp caverns are filled with all sorts of odd fungi.</i><br>"
-        "<i>This mushroom-stabbing spear will help give us a taste of what we're missing!</i><br>",
+        "spearfisher", "Spearfisher",
+        "<i>Sure, you could just throw a little gold into the river and wait for</i><br>"
+        "<i>the weak, crusty bottom-feeders to shuffle over to it -</i><br>"
+        "<i>but if you want a </i>real<i> meal, you'd better be wading in that stream</i><br>"
+        "<i>with a spear in one hand and a list in the other.</i><br>",
         0 USES, ForagingTool,
         {
             { ItemLevel, 3 },
-            { ToolEnergyCost, 50 },
+            { ToolEnergyCost, 20 },
             { CostLeafy, 10 },
             { CostMetallic, 30 },
             { CostCrystalline, 30 },
-            { ToolCanDiscover1, ItemMark::marker("fungified_token") },
-            { ToolCanDiscover2, ItemMark::marker("polymore") },
-            { ToolCanDiscover3, ItemMark::marker("copycap") },
+            { ToolCanDiscover1, ItemMark::marker("haskeel") },
+            { ToolCanDiscover3, ItemMark::marker("shellfish") },
             { ToolDiscoverWeight1, 1 },
-            { ToolDiscoverWeight2, 1 },
             { ToolDiscoverWeight3, 1 }
         }
     },
@@ -531,9 +582,25 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         0 USES, Artifact,
         {
             { ItemLevel, 4 },
-            { PropertyIfLore, HeritageConsumableEnergyBoost },
-            { PropertyLoreRequirement, 200 },
-            { PropertyIfLoreValue, 20 },
+            { PropertyIfLore, HeritageItemDoubleChance },
+            { PropertyLoreRequirement, 230 },
+            { PropertyIfLoreValue, 30 },
+        }
+    },
+    {
+        CT_ARTIFACT | 3,
+        "amniotic_cable", "Amniotic Cable",
+        "<i>In a technique known as \"unattended upbringing\", these cables plug directly into an egg</i><br>"
+        "<i>to infuse the child with good personality traits, life skills, and a complete higher education</i><br>"
+        "<i>before they even see sunlight.</i><br>"
+        "<i>I gotta say, it's saved me a lot of time and effort. I didn't have to put in years of</i><br>"
+        "<i>mentally and physically abusing them or anything!</i><br>",
+        0 USES, Signature | Artifact,
+        {
+            { ItemLevel, 5 },
+            { PersistentEggPowerBoost, 3 },
+            { PersistentMaxEnergyBoost, 20 },
+            { PersistentMaxSpiritBoost, 20 },
         }
     },
     {
@@ -548,7 +615,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
             { PersistentEnergyPenalty, 10 },
             { InjuryMining, 1 },
             { InjuryForaging, 1 },
-            { InjuryTrading, 1 },
         }
     },
     {
@@ -617,13 +683,16 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
     },
     {
         CT_EFFECT | 7,
-        "trematrap", "Trematrap",
-        "<i>The parasite wrapped around my spine filters messages being sent through my nervous system.</i>"
-        "<i>When the brain tells the body it's time to die I can just, well, ignore it.</i>",
-        10 USES, Effect,
+        "spinal_trap", "Spinal Trap",
+        "<i>Through a series of metaphysical incantations, my spirit can remotely control</i><br>"
+        "<i>the signals being sent through my nervous system.</i><br>"
+        "<i>When my brain tells my body it's time to die, I can just - well - ignore it.</i><br>",
+        15 USES, Effect,
         {
             { ItemLevel, 5 },
-            { PersistentCannotDie, 1 }
+            { PropertyIfLore, PersistentCannotDie },
+            { PropertyIfLoreValue, 1 },
+            { PropertyLoreRequirement, 130 },
         }
     },
     {
@@ -684,13 +753,60 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         }
     },
     {
+        CT_WEATHER | 3,
+        "unified_egg_firmware_interface", "Unified Egg Firmware Interface",
+        "<i>The second half of the great cycle of life is turning it back on again.</i><br>"
+        "<i>In this consecrated place, life emerges under the guidance of spirits unbound by the</i><br>"
+        "<i>Basic Input Offspring System - molded directly by the gods themselves, whatever they may be.</i><br>",
+        0 USES, Weather,
+        {
+            { ItemLevel, 1 },
+            { PersistentEggsHaveColor, Sugarplum },
+        }
+    },
+    {
+        CT_WEATHER | 4,
+        "nonvolatile_compounds", "Nonvolatile Compounds",
+        "<i>The air and sand are full of inert elements, leaving most of the</i><br>"
+        "<i>ancient writing here completely undisturbed.</i><br>"
+        "<i>Time itself seems to move more slowly - especially compared to the northern regions of Rhodon.</i><br>",
+        0 USES, Weather,
+        {
+            { ItemLevel, 1 },
+            { PersistentLoreMultiplier, 2 },
+        }
+    },
+    {
+        CT_WEATHER | 5,
+        "unaligned_terrain", "Unaligned Terrain",
+        "<i>Normally, sudden changes in elevation in Rhodon's landscape occur at regular intervals -</i><br>"
+        "<i>But here, everything is janky and unpredictable, so I keep tripping over stuff.</i><br>"
+        "<i>The cartographers aren't documenting anything!</i><br>",
+        0 USES, Weather,
+        {
+            { ItemLevel, 1 },
+            { PersistentInjuryPercentChance, 15 }
+        }
+    },
+    {
+        CT_WEATHER | 6,
+        "detritus_reapers", "Detritus Reapers",
+        "<i>Death is an opportunity for new growth;</i><br>"
+        "<i>this world ain't big enough for the 65 thousand of us.</i><br>",
+        0 USES, Weather,
+        {
+            { ItemLevel, 1 },
+            { PersistentDeathGivesLore, 80 },
+        }
+    },
+    {
         CT_OTHER | 0,
         "fennahian_egg", "Fennahian Egg",
         "<i>I could make an omelette out of it, but maybe it's best to just wait for it to hatch.</i><br>",
         1 USES, Consumable | Untradeable,
         {
             { ItemLevel, 3 },
-            { ConsumableEnergyBoost, 50 }
+            { ConsumableEnergyBoost, 50 },
         }
     },
     {

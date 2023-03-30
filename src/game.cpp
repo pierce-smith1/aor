@@ -106,18 +106,18 @@ bool &Game::no_exhaustion() {
     return m_no_exhaustion;
 }
 
-bool Game::add_character(const QString &name, const std::multiset<Color> &heritage) {
+std::optional<Character *> Game::add_character(const QString &name, const std::multiset<Color> &heritage) {
     AorUInt max = 0;
     while (m_explorers[max].id() != NOBODY && max < MAX_EXPLORERS) {
         max++;
     }
 
     if (max == MAX_EXPLORERS) {
-        return false;
+        return std::optional<Character *>();
     }
 
     m_explorers[max] = Character(Generators::char_id(), name, heritage);
-    return true;
+    return std::optional<Character *>(&m_explorers[max]);
 }
 
 bool Game::add_item(const Item &item) {
@@ -138,7 +138,7 @@ TimedActivity &Game::register_activity(TimedActivity &activity) {
 }
 
 void Game::check_hatch() {
-    for (const Item &item : inventory().items()) {
+    for (Item &item : inventory().items()) {
         if (item.code == Item::code_of("fennahian_egg")) {
             if (m_threat - item.instance_properties[InstanceEggFoundThreatstamp] > THREAT_TO_HATCH) {
                 Heritage heritage;
@@ -152,8 +152,10 @@ void Game::check_hatch() {
                     }
                 }
 
-                if (add_character(Generators::yokin_name(), heritage)) {
+                auto babey = add_character(Generators::yokin_name(), heritage);
+                if (babey) {
                     gw()->notify(Discovery, "A new Fennahian was born!");
+                    call_hooks(HookJustHatched, [&](Character &) -> HookPayload { return { *babey, &item }; });
                 }
                 inventory().remove_item(item.id);
 
@@ -458,7 +460,27 @@ void Game::call_hooks(HookType type, const std::function<HookPayload(Character &
             continue;
         }
 
-        c.call_hooks(type, payload_provider(c), int_domain);
+        // Don't call global effects per-character; we'll do that later.
+        AorUInt char_domain = int_domain & ~Weather;
+        char_domain &= ~Resident;
+        c.call_hooks(type, payload_provider(c), char_domain);
+    }
+
+    call_global_hooks(type, payload_provider(m_explorers[0]), int_domain);
+}
+
+void Game::call_global_hooks(HookType type, const HookPayload &payload, AorUInt int_domain) {
+    if (int_domain & Weather) {
+        for (AorUInt i = 0; i < WEATHER_EFFECTS; i++) {
+            ItemCode weather = gw()->game()->current_location().properties[(ItemProperty) (WeatherEffect1 + i)];
+            Item::def_of(weather)->properties.call_hooks(type, payload, Item());
+        }
+    }
+
+    if (int_domain & Resident) {
+        for (const Item &item : gw()->game()->inventory().items()) {
+            item.call_hooks(type, payload, InventoryProperty);
+        }
     }
 }
 

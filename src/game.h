@@ -71,7 +71,7 @@ public:
     bool &fast_actions();
     bool &no_exhaustion();
 
-    bool add_character(const QString &name, const std::multiset<Color> &heritage);
+    std::optional<Character *> add_character(const QString &name, const std::multiset<Color> &heritage);
     bool add_item(const Item &item);
     TimedActivity &register_activity(TimedActivity &activity);
     void check_hatch();
@@ -97,6 +97,7 @@ public:
     Character &character(CharacterId id);
     TimedActivity &activity(ActivityId id);
     void call_hooks(HookType type, const std::function<HookPayload(Character &)> &payload_provider, AorUInt int_domain = BASE_HOOK_DOMAINS);
+    void call_global_hooks(HookType type, const HookPayload &payload, AorUInt int_domain = BASE_HOOK_DOMAINS);
 
     void serialize(QIODevice *dev) const;
     void deserialize(QIODevice *dev);
