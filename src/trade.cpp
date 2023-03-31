@@ -2,11 +2,7 @@
 #include "gamewindow.h"
 
 DoughbyteConnection::DoughbyteConnection() {
-#ifdef Q_NO_DEBUG
     m_socket.connectToHost("doughbyte.com", 10241);
-#else
-    m_socket.connectToHost("localhost", 10241);
-#endif
 
     QObject::connect(&m_socket, &QTcpSocket::connected, [=]() {
         IO::write_uint(&m_socket, gw()->game()->game_id());
