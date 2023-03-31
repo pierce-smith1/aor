@@ -503,9 +503,9 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
             { CostMetallic, 30 },
             { CostCrystalline, 30 },
             { ToolCanDiscover1, ItemMark::marker("haskeel") },
-            { ToolCanDiscover3, ItemMark::marker("shellfish") },
+            { ToolCanDiscover2, ItemMark::marker("shellfish") },
             { ToolDiscoverWeight1, 1 },
-            { ToolDiscoverWeight3, 1 }
+            { ToolDiscoverWeight2, 1 }
         }
     },
     {
@@ -515,7 +515,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         0 USES, SmithingTool,
         {
             { ItemLevel, 3 },
-            { ToolEnergyCost, 70 },
+            { ToolEnergyCost, 30 },
             { CostStone, 160 },
             { CostRuinc, 20 },
             { ToolMaximumStone, 50 },
@@ -535,6 +535,12 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
             { ToolEnergyCost, 30 },
             { CostStone, 50 },
             { CostCrystalline, 50 },
+            { ToolCanDiscover1, ItemMark::marker("rubygem") },
+            { ToolCanDiscover2, ItemMark::marker("rusted_bar") },
+            { ToolCanDiscover3, ItemMark::marker("wolframite_alpha") },
+            { ToolDiscoverWeight1, 1 },
+            { ToolDiscoverWeight2, 1 },
+            { ToolDiscoverWeight3, 1 },
         }
     },
     /*
@@ -583,7 +589,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         {
             { ItemLevel, 4 },
             { PropertyIfLore, HeritageItemDoubleChance },
-            { PropertyLoreRequirement, 230 },
+            { PropertyLoreRequirement, 200 },
             { PropertyIfLoreValue, 30 },
         }
     },

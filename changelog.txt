@@ -1,11 +1,11 @@
 
 b2.0.0
 
-[v] (game) Added exploring! Dissassemble food, tools and artifacts to learn the map of Rhodon and discover new places, then choose somewhere to move once your explorers have enough resources to make the passage. Each location has unique effects and special items to find, but they only have a limited number of resources - so don't get too comfortable where you are.
-[v] (game) Added an end goal! Find and reach the Tree of Roses to bring your adventure to a close (the ending is a blatant placeholder).
-[v] (game) Added sounds! The UI has some new satisfying clicky click noises and short soundbites to play when activities start.
+[v] (game) Added exploring - dissassemble food, tools and artifacts to uncover the map of Rhodon, then choose somewhere to move once your explorers have enough resources to make the passage. Each location has unique effects and special items to find, but they only have a limited number of resources - so don't get too comfortable where you are.
+[v] (game) Added an end goal - find and reach the Tree of Roses to bring your adventure to a close (the ending is a blatant placeholder).
+[v] (game) Added sounds - certain UI elements and game actions will now play sounds (thanks prrrki!)
 [v] (game) Experimenting with the game being significantly faster; all actions now complete 10x as quickly.
-[ ] (game) Added a new tier of items
+[v] (game) Added a new tier of items
 [v] (game) Tools no longer have a limited number of uses
 [v] (game) Globally, random injuries no longer occur - they can now only be triggered by determinate events (i.e. running out of energy) or location-specific random events
 [v] (game) In response to the above changes, the Plum and Orange Fennahian color bonuses have been changed
@@ -18,6 +18,7 @@ b2.0.0
 [v] (game) New games now start with 2 explorers, one of which has dual heritage
 [ ] (game) Item balance:
     [v] (buff) Bleeding Wildheart and Norton Ghost Pepper [Leafy Resource]: 0 -> 10
+    [v] (buff) Norton Ghost Pepper [Energy Boost]: 20 -> 30
     [v] (nerf) Seaquake [Item Level]: 3 -> 2
     [v] (buff) Fungified Token, Polymore, and Copycap [Item Level]: 4 -> 5
     [v] (buff) Fungified Token, Polymore, and Copycap [Item Uses]: 1 -> 3

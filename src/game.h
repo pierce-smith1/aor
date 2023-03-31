@@ -15,7 +15,7 @@
 #include "serialize.h"
 
 const static AorUInt MAX_EXPLORERS = 12;
-const static AorUInt AEGIS_THREAT = 800 * 5;
+const static AorUInt AEGIS_THREAT = 1200 * 5;
 const static AorUInt STUDY_SLOTS_PER_DOMAIN = 3;
 const static AorInt LORE_PER_SCAN = 5;
 const static AorInt BASE_MAX_LORE = 50;
