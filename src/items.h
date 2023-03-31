@@ -134,7 +134,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         {
             { ItemLevel, 2 },
             { ConsumableClearsNumEffects, 1 },
-            { ConsumableEnergyBoost, 20 },
+            { ConsumableEnergyBoost, 30 },
             { LeafyResource, 10 }
         }
     },
@@ -727,7 +727,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
     },
     {
         CT_WEATHER | 1,
-        "harmony", "Harmony",
+        "harmony", "Peace",
         "<i>I see the towering pines, needles pointing to the twinkling stars;</i><br>"
         "<i>the fluttering butterflies, speaking with the language of the wind;</i><br>"
         "<i>the flocking birds, streaking patterns in the sky;</i><br>"

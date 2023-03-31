@@ -1124,7 +1124,7 @@
             <widget class="QWidget" name="study_tab">
              <attribute name="icon">
               <iconset resource="../../images.qrc">
-               <normaloff>:/assets/img/icons/arrow.png</normaloff>:/assets/img/icons/arrow.png</iconset>
+               <normaloff>:/assets/img/icons/loreglyph.png</normaloff>:/assets/img/icons/loreglyph.png</iconset>
              </attribute>
              <attribute name="title">
               <string>Study</string>
@@ -1205,7 +1205,7 @@
                     <string/>
                    </property>
                    <property name="pixmap">
-                    <pixmap resource="../../images.qrc">:/assets/img/icons/arrows.png</pixmap>
+                    <pixmap resource="../../images.qrc">:/assets/img/icons/downarrow.png</pixmap>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignCenter</set>
@@ -1239,7 +1239,7 @@
                        <string/>
                       </property>
                       <property name="pixmap">
-                       <pixmap resource="../../images.qrc">:/assets/img/icons/bolt.png</pixmap>
+                       <pixmap resource="../../images.qrc">:/assets/img/icons/loreglyph.png</pixmap>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1378,7 +1378,7 @@
              <string/>
             </property>
             <property name="pixmap">
-             <pixmap resource="../../images.qrc">:/assets/img/icons/warning.png</pixmap>
+             <pixmap resource="../../images.qrc">:/assets/img/icons/threat.png</pixmap>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>

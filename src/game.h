@@ -85,7 +85,15 @@ public:
 
     void start_scan();
     bool can_scan();
-    bool can_travel(LocationId id);
+
+    enum class TravelCheckResult {
+        Ok,
+        InsufficientResources,
+        ConcurrentAction,
+        AlreadyHere,
+        NoPath,
+    };
+    TravelCheckResult can_travel(LocationId id);
     void start_travel(LocationId id);
     AorInt forageables_left(LocationId id);
     AorInt forageables_left();

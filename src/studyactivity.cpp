@@ -40,11 +40,11 @@ AorInt StudyActivity::lore_to_gain(const TimedActivity &activity) {
 
     AorInt gain = 0;
     if (item.def()->type & Artifact) {
-        gain = item.def()->properties[ItemLevel] * 12;
+        gain = item.def()->properties[ItemLevel] * 20;
     } else if (item.def()->type & Tool) {
-        gain = item.def()->properties[ItemLevel] * 8;
+        gain = item.def()->properties[ItemLevel] * 15;
     } else {
-        gain = item.def()->properties[ItemLevel] * 2;
+        gain = item.def()->properties[ItemLevel] * 5;
     }
 
     gw()->game()->call_hooks(HookCalcLoreGain, [&](Character &) -> HookPayload { return { &gain }; });

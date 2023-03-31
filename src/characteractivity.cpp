@@ -385,14 +385,18 @@ void CharacterActivity::clear_injuries(const TimedActivity &activity) {
 
 void CharacterActivity::start_next_action(const TimedActivity &activity) {
     activity.owner().activities().pop_front();
-    TimedActivity &next = activity.owner().activity();
-    while (next.explorer_subtype() != None) {
-        if (activity.owner().can_perform_action(activity.explorer_subtype())) {
-            next.start();
+    TimedActivity *next = &activity.owner().activity();
+    while (next->explorer_subtype() != None) {
+        if (activity.owner().can_perform_action(next->explorer_subtype())) {
+            next->start();
             break;
         }
+
+        for (ItemId owned_item_id : next->owned_item_ids) {
+            gw()->game()->inventory().get_item_ref(owned_item_id).owning_action = NO_ACTION;
+        }
         activity.owner().activities().pop_front();
-        next = activity.owner().activity();
+        next = &activity.owner().activity();
     }
 }
 

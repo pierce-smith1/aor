@@ -8,6 +8,19 @@ LocationSlot::LocationSlot(const LocationDefinition &def, QWidget *parent)
     setParent(parent);
     setMinimumSize(32, 32);
     setMaximumSize(32, 32);
+
+    m_item_label->setMinimumSize(28, 28);
+    m_item_label->setMaximumSize(28, 28);
+}
+
+QPixmap LocationSlot::pixmap() {
+    if (m_location_def.id & BiomeJungle) {
+        return QPixmap(":/assets/img/icons/jungle.png");
+    } else if (m_location_def.id & BiomeMesa) {
+        return QPixmap(":/assets/img/icons/mesa.png");
+    } else {
+        return QPixmap(":/assets/img/icons/roses.png");
+    }
 }
 
 bool LocationSlot::do_hovering() {
@@ -19,7 +32,7 @@ std::optional<TooltipInfo> LocationSlot::tooltip_info() {
         QString("<b>%1</b>").arg(m_location_def.display_name),
         location_subtext(),
         location_description(),
-        Item::pixmap_of("byteberry"),
+        QPixmap(QString(":/assets/img/items/%1").arg(m_location_def.internal_name)),
         {},
         std::optional<QColor>()
     });
@@ -28,7 +41,20 @@ std::optional<TooltipInfo> LocationSlot::tooltip_info() {
 void LocationSlot::on_left_click(QMouseEvent *event) {
     QAction *travel_action = new QAction(Icons::activity_icons().at(Travelling), "Travel", this);
 
-    if (!gw()->game()->can_travel(m_location_def.id)) {
+    auto travel_check_result = gw()->game()->can_travel(m_location_def.id);
+    if (gw()->game()->can_travel(m_location_def.id) != Game::TravelCheckResult::Ok) {
+        switch (travel_check_result) {
+            case Game::TravelCheckResult::ConcurrentAction: {
+                travel_action->setText("Travel (All explorers must be idle)");
+                break;
+            } case Game::TravelCheckResult::InsufficientResources: {
+                travel_action->setText("Travel (Requirements not met)");
+                break;
+            } case Game::TravelCheckResult::NoPath: {
+                travel_action->setText("Travel (Too far away)");
+                break;
+            } default: {}
+        }
         travel_action->setEnabled(false);
     }
 

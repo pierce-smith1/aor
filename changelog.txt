@@ -17,8 +17,8 @@ b2.0.0
 [v] (game) Raised the maximum number of explorers from 11 to 12
 [v] (game) New games now start with 2 explorers, one of which has dual heritage
 [ ] (game) Item balance:
-    [ ] (buff) Bleeding Wildheart and Norton Ghost Pepper [Leafy Resource]: 0 -> 10
-    [v] (buff) Seaquake [Item Level]: 3 -> 2
+    [v] (buff) Bleeding Wildheart and Norton Ghost Pepper [Leafy Resource]: 0 -> 10
+    [v] (nerf) Seaquake [Item Level]: 3 -> 2
     [v] (buff) Fungified Token, Polymore, and Copycap [Item Level]: 4 -> 5
     [v] (buff) Fungified Token, Polymore, and Copycap [Item Uses]: 1 -> 3
     [v] (buff) Obsessive Checksum Discorder [Energy Penalty]: 20 -> 10

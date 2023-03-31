@@ -6,6 +6,7 @@ class LocationSlot : public Slot {
 public:
     LocationSlot(const LocationDefinition &def, QWidget *parent);
 
+    virtual QPixmap pixmap() override;
     virtual bool do_hovering() override;
     virtual std::optional<TooltipInfo> tooltip_info() override;
 

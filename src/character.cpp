@@ -187,6 +187,7 @@ AorInt Character::spirit_to_gain() {
             break;
         } default: {
             gain -= base_spirit_cost();
+            call_hooks(HookCalcSpiritGain, { &gain }, BASE_HOOK_DOMAINS, activity().owned_items());
             break;
         }
     }

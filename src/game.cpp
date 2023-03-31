@@ -349,26 +349,30 @@ std::vector<TimedActivity> Game::activities_of_type(ItemDomain type) {
     return activities;
 }
 
-bool Game::can_travel(LocationId id) {
+Game::TravelCheckResult Game::can_travel(LocationId id) {
     if (id == m_current_location_id || m_next_location_id != NOWHERE) {
-        return false;
+        return TravelCheckResult::AlreadyHere;
     }
 
     if (std::any_of(m_explorers.begin(), m_explorers.end(), [=](Character &c) {
         return c.activity().active;
     })) {
-        return false;
+        return TravelCheckResult::ConcurrentAction;
     }
 
     // Temporarily set so that hooks can use it.
     m_next_location_id = id;
 
-    bool can_travel = m_map.path_exists_between(m_current_location_id, id);
+    if (!m_map.path_exists_between(m_current_location_id, id)) {
+        return TravelCheckResult::NoPath;
+    }
+
+    bool can_travel = true;
     call_hooks(HookDecideCanTravel, [&](Character &c) -> HookPayload { return { &c, &can_travel }; });
 
     m_next_location_id = NOWHERE;
 
-    return can_travel;
+    return can_travel ? TravelCheckResult::Ok : TravelCheckResult::InsufficientResources;
 }
 
 void Game::start_travel(LocationId id) {

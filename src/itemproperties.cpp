@@ -366,7 +366,7 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
             }}}
         }},
         { HeritageSpiritRetention, {
-            "I lose <b>%1% less spirit</b> from actions (but not less than 1).",
+            "I lose <b>%1 less spirit</b> from actions (but not less than 1).",
             {{ HookCalcSpiritGain, HOOK_1(AorInt, spirit_gain)
                 if (*spirit_gain < 0) {
                     *spirit_gain += prop_value;

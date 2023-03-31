@@ -25,7 +25,7 @@ const std::map<ItemDomain, QPixmap> &Icons::activity_icons_big() {
         { Eating, QPixmap(":/assets/img/icons/apple_big.png") },
         { Defiling, QPixmap(":/assets/img/icons/spirit_big.png") },
         { Coupling, QPixmap(":/assets/img/icons/heart_big.png") },
-        { Travelling, QPixmap(":/assets/img/icons/arrow.png") },
+        { Travelling, QPixmap(":/assets/img/icons/arrow_big.png") },
         { None, QPixmap(":/assets/img/icons/blank.png") },
     };
 
