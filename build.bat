@@ -23,6 +23,9 @@ for %%I in (%CD%\assets\img\style\*.png) do (
 for %%I in (%CD%\assets\img\map\*.png) do (
     echo ^<file^>assets/img/map/%%~nxI^</file^> >> images.qrc
 )
+for %%I in (%CD%\assets\wav\*.wav) do (
+    echo ^<file^>assets/wav/%%~nxI^</file^> >> images.qrc
+)
 
 echo ^</qresource^>^</RCC^> >> images.qrc
 
