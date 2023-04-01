@@ -41,7 +41,7 @@ public:
                     // constructor public for use with std::allocator.
 
     bool initialized();
-    Game *game();
+    Game *&game();
     Ui::LKMainWindow &window();
     Tooltip *&tooltip();
     CharacterId &selected_char_id();

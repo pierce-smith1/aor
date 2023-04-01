@@ -108,7 +108,7 @@ bool LKGameWindow::initialized() {
     return m_initialized;
 }
 
-Game *LKGameWindow::game() {
+Game *&LKGameWindow::game() {
     return m_game;
 }
 

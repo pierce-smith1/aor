@@ -26,6 +26,28 @@ MenuBar::MenuBar(LKGameWindow *parent)
     seperator->setSeparator(true);
     handbook_menu->addAction(seperator);
 
+    QAction *restart_action = new QAction(handbook_menu);
+    restart_action->setText("New Expedition");
+    handbook_menu->addAction(restart_action);
+    connect(restart_action, &QAction::triggered, [=]() {
+        bool restart = QMessageBox::question(gw(),
+            "Aegis of Rhodon",
+            "Are you sure you want to start a new expedition?<br><b>Your current progress will be lost.</b>"
+        ) == QMessageBox::Yes;
+
+        if (restart) {
+            delete gw()->game();
+            gw()->game() = Game::new_game();
+            gw()->selected_char_id() = NOBODY;
+            gw()->selected_tribe_id() = NO_TRIBE;
+            gw()->refresh_ui();
+        }
+    });
+
+    seperator = new QAction(handbook_menu);
+    seperator->setSeparator(true);
+    handbook_menu->addAction(seperator);
+
     QAction *about_action = new QAction(handbook_menu);
     about_action->setText("About");
     handbook_menu->addAction(about_action);
