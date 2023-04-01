@@ -241,7 +241,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         "<i>The first half of the great cycle of life is turning it off.</i><br>"
         "<i>This divine flower promises lucrative rewards for participating in its ritual,</i><br>"
         "<i>if we are prepared to pay its price.</i><br>",
-        2 USES, Signature | Consumable,
+        3 USES, Signature | Consumable,
         {
             { ItemLevel, 5 },
             { LeafyResource, 50 },
