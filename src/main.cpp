@@ -79,9 +79,9 @@ void welcome_message() {
     );
     welcome.setInformativeText(
         "The passage here was not easy.<br>"
-        "I've been sent alone, and I gaze into the sprawling horizon of Rhodon with only the clothes on my back...<br>"
+        "We've been sent alone, and gaze into the sprawling horizon of Rhodon with only the clothes on our backs...<br>"
         "<br>"
-        "Still! I have much work to do, so I musn't get distracted.<br>"
+        "Still! We have much work to do, so we musn't get distracted.<br>"
         "<br>"
         "...Maybe I should start by <b>foraging for something to eat?</b>"
     );
