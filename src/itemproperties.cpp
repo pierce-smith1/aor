@@ -315,6 +315,7 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
             "Whenever an explorer dies, gain <b>+%1 lore.</b>",
             {{ HookPostDeath, HOOK_1(Character, character)
                 gw()->game()->lore() += prop_value;
+                gw()->window().lore_label->setText(QString("<b>%1</b>").arg(gw()->game()->lore()));
             }}}
         }},
         { HeritageMaxEnergyBoost, {

@@ -84,8 +84,8 @@ void Character::queue_activity(ItemDomain domain, const std::vector<ItemId> &ite
 }
 
 void Character::die() {
-    m_dead = true;
     call_hooks(HookPostDeath, { this });
+    m_dead = true;
 }
 
 TimedActivity &Character::activity() {
