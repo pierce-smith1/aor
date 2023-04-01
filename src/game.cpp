@@ -364,6 +364,7 @@ Game::TravelCheckResult Game::can_travel(LocationId id) {
     m_next_location_id = id;
 
     if (!m_map.path_exists_between(m_current_location_id, id)) {
+        m_next_location_id = NOWHERE;
         return TravelCheckResult::NoPath;
     }
 
