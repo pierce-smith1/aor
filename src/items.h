@@ -395,10 +395,11 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         1 USES, Material | Signature,
         {
             { ItemLevel, 5 },
-            { StoneResource, 35 },
-            { MetallicResource, 35 },
-            { CrystallineResource, 35 },
-            { RunicResource, 35 }
+            { StoneResource, 40 },
+            { MetallicResource, 40 },
+            { CrystallineResource, 40 },
+            { RunicResource, 40 },
+            { LeafyResource, 40 },
         }
     },
     {
@@ -464,6 +465,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
             { ToolEnergyCost, 30 },
             { CostMetallic, 10 },
             { CostCrystalline, 30 },
+            { ToolMaximumStone, 200 },
             { ToolMaximumMetallic, 80 },
             { ToolMaximumCrystalline, 30 },
             { ToolMaximumRunic, 20 },
@@ -516,7 +518,7 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         {
             { ItemLevel, 3 },
             { ToolEnergyCost, 30 },
-            { CostStone, 160 },
+            { CostStone, 150 },
             { CostRuinc, 20 },
             { ToolMaximumStone, 50 },
             { ToolMaximumCrystalline, 50 },
