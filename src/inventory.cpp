@@ -94,6 +94,20 @@ ItemId Inventory::make_item(ItemDefinitionPtr def, AorUInt y, AorUInt x) {
     return new_item.id;
 }
 
+std::pair<size_t, size_t> Inventory::coordinates_of(ItemId id) {
+    auto inventory_pos = std::find_if(m_items.begin(), m_items.end(), [=](const Item &item) {
+        return item.id == id;
+    });
+
+    if (inventory_pos == m_items.end()) {
+        bugcheck(ItemByIdLookupMiss, "coordinates_of", id);
+        return {};
+    }
+
+    size_t pos = inventory_pos - m_items.begin();
+    return { pos / INVENTORY_COLS, pos % INVENTORY_COLS };
+}
+
 bool Inventory::are_yx_coords_oob(AorUInt y, AorUInt x) {
     return (y >= INVENTORY_ROWS) || (x >= INVENTORY_COLS);
 }

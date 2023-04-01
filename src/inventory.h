@@ -27,6 +27,7 @@ public:
     bool add_item(const Item &item);
     void put_item(const Item &item, AorUInt y, AorUInt x);
     ItemId make_item(ItemDefinitionPtr def, AorUInt y, AorUInt x);
+    std::pair<size_t, size_t> coordinates_of(ItemId id);
 
     static bool are_yx_coords_oob(AorUInt y, AorUInt x);
     static size_t inventory_index(AorUInt y, AorUInt x);

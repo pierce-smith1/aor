@@ -30,9 +30,9 @@ void InventorySlot::accept_message(const SlotMessage &message) {
         } case SlotSetItem: {
             Item item = get_item(message);
 
-            // If another item with the same id already exists, destroy that bitch
-            inventory().get_item_ref(item.id) = Item();
+            auto item_coord = inventory().coordinates_of(item.id);
 
+            inventory().put_item(my_item(), item_coord.first, item_coord.second);
             inventory().put_item(item, m_y, m_x);
             break;
         } default: {}

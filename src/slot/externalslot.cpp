@@ -15,6 +15,11 @@ void ExternalSlot::accept_message(const SlotMessage &message) {
             break;
         } case SlotSetItem: {
             accept_message(SlotMessage(SlotForgetItem, std::monostate(), this));
+
+            if (!will_accept_drop(message)) {
+                return;
+            }
+
             my_item_id() = get_item(message).id;
             break;
         } case SlotForgetItem: {
