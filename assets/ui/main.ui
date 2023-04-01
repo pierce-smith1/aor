@@ -660,7 +660,7 @@
              <enum>QTabWidget::West</enum>
             </property>
             <property name="currentIndex">
-             <number>3</number>
+             <number>0</number>
             </property>
             <property name="documentMode">
              <bool>false</bool>
@@ -748,7 +748,7 @@
                      </widget>
                     </item>
                     <item row="1" column="3">
-                     <widget class="QLabel" name="total_smith_stone_label">
+                     <widget class="QLabel" name="total_smith_metallic_label">
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
                         <horstretch>0</horstretch>
@@ -761,7 +761,7 @@
                      </widget>
                     </item>
                     <item row="0" column="3">
-                     <widget class="QLabel" name="total_smith_metallic_label">
+                     <widget class="QLabel" name="total_smith_stone_label">
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
                         <horstretch>0</horstretch>
