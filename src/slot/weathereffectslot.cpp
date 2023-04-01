@@ -6,6 +6,10 @@ WeatherEffectSlot::WeatherEffectSlot(size_t n)
     make_tall();
 }
 
+bool WeatherEffectSlot::will_accept_drop(const SlotMessage &) {
+    return false;
+}
+
 bool WeatherEffectSlot::is_draggable() {
     return false;
 }

@@ -6,6 +6,10 @@ SkillSlot::SkillSlot(size_t n)
     make_tall();
 }
 
+bool SkillSlot::will_accept_drop(const SlotMessage &) {
+    return false;
+}
+
 void SkillSlot::install() {
     gw()->window().skills_box->layout()->addWidget(this);
 }
