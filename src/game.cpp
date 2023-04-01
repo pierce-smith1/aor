@@ -122,7 +122,11 @@ std::optional<Character *> Game::add_character(const QString &name, const std::m
 
 bool Game::add_item(const Item &item) {
     if (m_inventory.add_item(item)) {
-        check_tutorial((ItemDomain) item.def()->type.n);
+        for (AorUInt i = 1; i != 1ull << 63; i <<= 1) {
+            if (item.def()->type & i) {
+                check_tutorial((ItemDomain) i);
+            }
+        }
         m_history.insert(item.code);
         gw()->encyclopedia()->refresh();
 
@@ -205,8 +209,6 @@ void Game::check_tutorial(ItemDomain domain) {
                 "When equipped, <b>smithing tools</b> increase the amount of resources I can put into <b>smithing slots</b>.<br>"
                 "The maximum amount of resources a smithing tool can support is referred to as its <b>power</b>.<br>"
                 "Regardless of tool, I can always support at least <b>10 of each resource type</b>.<br>"
-                "<br>"
-                "Like all tools, smithing tools can <b>only be used a limited number of times</b> before they break."
             );
             break;
         }
@@ -217,8 +219,6 @@ void Game::check_tutorial(ItemDomain domain) {
                 "When equipped, <b>foraging tools</b> allow me to find new consumables when I forage.<br>"
                 "Each foraging tool has a unique pool of items it can discover; some potentially rarer than others.<br>"
                 "While I hold a foraging tool, I also have a chance to find <b>loose eggs</b> that can <b>hatch into new explorers!</b><br>"
-                "<br>"
-                "Like all tools, foraging tools can <b>only be used a limited number of times</b> before they break."
             );
             break;
         }
@@ -228,8 +228,6 @@ void Game::check_tutorial(ItemDomain domain) {
                 "<br>"
                 "When equipped, <b>mining tools</b> allow me to find new materials when I mine.<br>"
                 "Each mining tool has a unique pool of items it can discover; some potentially rarer than others.<br>"
-                "<br>"
-                "Like all tools, mining tools can <b>only be used a limited number of times</b> before they break."
             );
             break;
         }
@@ -247,9 +245,11 @@ void Game::check_tutorial(ItemDomain domain) {
                 "<b>I just found a signature item!</b><br>"
                 "<br>"
                 "Signature items are <b>limited, location-specific</b> items. Each location usually has only one, and they are typically <b>exceedingly unique and powerful.</b><br>"
-                "They are found randomly after <b>either</b> foraging or mining, regardless of what they are.<br>"
-                "The items are not tied to the location once found - I can bring them elsewhere or even trade them away."
+                "They are found randomly after <b>either</b> foraging or mining, regardless of what they are - food, material, artifact, etc.<br>"
+                "The items are not tied to the location once found - I can bring them elsewhere or even trade them away.<br>"
+                "The only restriction on their use is that <b>signature artifacts may not be unequipped</b> once slotted on an explorer.<br>"
             );
+            break;
         }
         default: {
             break;
