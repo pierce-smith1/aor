@@ -26,16 +26,28 @@ MenuBar::MenuBar(LKGameWindow *parent)
     seperator->setSeparator(true);
     handbook_menu->addAction(seperator);
 
-    QAction *multiwindow_action = new QAction(handbook_menu);
-    multiwindow_action->setText("Toggle Multiwindow Mode");
-    handbook_menu->addAction(multiwindow_action);
-    connect(multiwindow_action, &QAction::triggered, [=]() {
-        if (parent->m_multiwindows.empty()) {
-            parent->enter_multiwindow_mode();
-        } else {
-            parent->exit_multiwindow_mode();
+    QAction *restart_action = new QAction(handbook_menu);
+    restart_action->setText("New Expedition");
+    handbook_menu->addAction(restart_action);
+    connect(restart_action, &QAction::triggered, [=]() {
+        bool restart = QMessageBox::question(gw(),
+            "Aegis of Rhodon",
+            "Are you sure you want to start a new expedition?<br><b>Your current progress will be lost.</b>"
+        ) == QMessageBox::Yes;
+
+        if (restart) {
+            delete gw()->game();
+            gw()->game() = Game::new_game();
+            gw()->selected_char_id() = NOBODY;
+            gw()->selected_tribe_id() = NO_TRIBE;
+            gw()->refresh_ui();
+            CharacterActivity::refresh_ui_bars(gw()->game()->characters()[0]);
         }
     });
+
+    seperator = new QAction(handbook_menu);
+    seperator->setSeparator(true);
+    handbook_menu->addAction(seperator);
 
     QAction *about_action = new QAction(handbook_menu);
     about_action->setText("About");
@@ -45,4 +57,32 @@ MenuBar::MenuBar(LKGameWindow *parent)
     });
 
     addMenu(handbook_menu);
+
+    QMenu *settings_menu = new QMenu("Settings", this);
+
+    QAction *multiwindow_action = new QAction(settings_menu);
+    multiwindow_action->setCheckable(true);
+    multiwindow_action->setChecked(gw()->game()->settings().multiwindow_on);
+    multiwindow_action->setText("Multiwindow");
+    settings_menu->addAction(multiwindow_action);
+    connect(multiwindow_action, &QAction::triggered, [=]() {
+        gw()->game()->settings().multiwindow_on = multiwindow_action->isChecked();
+
+        if (multiwindow_action->isChecked()) {
+            gw()->enter_multiwindow_mode();
+        } else {
+            gw()->exit_multiwindow_mode();
+        }
+    });
+
+    QAction *sound_action = new QAction(settings_menu);
+    sound_action->setCheckable(true);
+    sound_action->setChecked(gw()->game()->settings().sounds_on);
+    sound_action->setText("Sounds");
+    settings_menu->addAction(sound_action);
+    connect(sound_action, &QAction::triggered, [=]() {
+        gw()->game()->settings().sounds_on = sound_action->isChecked();
+    });
+
+    addMenu(settings_menu);
 }

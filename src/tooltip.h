@@ -9,6 +9,7 @@
 #include "../ui_tooltip.h"
 #include "items.h"
 #include "gamewindow.h"
+#include "sounds.h"
 
 class Game;
 
@@ -26,19 +27,19 @@ public:
     Tooltip();
 
     void set(const TooltipInfo &item);
-    void set(const Item &item, Game &game);
+    void set(const Item &item);
     void color_cost_text();
 
     Ui::Tooltip widget;
 
 private:
     void hide_resources();
-    const std::map<quint16, QLabel *> &icons();
-    const std::map<quint16, QLabel *> &text();
-    const std::map<quint16, QLabel *> &cost_icons();
-    const std::map<quint16, QLabel *> &cost_text();
-    const std::map<quint16, QLabel *> &power_icons();
-    const std::map<quint16, QLabel *> &power_text();
+    const std::map<AorUInt, QLabel *> &icons();
+    const std::map<AorUInt, QLabel *> &text();
+    const std::map<AorUInt, QLabel *> &cost_icons();
+    const std::map<AorUInt, QLabel *> &cost_text();
+    const std::map<AorUInt, QLabel *> &power_icons();
+    const std::map<AorUInt, QLabel *> &power_text();
 
     QGraphicsColorizeEffect *m_colorize_effect;
 };
@@ -58,6 +59,10 @@ protected:
             return;
         }
 
+        if (gw()->game()->settings().sounds_on) {
+            Sounds::hover_sound()->play();
+        }
+
         QEnterEvent *enter_event = (QEnterEvent *) event;
         m_tooltip->move(enter_event->globalPos());
 
@@ -66,7 +71,7 @@ protected:
             m_tooltip->set(info);
         } else {
             Item item = tooltip_item().value();
-            m_tooltip->set(item, gw()->game());
+            m_tooltip->set(item);
         }
 
         m_tooltip->adjustSize();

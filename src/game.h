@@ -11,8 +11,14 @@
 #include "io.h"
 #include "hooks.h"
 #include "map.h"
+#include "settings.h"
+#include "serialize.h"
 
-const static int MAX_EXPLORERS = 11;
+const static AorUInt MAX_EXPLORERS = 12;
+const static AorUInt AEGIS_THREAT = 1200 * 5;
+const static AorUInt STUDY_SLOTS_PER_DOMAIN = 3;
+const static AorInt LORE_PER_SCAN = 5;
+const static AorInt BASE_MAX_LORE = 50;
 
 using RemoteOffer = std::array<Item, TRADE_SLOTS>;
 
@@ -26,8 +32,14 @@ using ForeignTribes = std::map<GameId, TradeState>;
 using Offer = std::array<ItemId, TRADE_SLOTS>;
 using TradePurchases = std::array<Item, TRADE_SLOTS>;
 using ItemHistory = std::set<ItemCode>;
+using ConsumableWaste = std::map<LocationId, AorUInt>;
+using MineableWaste = std::map<LocationId, AorUInt>;
+using WasteActionCounts = std::map<LocationId, AorUInt>;
+using SignatureRequirements = std::map<LocationId, std::array<AorUInt, 9>>;
+using RunningActivities = std::vector<TimedActivity>;
+using StudiedItems = std::map<ItemDomain, std::array<ItemId, STUDY_SLOTS_PER_DOMAIN>>;
 
-class Game {
+class Game : public Serializable {
 public:
     Game();
 
@@ -41,25 +53,63 @@ public:
     GameId game_id();
     QString &tribe_name();
     ItemHistory &history();
-    quint64 &actions_done();
+    WorldMap &map();
+    LocationId &current_location_id();
+    LocationDefinition current_location();
+    LocationId &next_location_id();
+    AorUInt &threat();
+    RunningActivities &running_activities();
+    ConsumableWaste &forageable_waste();
+    MineableWaste &mineable_waste();
+    WasteActionCounts &waste_action_counts();
+    SignatureRequirements &signature_requirements();
+    StudiedItems &studied_items();
+    AorInt &lore();
+
+    Settings &settings();
+
     bool &fast_actions();
     bool &no_exhaustion();
 
-    bool add_character(const QString &name, const std::multiset<Color> &heritage);
+    std::optional<Character *> add_character(const QString &name, const std::multiset<Color> &heritage);
     bool add_item(const Item &item);
+    TimedActivity &register_activity(TimedActivity &activity);
     void check_hatch();
     void check_tutorial(ItemDomain domain);
-    int trade_level();
-    int foreign_trade_level(GameId tribe_id);
+    AorInt trade_level();
+    AorInt foreign_trade_level(GameId tribe_id);
+    ItemProperties total_smithing_resources(CharacterId character_id);
     ItemProperties total_resources();
+    ItemDomain intent_of(ItemId item_id);
+    std::vector<TimedActivity> activities_of_type(ItemDomain type);
+
+    void start_scan();
+    bool can_scan();
+
+    enum class TravelCheckResult {
+        Ok,
+        InsufficientResources,
+        ConcurrentAction,
+        AlreadyHere,
+        NoPath,
+    };
+    TravelCheckResult can_travel(LocationId id);
+    void start_travel(LocationId id);
+    AorInt forageables_left(LocationId id);
+    AorInt forageables_left();
+    AorInt mineables_left(LocationId id);
+    AorInt mineables_left();
+    AorUInt signatures_left(LocationId id);
+    Item next_signature(LocationId id);
 
     Character &character(CharacterId id);
-    CharacterActivity &activity(ActivityId id);
+    TimedActivity &activity(ActivityId id);
+    void call_hooks(HookType type, const std::function<HookPayload(Character &)> &payload_provider, AorUInt int_domain = BASE_HOOK_DOMAINS);
+    void call_global_hooks(HookType type, const HookPayload &payload, AorUInt int_domain = BASE_HOOK_DOMAINS);
 
-    void refresh_ui_bars(QProgressBar *activity, QProgressBar *spirit, QProgressBar *energy, CharacterId char_id);
+    void serialize(QIODevice *dev) const;
+    void deserialize(QIODevice *dev);
 
-    void serialize(QIODevice *dev);
-    static Game *deserialize(QIODevice *dev);
     static Game *new_game();
 
 private:
@@ -68,12 +118,23 @@ private:
     Offer m_trade_offer {};
     bool m_accepting_trade = false;
     RemoteOffer m_accepted_offer {};
-    GameId m_trade_partner = NOBODY;
+    GameId m_trade_partner = NO_TRIBE;
     GameId m_game_id;
     QString m_tribe_name;
     ItemHistory m_history;
-    quint64 m_actions_done = 0;
+    AorUInt m_threat = 0;
     WorldMap m_map;
+    LocationId m_current_location_id = LocationDefinition::get_def("point_entry").id;
+    LocationId m_next_location_id = NOWHERE;
+    ConsumableWaste m_consumable_waste;
+    MineableWaste m_mineable_waste;
+    WasteActionCounts m_waste_action_counts;
+    SignatureRequirements m_signature_requirements;
+    RunningActivities m_running_activities;
+    StudiedItems m_studied_items {};
+    AorInt m_lore = 0;
+
+    Settings m_settings;
 
     // Transient
     ForeignTribes m_tribes;

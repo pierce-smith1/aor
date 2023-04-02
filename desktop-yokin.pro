@@ -20,6 +20,7 @@ FORMS += assets/ui/log.ui
 QT += gui
 QT += widgets
 QT += network
+QT += multimedia
 
 # You can make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -30,4 +31,6 @@ DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs depr
 
 # Input
 SOURCES += $$files($$PWD/src/*.cpp)
+SOURCES += $$files($$PWD/src/slot/*.cpp)
 HEADERS += $$files($$PWD/src/*.h)
+HEADERS += $$files($$PWD/src/slot/*.h)

@@ -9,6 +9,7 @@ QString Colors::name(Color c) {
         case Plum: { return "Plum"; }
         case Cucumber: { return "Cucumber"; }
         case Lime: { return "Lime"; }
+        case Sugarplum: { return "Sugarplum"; }
     }
 
     return "";
@@ -23,6 +24,7 @@ QColor Colors::qcolor(Color c) {
         case Plum: { return QColor(102, 102, 204); }
         case Cucumber: { return QColor(0, 153, 0); }
         case Lime: { return QColor(102, 204, 51); }
+        case Sugarplum: { return QColor(255, 204, 255); }
     }
 
     return QColor(0, 0, 0);
@@ -31,13 +33,14 @@ QColor Colors::qcolor(Color c) {
 ItemProperties Colors::heritage_properties(Color c, int magnitude) {
     double factor = pow(magnitude, 1.5);
     switch (c) {
-        case Banana: { return { { HeritageActivitySpeedBonus, 7 * factor } }; }
-        case Orange: { return { { HeritageInjuryResilience, 7 * factor } }; }
-        case Cherry: { return { { HeritageMaxEnergyBoost, 20 * factor } }; }
-        case Blueberry: { return { { HeritageMaxSpiritBoost, 20 * factor } }; }
-        case Plum: { return { { HeritageSmithProductUsageBoost, 1 * factor } }; }
-        case Cucumber: { return { { HeritageConsumableEnergyBoost, 5 * factor } }; }
-        case Lime: { return { { HeritageItemDoubleChance, 5 * factor } }; }
+        case Banana: { return {{ HeritageActivitySpeedBonus, 7 * factor }}; }
+        case Orange: { return {{ PersistentThreatDecrease, 1 * factor }}; }
+        case Cherry: { return {{ HeritageMaxEnergyBoost, 20 * factor }}; }
+        case Blueberry: { return {{ HeritageMaxSpiritBoost, 20 * factor }}; }
+        case Plum: { return {{ HeritageSpiritRetention, 1 * factor }}; }
+        case Cucumber: { return {{ HeritageConsumableEnergyBoost, 5 * factor }}; }
+        case Lime: { return {{ HeritageItemDoubleChance, 5 * factor }}; }
+        case Sugarplum: { return {{ PropertyIfLore, PersistentDiscoveryNotRandom }, { PropertyIfLoreValue, 1 }, { PropertyLoreRequirement, 200 }}; }
     }
 
     return {};

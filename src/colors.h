@@ -9,18 +9,15 @@
 
 #include "itemproperties.h"
 
-const static int CHERRY_ENERGY_MULTIPLIER = 20;
-const static int BLUERASPBERRY_spirit_MULTIPLIER = 20;
-const static int BLUEBERRY_ENERGY_BONUS = 10;
-
-enum Color : quint16 {
+enum Color : AorUInt {
     Banana = 1,
     Orange,
     Cherry,
     Blueberry,
     Plum,
     Cucumber,
-    Lime
+    Lime,
+    Sugarplum,
 };
 
 namespace Colors {

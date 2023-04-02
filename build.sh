@@ -14,7 +14,7 @@ compile() {
     INCFLAGS=$(grep 'INCPATH *=' Makefile.Debug | cut -f 2- -d '-' | tr ' ' ',')
     echo -e "CompileFlags:\n\tAdd: [${INCFLAGS},-std=c++17]" > .clangd
 
-    make debug
+    make -j 12 debug
 
     cd $WHEREAMI/server
     ./build.sh
@@ -46,6 +46,14 @@ generate_qrc() {
 
     for image in assets/img/style/*.png; do
         echo "<file>$image</file>" >> .images.qrc
+    done
+
+    for image in assets/img/map/*.png; do
+        echo "<file>$image</file>" >> .images.qrc
+    done
+
+    for wav in assets/wav/*.wav; do
+        echo "<file>$wav</file>" >> .images.qrc
     done
 
     echo "</qresource></RCC>" >> .images.qrc

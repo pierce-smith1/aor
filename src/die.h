@@ -34,6 +34,12 @@ enum FatalErrorType {
     IncorrectHookPayload,
     CallForUnknownHookType,
     ItemSlotByNameLookupMiss,
+    NonExhaustivePayloadSerialization,
+    NonExhaustivePayloadDeserialization,
+    UnimplementedSlotInstall,
+    LocationDefinitionLookupMiss,
+    CoordsByLocationIdLookupMiss,
+    UnregisterUnknownActivity,
 };
 
 QString bugcheck_error_string(FatalErrorType type);

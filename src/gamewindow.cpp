@@ -1,16 +1,27 @@
+#include <QScrollBar>
+
 #include "gamewindow.h"
 #include "items.h"
-#include "itemslot.h"
-#include "externalslot.h"
-#include "effectslot.h"
-#include "queuedactivityslot.h"
-#include "skillslot.h"
 #include "encyclopedia.h"
-#include "explorerbutton.h"
 #include "die.h"
 #include "main.h"
 #include "about.h"
 #include "menu.h"
+
+#include "slot/inventoryslot.h"
+#include "slot/materialslot.h"
+#include "slot/toolslot.h"
+#include "slot/artifactslot.h"
+#include "slot/effectslot.h"
+#include "slot/portraitslot.h"
+#include "slot/queuedactivityslot.h"
+#include "slot/smithingresultslot.h"
+#include "slot/foreigntradeslot.h"
+#include "slot/tradeslot.h"
+#include "slot/skillslot.h"
+#include "slot/explorerbutton.h"
+#include "slot/weathereffectslot.h"
+#include "slot/studyslot.h"
 
 LKGameWindow *LKGameWindow::the_game_window;
 
@@ -25,17 +36,19 @@ LKGameWindow::LKGameWindow()
       m_connection(),
       m_save_file(SAVE_FILE_NAME),
       m_encyclopedia(new Encyclopedia),
-      m_about_box(new AboutBox)
+      m_about_box(new AboutBox),
+      m_map_view(new MapView)
 {
     m_window.setupUi(this);
     m_event_log.setupUi(new QDialog(this));
 
-    setMenuBar(new MenuBar(this));
+    window().crawl_contents->layout()->addWidget(m_map_view);
+    window().crawl_area->verticalScrollBar()->setEnabled(false);
 
     Game *new_game = Game::new_game();
-    m_game = *new_game;
-    delete new_game;
-    m_encyclopedia->refresh();
+    m_game = new_game;
+
+    setMenuBar(new MenuBar(this));
 
     const auto activity_buttons = get_activity_buttons();
     for (const auto &pair : activity_buttons) {
@@ -46,10 +59,10 @@ LKGameWindow::LKGameWindow()
 
     connect(m_window.trade_accept_button, &QPushButton::clicked, [=]() {
         m_connection.agreement_changed(m_selected_tribe_id, true);
-        m_game.accepting_trade() = true;
+        m_game->accepting_trade() = true;
         refresh_ui_buttons();
 
-        if (m_game.tribes().at(selected_tribe_id()).remote_accepted) {
+        if (m_game->tribes().at(selected_tribe_id()).remote_accepted) {
             m_connection.execute_trade();
             m_connection.notify_trade(selected_tribe_id());
         }
@@ -57,24 +70,17 @@ LKGameWindow::LKGameWindow()
 
     connect(m_window.trade_unaccept_button, &QPushButton::clicked, [=]() {
         m_connection.agreement_changed(m_selected_tribe_id, false);
-        m_game.accepting_trade() = false;
-        m_game.trade_partner() = NOBODY;
+        m_game->accepting_trade() = false;
+        m_game->trade_partner() = NO_TRIBE;
         refresh_ui_buttons();
     });
 
     connect(m_window.trade_partner_combobox, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index) {
-        m_selected_tribe_id = m_window.trade_partner_combobox->itemData(index).toLongLong(nullptr);
+        m_selected_tribe_id = m_window.trade_partner_combobox->itemData(index).toLongLong();
         refresh_ui();
     });
 
-    ItemSlot::insert_inventory_slots();
-    ExternalSlot::insert_external_slots();
-    ToolSlot::insert_tool_slots();
-    EffectSlot::insert_effect_slots();
-    PortraitSlot::insert_portrait_slot();
-    ExplorerButton::insert_explorer_buttons();
-    QueuedActivitySlot::insert_queued_activity_slots();
-    SkillSlot::insert_skill_slots();
+    install_slots();
 
     QPalette activity_palette;
     activity_palette.setColor(QPalette::Highlight, Colors::qcolor(Lime));
@@ -87,17 +93,22 @@ LKGameWindow::LKGameWindow()
     QPalette energy_palette;
     energy_palette.setColor(QPalette::Highlight, Colors::qcolor(Cherry));
     m_window.energy_bar->setPalette(energy_palette);
+    m_window.global_action_bar->setPalette(energy_palette);
 
     m_encyclopedia->refresh();
 
     m_backup_timer_id = startTimer(BACKUP_INTERVAL_MS);
+    m_refresh_timer_id = startTimer(ACTIVITY_TICK_RATE_MS);
+
+    CharacterActivity::refresh_ui_bars(selected_char());
+    m_window.lore_label->setText(QString("<b>%1</b>").arg(m_game->lore()));
 }
 
 bool LKGameWindow::initialized() {
     return m_initialized;
 }
 
-Game &LKGameWindow::game() {
+Game *&LKGameWindow::game() {
     return m_game;
 }
 
@@ -114,12 +125,12 @@ Tooltip *&LKGameWindow::tooltip() {
 }
 
 Character &LKGameWindow::selected_char() {
-    return m_game.character(selected_char_id());
+    return m_game->character(selected_char_id());
 }
 
 CharacterId &LKGameWindow::selected_char_id() {
     if (m_selected_char_id == NOBODY) {
-        m_selected_char_id = m_game.characters()[0].id();
+        m_selected_char_id = m_game->characters()[0].id();
     }
 
     return m_selected_char_id;
@@ -133,8 +144,69 @@ Encyclopedia *&LKGameWindow::encyclopedia() {
     return m_encyclopedia;
 }
 
-void LKGameWindow::register_slot(ItemSlot *slot) {
+void LKGameWindow::register_slot(Slot *slot) {
     m_slots.push_back(slot);
+}
+
+void LKGameWindow::unregister_slot(Slot *slot) {
+    m_slots.erase(std::find_if(m_slots.begin(), m_slots.end(), [=](Slot *s) {
+        return s == slot;
+    }));
+}
+
+void LKGameWindow::install_slots() {
+    for (AorUInt x = 0; x < INVENTORY_COLS; x++) {
+        for (AorUInt y = 0; y < INVENTORY_ROWS; y++) {
+            (new InventorySlot(y, x))->install();
+        }
+    }
+
+    for (AorUInt i = 0; i < SMITHING_SLOTS; i++) {
+        (new MaterialSlot(i))->install();
+    }
+
+    (new ToolSlot(SmithingTool))->install();
+    (new ToolSlot(ForagingTool))->install();
+    (new ToolSlot(MiningTool))->install();
+
+    for (AorUInt i = 0; i < ARTIFACT_SLOTS; i++) {
+        (new ArtifactSlot(i))->install();
+    }
+
+    for (AorUInt i = 0; i < EFFECT_SLOTS; i++) {
+        (new EffectSlot(i))->install();
+    }
+
+    for (AorUInt i = 0; i < MAX_QUEUED_ACTIVITIES; i++) {
+        (new QueuedActivitySlot(i))->install();
+    }
+
+    for (AorUInt i = 0; i < MAX_EXPLORERS; i++) {
+        (new ExplorerButton(i))->install();
+    }
+
+    (new PortraitSlot())->install();
+
+    for (AorUInt i = 0; i < MAX_SKILLS; i++) {
+        (new SkillSlot(i))->install();
+    }
+
+    (new SmithingResultSlot())->install();
+
+    for (AorUInt i = 0; i < TRADE_SLOTS; i++) {
+        (new ForeignTradeSlot(i))->install();
+        (new TradeSlot(i))->install();
+    }
+
+    for (AorUInt i = 0; i < WEATHER_EFFECTS; i++) {
+        (new WeatherEffectSlot(i))->install();
+    }
+
+    for (AorUInt i = 0; i < STUDY_SLOTS_PER_DOMAIN; i++) {
+        for (ItemDomain d : { Consumable, Tool, Artifact }) {
+            (new StudySlot(d, i))->install();
+        }
+    }
 }
 
 void LKGameWindow::notify(NotificationType type, const QString &msg) {
@@ -143,30 +215,31 @@ void LKGameWindow::notify(NotificationType type, const QString &msg) {
 
 void LKGameWindow::refresh_ui() {
     m_window.player_name_label->setText(QString("Explorer <b>%1</b>").arg(selected_char().name()));
-    m_window.tribe_name_label->setText(QString("Expedition <b>%1</b>").arg(m_game.tribe_name()));
+    m_window.tribe_name_label->setText(QString("Expedition <b>%1</b>").arg(m_game->tribe_name()));
 
     refresh_slots();
     refresh_ui_buttons();
-    refresh_ui_bars();
     refresh_trade_ui();
+    refresh_material_infostrips();
+    refresh_global_action_bar();
+    refresh_map();
+
+    /*
+    CharacterActivity::refresh_ui_bars(selected_char());
+    m_window.lore_label->setText(QString("<b>%1</b>").arg(m_game->lore()));
+    */
 }
 
 void LKGameWindow::refresh_slots() {
-    for (ItemSlot *slot : m_slots) {
-        slot->refresh_pixmap();
+    for (Slot *slot : m_slots) {
+        slot->refresh();
     }
 }
 
-void LKGameWindow::refresh_ui_bars() {
-    m_game.refresh_ui_bars(m_window.activity_time_bar, m_window.spirit_bar, m_window.energy_bar, m_selected_char_id);
-}
-
 void LKGameWindow::refresh_ui_buttons() {
-    bool smithing_already_queued = std::any_of(
-        begin(selected_char().activities()),
-        end(selected_char().activities()),
-        [](CharacterActivity &a) {
-            return a.action() == Smithing;
+    auto activities = selected_char().activities();
+    bool smithing_already_queued = std::any_of(activities.begin(), activities.end(), [](ActivityId aid) {
+        return gw()->game()->activity(aid).explorer_subtype() == Smithing;
     });
 
     for (ItemDomain domain : { Smithing, Foraging, Mining }) {
@@ -179,18 +252,26 @@ void LKGameWindow::refresh_ui_buttons() {
         }
     }
 
-    m_window.trade_partner_combobox->setEnabled(m_game.trade_partner() == NOBODY);
+    get_activity_buttons().at(Foraging)->setText(QString("Forage (%1)")
+        .arg(m_game->forageables_left())
+    );
+
+    get_activity_buttons().at(Mining)->setText(QString("Mine (%1)")
+        .arg(m_game->mineables_left())
+    );
+
+    m_window.trade_partner_combobox->setEnabled(m_game->trade_partner() == NO_TRIBE);
 
     if (!m_connection.is_connected()
-        || selected_char().activity().ongoing()
+        || selected_char().activity().active
         || trade_ongoing(m_selected_tribe_id)
         || m_window.trade_partner_combobox->count() == 0
-        || m_game.foreign_trade_level(m_selected_tribe_id) != m_game.trade_level()
-        || m_game.trade_level() == 0
+        || m_game->foreign_trade_level(m_selected_tribe_id) != m_game->trade_level()
+        || m_game->trade_level() == 0
     ) {
         m_window.trade_accept_button->setEnabled(false);
         m_window.trade_unaccept_button->setEnabled(false);
-    } else if (m_game.accepting_trade()) {
+    } else if (m_game->accepting_trade()) {
         m_window.trade_accept_button->setEnabled(false);
         m_window.trade_unaccept_button->setEnabled(true);
     } else {
@@ -200,23 +281,23 @@ void LKGameWindow::refresh_ui_buttons() {
 }
 
 void LKGameWindow::refresh_trade_ui() {
-    if (m_selected_tribe_id != NOBODY && m_game.tribes().at(m_selected_tribe_id).remote_accepted) {
+    if (m_selected_tribe_id != NO_TRIBE && m_game->tribes().at(m_selected_tribe_id).remote_accepted) {
         m_window.trade_remote_accept_icon->setPixmap(QPixmap(":/assets/img/icons/check.png"));
     } else {
         m_window.trade_remote_accept_icon->setPixmap(QPixmap(":/assets/img/icons/warning.png"));
     }
 
-    if (m_selected_tribe_id != NOBODY) {
+    if (m_selected_tribe_id != NO_TRIBE) {
         m_window.foreign_trade_level_label->setText(QString("<b>%1</b>")
-            .arg(m_game.foreign_trade_level(m_selected_tribe_id))
+            .arg(m_game->foreign_trade_level(m_selected_tribe_id))
         );
     } else {
         m_window.foreign_trade_level_label->setText("");
     }
 
-    m_window.trade_level_label->setText(QString("<b>%1</b>").arg(m_game.trade_level()));
+    m_window.trade_level_label->setText(QString("<b>%1</b>").arg(m_game->trade_level()));
 
-    if (m_game.foreign_trade_level(m_selected_tribe_id) == m_game.trade_level()) {
+    if (m_game->foreign_trade_level(m_selected_tribe_id) == m_game->trade_level()) {
         m_window.foreign_trade_level_label->setText(
             "<font color=green>" + m_window.foreign_trade_level_label->text() + "</font>"
         );
@@ -231,16 +312,45 @@ void LKGameWindow::refresh_trade_ui() {
 
     if (!m_connection.is_connected()) {
         window().trade_notification_label->setText("No connection to trade server - try restarting the game");
-    } else if (m_game.tribes().size() == 1) { // Not == 0, since there's always a Nobody tribe
+    } else if (m_game->tribes().size() == 1) { // Not == 0, since there's always a Nobody tribe
         window().trade_notification_label->setText("There's no one else to trade with.");
     }
 
-    for (Character &character : game().characters()) {
-        if (character.activity().action() == Trading) {
+    for (Character &character : m_game->characters()) {
+        if (character.activity().explorer_subtype() == Trading) {
             window().trade_arrow_label->setPixmap(QPixmap(":/assets/img/icons/arrows.png"));
             window().trade_notification_label->setText(QString("%1 is carrying out this trade...").arg(character.name()));
         }
     }
+}
+
+void LKGameWindow::refresh_material_infostrips() {
+    ItemProperties total = m_game->total_resources();
+
+    m_window.total_stone_label->setText(QString("<b>%1</b>").arg(total[StoneResource]));
+    m_window.total_metallic_label->setText(QString("<b>%1</b>").arg(total[MetallicResource]));
+    m_window.total_crystalline_label->setText(QString("<b>%1</b>").arg(total[CrystallineResource]));
+    m_window.total_runic_label->setText(QString("<b>%1</b>").arg(total[RunicResource]));
+    m_window.total_leafy_label->setText(QString("<b>%1</b>").arg(total[LeafyResource]));
+
+    ItemProperties smith = m_game->total_smithing_resources(selected_char_id());
+
+    m_window.total_smith_stone_label->setText(QString("<b>%1</b>").arg(smith[StoneResource]));
+    m_window.total_smith_metallic_label->setText(QString("<b>%1</b>").arg(smith[MetallicResource]));
+    m_window.total_smith_crystalline_label->setText(QString("<b>%1</b>").arg(smith[CrystallineResource]));
+    m_window.total_smith_runic_label->setText(QString("<b>%1</b>").arg(smith[RunicResource]));
+    m_window.total_smith_leafy_label->setText(QString("<b>%1</b>").arg(smith[LeafyResource]));
+}
+
+void LKGameWindow::refresh_global_action_bar() {
+    m_window.global_action_bar->setMaximum(AEGIS_THREAT);
+    m_window.global_action_bar->setValue(m_game->threat() > AEGIS_THREAT ? AEGIS_THREAT : m_game->threat());
+    m_window.global_action_count->setText(QString("<b>%1</b>").arg(m_game->threat()));
+    m_window.global_action_max->setText(QString("<b>%1</b>").arg(AEGIS_THREAT));
+}
+
+void LKGameWindow::refresh_map() {
+    m_map_view->refresh();
 }
 
 void LKGameWindow::tutorial(const QString &text) {
@@ -251,7 +361,7 @@ void LKGameWindow::tutorial(const QString &text) {
 }
 
 bool LKGameWindow::trade_ongoing(GameId tribe) {
-    return m_game.trade_partner() == tribe;
+    return m_game->trade_partner() == tribe;
 }
 
 const std::map<ItemDomain, QPushButton *> LKGameWindow::get_activity_buttons() {
@@ -262,34 +372,6 @@ const std::map<ItemDomain, QPushButton *> LKGameWindow::get_activity_buttons() {
     };
 }
 
-const std::vector<ItemSlot *> &LKGameWindow::item_slots() {
-    return m_slots;
-}
-
-ItemSlot *LKGameWindow::get_slot(const QString &name) {
-    auto result = std::find_if(begin(m_slots), end(m_slots), [&name](ItemSlot *slot) {
-        return slot->objectName() == name;
-    });
-
-    if (result == end(m_slots)) {
-        bugcheck(ItemSlotByNameLookupMiss, name);
-    }
-
-    return *result;
-}
-
-const std::vector<ItemSlot *> LKGameWindow::item_slots(ItemDomain domain) {
-    std::vector<ItemSlot *> slots_of_type;
-
-    for (ItemSlot *slot : item_slots()) {
-        if (slot->type() == domain) {
-            slots_of_type.push_back(slot);
-        }
-    }
-
-    return slots_of_type;
-}
-
 void LKGameWindow::save() {
     if (m_save_file.openMode() == QIODevice::NotOpen) {
         m_save_file.open(QIODevice::ReadWrite);
@@ -297,11 +379,12 @@ void LKGameWindow::save() {
 
     m_save_file.reset();
 
-    IO::write_byte(&m_save_file, 'r');
-    IO::write_byte(&m_save_file, 'h');
-    IO::write_byte(&m_save_file, 'o');
+    IO::write_uint(&m_save_file, SAVE_MAGIC_NUMBER);
+    IO::write_uint(&m_save_file, MAJOR_VERSION);
+    IO::write_uint(&m_save_file, MINOR_VERSION);
+    IO::write_uint(&m_save_file, PATCH_VERSION);
 
-    m_game.serialize(&m_save_file);
+    m_game->serialize(&m_save_file);
 
     m_save_file.flush();
 }
@@ -313,21 +396,34 @@ void LKGameWindow::load() {
 
     m_save_file.reset();
 
-    char r = IO::read_byte(&m_save_file);
-    char h = IO::read_byte(&m_save_file);
-    char o = IO::read_byte(&m_save_file);
+    AorUInt magic = IO::read_uint(&m_save_file);
 
-    if (r != 'r' || h != 'h' || o != 'o') {
-        bugcheck(SaveInvalidHeader, r, h, o);
+    if (magic != SAVE_MAGIC_NUMBER) {
+        QMessageBox::critical(this, "Aegis of Rhodon", QString("The save file is damaged or of an incompatible version (1.x.x)."));
+        exit(0);
     }
 
-    Game *game = Game::deserialize(&m_save_file);
-    m_game = *game;
-    delete game;
-
-    for (Character &character : m_game.characters()) {
-        character.activities().front().start();
+    AorUInt mv = IO::read_uint(&m_save_file);
+    if (mv != MAJOR_VERSION) {
+        QMessageBox::critical(this, "Aegis of Rhodon", QString("The save file is of an incompatible version."));
+        exit(0);
     }
+
+    IO::read_uint(&m_save_file);
+    IO::read_uint(&m_save_file);
+
+    m_game = new Game();
+    m_game->deserialize(&m_save_file);
+
+    for (Character &character : m_game->characters()) {
+        character.activity().start();
+    }
+
+    m_selected_char_id = NOBODY;
+
+    CharacterActivity::refresh_ui_bars(selected_char());
+    m_window.lore_label->setText(QString("<b>%1</b>").arg(m_game->lore()));
+    refresh_ui();
 }
 
 bool LKGameWindow::save_file_exists() {
@@ -338,7 +434,8 @@ void LKGameWindow::enter_multiwindow_mode() {
     std::vector<QWidget *> widgets_to_split = {
         findChild<QWidget *>("activities_widget"),
         findChild<QWidget *>("inventory_widget"),
-        findChild<QWidget *>("explorer_widget")
+        findChild<QWidget *>("explorer_widget"),
+        findChild<QWidget *>("global_action_widget")
     };
 
     for (QWidget *widget : widgets_to_split) {
@@ -348,8 +445,6 @@ void LKGameWindow::enter_multiwindow_mode() {
         window->setCentralWidget(widget);
         window->setMenuBar(new MenuBar(this));
         window->show();
-        //window->setMinimumSize(QSize(window->size().width(), window->size().height())); // evil hack to prevent resizing
-        //window->setMaximumSize(QSize(window->size().width(), window->size().height()));
 
         m_multiwindows.push_back(window);
     }
@@ -359,9 +454,10 @@ void LKGameWindow::enter_multiwindow_mode() {
 
 void LKGameWindow::exit_multiwindow_mode() {
     QGridLayout *central_layout = (QGridLayout *) m_window.super_widget->layout();
-    central_layout->addWidget(m_multiwindows[0]->centralWidget(), 0, 0, 1, 2); // BRITTLE AS SHIT OH MAN
-    central_layout->addWidget(m_multiwindows[1]->centralWidget(), 1, 0, 1, 1); // These are pulled directly from ui_main.h
-    central_layout->addWidget(m_multiwindows[2]->centralWidget(), 1, 1, 1, 1); // WARNING: DANGER: TODO: YOU WILL GET FUCKED
+    central_layout->addWidget(m_multiwindows[0]->centralWidget(), 0, 1, 1, 2); // BRITTLE AS SHIT OH MAN
+    central_layout->addWidget(m_multiwindows[1]->centralWidget(), 1, 1, 1, 1); // These are pulled directly from ui_main.h
+    central_layout->addWidget(m_multiwindows[2]->centralWidget(), 1, 2, 1, 1); // WARNING: DANGER: TODO: YOU WILL GET FUCKED
+    central_layout->addWidget(m_multiwindows[3]->centralWidget(), 0, 0, 2, 1);
 
     for (QWidget *window : m_multiwindows) {
         window->hide();
@@ -369,6 +465,8 @@ void LKGameWindow::exit_multiwindow_mode() {
     }
 
     m_multiwindows.clear();
+
+    setMenuBar(new MenuBar(this)); // LOL
 
     show();
 }
@@ -380,13 +478,20 @@ void LKGameWindow::timerEvent(QTimerEvent *event) {
         }
     }
 
-    for (Character &character : m_game.characters()) {
-        if (character.activity().timer_id() == event->timerId() && character.activity().action() != None) {
-            character.activity().progress(ACTIVITY_TICK_RATE_MS);
-        }
-    }
+    if (event->timerId() == m_refresh_timer_id) {
+        auto &acts = m_game->running_activities();
 
-    refresh_ui_bars();
+        for (TimedActivity &activity : acts) {
+            if (activity.active) {
+                activity.progress();
+                activity.update_ui();
+            }
+        }
+
+        acts.erase(std::remove_if(acts.begin(), acts.end(), [=](TimedActivity &act) {
+            return act.finished;
+        }), acts.end());
+    }
 }
 
 void LKGameWindow::closeEvent(QCloseEvent *event) {

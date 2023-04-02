@@ -17,17 +17,20 @@ class LKGameWindow;
 #include "game.h"
 #include "trade.h"
 #include "encryptedfile.h"
+#include "map.h"
+#include "timedactivity.h"
 
-class ItemSlot;
+class Slot;
 class RecipieBox;
 class Encyclopedia;
 class Tooltip;
 class AboutBox;
 
-using ActivityTimers = std::map<CharacterId, int>;
+using ActivityTimers = std::map<CharacterId, AorInt>;
 
 static const QString SAVE_FILE_NAME = "save.rho";
-static const int BACKUP_INTERVAL_MS = 1000 * 6;
+static const AorUInt SAVE_MAGIC_NUMBER = 2270;
+static const AorInt BACKUP_INTERVAL_MS = 1000 * 60;
 
 class LKGameWindow : public QMainWindow {
     Q_OBJECT
@@ -38,7 +41,7 @@ public:
                     // constructor public for use with std::allocator.
 
     bool initialized();
-    Game &game();
+    Game *&game();
     Ui::LKMainWindow &window();
     Tooltip *&tooltip();
     CharacterId &selected_char_id();
@@ -49,7 +52,9 @@ public:
     Character &selected_char();
     void swap_char(CharacterId char_id);
 
-    void register_slot(ItemSlot *slot);
+    void register_slot(Slot *slot);
+    void unregister_slot(Slot *slot);
+    void install_slots();
 
     void notify(NotificationType type, const QString &message);
 
@@ -57,15 +62,14 @@ public:
 
     void refresh_ui();
     void refresh_slots();
-    void refresh_ui_bars();
     void refresh_ui_buttons();
     void refresh_trade_ui();
+    void refresh_material_infostrips();
+    void refresh_global_action_bar();
+    void refresh_map();
     void tutorial(const QString &text);
 
     const std::map<ItemDomain, QPushButton *> get_activity_buttons();
-    const std::vector<ItemSlot *> &item_slots();
-    const std::vector<ItemSlot *> item_slots(ItemDomain domain);
-    ItemSlot *get_slot(const QString &name);
 
     void save();
     void load();
@@ -85,16 +89,19 @@ private:
     CharacterId m_selected_char_id = NOBODY;
     Ui::LKMainWindow m_window;
     Tooltip *m_item_tooltip;
-    Game m_game;
-    GameId m_selected_tribe_id = NOBODY;
-    std::vector<ItemSlot *> m_slots;
+    Game *m_game;
+    GameId m_selected_tribe_id = NO_TRIBE;
+    std::vector<Slot *> m_slots;
     DoughbyteConnection m_connection;
-    EncryptedFile m_save_file;
+    QFile m_save_file;
     Encyclopedia *m_encyclopedia;
-    int m_backup_timer_id;
+    AorInt m_backup_timer_id;
+    AorInt m_refresh_timer_id;
     Ui::EventLog m_event_log;
     AboutBox *m_about_box;
+    MapView *m_map_view;
     std::vector<QMainWindow *> m_multiwindows;
+    std::vector<TimedActivity> m_timed_actions;
 
     friend LKGameWindow *gw();
     friend class MenuBar;

@@ -1,0 +1,46 @@
+
+b2.0.0
+
+[v] (game) Added exploring - dissassemble food, tools and artifacts to uncover the map of Rhodon, then choose somewhere to move once your explorers have enough resources to make the passage. Each location has unique effects and special items to find, but they only have a limited number of resources - so don't get too comfortable where you are.
+[v] (game) Added an end goal - find and reach the Tree of Roses to bring your adventure to a close (the ending is a blatant placeholder).
+[v] (game) Added sounds - certain UI elements and game actions will now play sounds (thanks prrrki!)
+[v] (game) Experimenting with the game being significantly faster; all actions now complete 10x as quickly.
+[v] (game) Added a new tier of items
+[v] (game) Tools no longer have a limited number of uses
+[v] (game) Globally, random injuries no longer occur - they can now only be triggered by determinate events (i.e. running out of energy) or location-specific random events
+[v] (game) In response to the above changes, the Plum and Orange Fennahian color bonuses have been changed
+[v] (game) Fleshed out the global action counter into a more comprehensive threat system; this includes a bar showing the current and maximum threat (how long you have left before Welchian Fever begins)
+[v] (game) The fungus items have been changed from tool products to signature (location specific) items; the Spacefiller has been reworked into the Spearfisher with a new set of consumables
+[v] (game) Added infostrips showing the total number of resources you have in your inventory and in each explorer's material slots
+[v] (game) Added info about explorers' current energy/spirit, equipped items, and injuries to their tooltips
+[v] (game) Added icons to explorer buttons indicating if they hold a tool/artifact/injury
+[v] (game) Raised the maximum number of explorers from 11 to 12
+[v] (game) New games now start with 2 explorers, one of which has dual heritage
+[ ] (game) Item balance:
+    [v] (buff) Bleeding Wildheart and Norton Ghost Pepper [Leafy Resource]: 0 -> 10
+    [v] (buff) Norton Ghost Pepper [Energy Boost]: 20 -> 30
+    [v] (nerf) Seaquake [Item Level]: 3 -> 2
+    [v] (buff) Fungified Token, Polymore, and Copycap [Item Level]: 4 -> 5
+    [v] (buff) Fungified Token, Polymore, and Copycap [Item Uses]: 1 -> 3
+    [v] (buff) Obsessive Checksum Discorder [Energy Penalty]: 20 -> 10
+    [v] (buff) Obsessive Checksum Discorder [Item Uses]: 5 -> 6
+    [v] (buff) Dynamic Digestion [Spirit Penalty]: 20 -> 10
+    [v] (buff) Dynamic Digestion [Energy Penalty]: 10 -> 0
+    [v] (buff) Dynamic Digestion [Item Uses]: 2 -> 10
+    [v] (buff) Double Vision [Item Uses]: 3 -> 6
+[v] (qol) Save files are no longer encrypted (the qol is for really for me)
+[v] (bug) Fixed nasty UI misalignment near the explorer portrait
+[v] (bug) Fixed some more things probably, I wasn't keeping track
+[v] (bug) Added a bunch of new bugs (you should find them!!!!)
+    (bug) Known issues (PLEASE read this and DO NOT tell me about things I already know or I WILL find you):
+        There's a visual bug where the top right tile of the map will occassionally become revealed as if it's a real location
+        Multiwindow mode is still extremely ugly, and has only gotten worse with the new threat bar; it also could still use a re-arranging to fit the explorer windows next to the portrait
+        Based on my testing, there seems to have been a significant performance regression; please let me know if you experience stuttering and freezing
+        There are some severe visual oddities with how the lore meter works when studying multiple items at a time
+        The new travelling action does not have unique art/sounds
+        Sugarplum Fennahians look strange in some art, such as smithing
+        There seems to be an elusive ITEM_INSTANCE_BY_ID_LOOKUP crash that occurs very occasionally when loading a save
+        If you're dragging an item while a tutorial window pops up, the whole game is fucked
+        You cannot equip a tool if you're taking any sort of action - it would be nicer if you were prevented from equiping tools only when a relevant action was in the queue
+        Binary Pesticide should probably communicate its lore requirements up front rather than delegating them to Spinal Trap
+

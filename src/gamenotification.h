@@ -4,7 +4,9 @@
 #include <QTime>
 #include <QString>
 
-enum NotificationType : int {
+#include "types.h"
+
+enum NotificationType : AorInt {
     Discovery = 2000,
     Warning,
     ActionComplete

@@ -35,7 +35,7 @@ public:
     void execute_trade();
 
     void update_offers();
-    void update_offers(GameId tribe_id, ItemCode code, char uses, int n);
+    void update_offers(GameId tribe_id, ItemCode code, AorUInt uses, int n);
     void update_agreements();
     void update_agreements(GameId tribe_id, bool agrees);
     void update_availability();

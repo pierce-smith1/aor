@@ -10,26 +10,29 @@
 
 #include "items.h"
 #include "inventory.h"
-#include "actions.h"
+#include "characteractivity.h"
 #include "generators.h"
+#include "clampedresource.h"
 
 class Game;
 
-const static int MAX_ARRAY_SIZE = std::max({ SMITHING_SLOTS, TRADE_SLOTS, ARTIFACT_SLOTS });
-const static int MAX_QUEUED_ACTIVITIES = 8;
+const static AorUInt MAX_ARRAY_SIZE = std::max({ SMITHING_SLOTS, TRADE_SLOTS, ARTIFACT_SLOTS });
+const static AorUInt MAX_QUEUED_ACTIVITIES = 8;
+const static AorUInt MAX_SKILLS = 6;
 
-const static int BASE_MAX_ENERGY = 50;
-const static int BASE_MAX_SPIRIT = 50;
-const static int BASE_MAX_RESOURCE = 10;
+const static AorUInt BASE_MAX_ENERGY = 50;
+const static AorUInt BASE_MAX_SPIRIT = 50;
+const static AorUInt BASE_MAX_RESOURCE = 10;
 
-const static quint16 BASE_HOOK_DOMAINS = Artifact | Effect | Explorer;
+const static AorUInt BASE_HOOK_DOMAINS = Artifact | Effect | Explorer | Weather | Travelling | Resident;
 
 using Heritage = std::multiset<Color>;
 using ExternalItemIds = std::map<ItemDomain, std::array<ItemId, MAX_ARRAY_SIZE>>;
 using Effects = std::array<Item, EFFECT_SLOTS>;
+using Skills = std::array<Item, MAX_SKILLS>;
 using ToolIds = std::map<ItemDomain, ItemId>;
 
-class Character {
+class Character : public Serializable {
 public:
     explicit Character();
     explicit Character(CharacterId id, const QString &name, const Heritage &heritage);
@@ -45,45 +48,43 @@ public:
     ItemProperties heritage_properties();
 
     void queue_activity(ItemDomain domain, const std::vector<ItemId> &items);
-    CharacterActivity &activity();
+    void die();
+    TimedActivity &activity();
 
-    quint16 &energy();
-    quint16 &spirit();
-    int energy_int();
-    int spirit_int();
-    int max_energy();
-    int max_spirit();
-    int base_spirit_cost();
-    void add_energy(int add);
-    void add_spirit(int add);
-    quint16 egg_find_percent_chance();
+    ClampedResource &energy();
+    ClampedResource &spirit();
+    AorInt base_spirit_cost();
+    AorUInt egg_find_percent_chance();
 
     bool can_perform_action(ItemDomain action);
-    int energy_to_gain();
-    int spirit_to_gain();
+    AorInt energy_to_gain();
+    AorInt spirit_to_gain();
 
     std::vector<ItemCode> smithable_items();
     ItemCode smithing_result();
     ItemProperties total_material_resources();
+    std::vector<Item> equipped_items();
+    std::vector<Item> nonempty_injuries();
 
     bool clear_last_effect();
     bool push_effect(const Item &effect);
     bool discover(const Item &item);
 
-    void call_hooks(HookType type, const HookPayload &payload, quint16 int_domain = BASE_HOOK_DOMAINS, const std::vector<Item> &extra_items = {});
+    void call_hooks(HookType type, const HookPayload &payload, AorUInt int_domain = BASE_HOOK_DOMAINS, const std::vector<Item> &extra_items = {});
 
     ItemId tool_id(ItemDomain domain);
     ToolIds &tools();
     ExternalItemIds &external_items();
     Effects &effects();
+    Skills &skills();
 
     void serialize(QIODevice *dev) const;
-    static Character *deserialize(QIODevice *dev);
+    void deserialize(QIODevice *dev);
 
 private:
     Inventory &inventory();
 
-    quint16 m_id;
+    AorUInt m_id;
     QString m_name;
     Heritage m_heritage;
     Activities m_activities;
@@ -97,9 +98,10 @@ private:
         { ForagingTool, EMPTY_ID },
         { MiningTool, EMPTY_ID },
     };
+    Skills m_skills {};
     CharacterId m_partner = NOBODY;
     bool m_dead = false;
     bool m_can_couple = false;
-    quint16 m_energy = 40;
-    quint16 m_spirit = 40;
+    ClampedResource m_energy = ClampedResource(40, BASE_MAX_ENERGY, HookCalcMaxEnergy);
+    ClampedResource m_spirit = ClampedResource(40, BASE_MAX_SPIRIT, HookCalcMaxSpirit);
 };

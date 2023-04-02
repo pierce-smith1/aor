@@ -3,16 +3,12 @@
 #include "gamewindow.h"
 #include "die.h"
 
-Item Item::empty_item = Item(0);
+Item Item::empty_item = Item();
 
 ItemDefinitionPtr Item::def_of(ItemCode code) {
-    auto result = std::find_if(
-        begin(ITEM_DEFINITIONS),
-        end(ITEM_DEFINITIONS),
-        [=](const ItemDefinition &def) {
-            return def.code == code;
-        }
-    );
+    auto result = std::find_if(ITEM_DEFINITIONS.begin(), ITEM_DEFINITIONS.end(), [=](const ItemDefinition &def) {
+        return def.code == code;
+    });
 
     if (result == ITEM_DEFINITIONS.end()) {
         bugcheck(DefLookupMiss, "code", code);
@@ -22,8 +18,9 @@ ItemDefinitionPtr Item::def_of(ItemCode code) {
 }
 
 ItemDefinitionPtr Item::def_of(const QString &name) {
-    auto match_name = [&name](const ItemDefinition def) -> bool { return def.internal_name == name; };
-    auto result = std::find_if(begin(ITEM_DEFINITIONS), end(ITEM_DEFINITIONS), match_name);
+    auto result = std::find_if(ITEM_DEFINITIONS.begin(), ITEM_DEFINITIONS.end(), [&](const ItemDefinition &def) {
+        return def.internal_name == name;
+    });
 
     if (result == ITEM_DEFINITIONS.end()) {
         bugcheck(DefLookupMiss, "name", name);
@@ -37,11 +34,11 @@ ItemDefinitionPtr Item::def_of(const Item &item) {
 }
 
 ItemCode Item::code_of(const QString &name) {
-    auto result = std::find_if(begin(ITEM_DEFINITIONS), end(ITEM_DEFINITIONS), [=](const ItemDefinition &def) {
+    auto result = std::find_if(ITEM_DEFINITIONS.begin(), ITEM_DEFINITIONS.end(), [&](const ItemDefinition &def) {
         return name == def.internal_name;
     });
 
-    if (result == end(ITEM_DEFINITIONS)) {
+    if (result == ITEM_DEFINITIONS.end()) {
         bugcheck(CodeLookupMiss, "name", name);
     }
 
@@ -51,12 +48,11 @@ ItemCode Item::code_of(const QString &name) {
 Item::Item(const ItemDefinition &def)
     : code(def.code),
       id(Generators::item_id()),
-      uses_left(def.default_uses_left),
-      intent(Ordinary)
+      uses_left(def.default_uses_left)
 {
     // Don't give an empty item a unique id
-    if (code == 0) {
-        id = 0;
+    if (code == EMPTY_CODE) {
+        id = EMPTY_ID;
     }
 }
 
@@ -80,7 +76,7 @@ Item Item::make_egg(CharacterId parent1, CharacterId parent2) {
 
     egg.instance_properties.map[InstanceEggParent1] = parent1;
     egg.instance_properties.map[InstanceEggParent2] = parent2;
-    egg.instance_properties.map[InstanceEggFoundActionstamp] = gw()->game().actions_done();
+    egg.instance_properties.map[InstanceEggFoundThreatstamp] = gw()->game()->threat();
 
     return egg;
 }
@@ -94,13 +90,13 @@ QString Item::instance_properties_to_string() const {
 
     if (instance_properties[InstanceEggParent1] != NOBODY) {
         string += QString("<i>Lovingly made by <b>%1</b> and <b>%2</b>.</i><br>")
-            .arg(gw()->game().character(instance_properties[InstanceEggParent1]).name())
-            .arg(gw()->game().character(instance_properties[InstanceEggParent2]).name());
+            .arg(gw()->game()->character(instance_properties[InstanceEggParent1]).name())
+            .arg(gw()->game()->character(instance_properties[InstanceEggParent2]).name());
     }
 
-    if (instance_properties[InstanceEggFoundActionstamp]) {
-        string += QString("Hatches after <b>%1 more actions.</b></i><br>")
-            .arg(ACTIONS_TO_HATCH - (gw()->game().actions_done() - instance_properties[InstanceEggFoundActionstamp]) + 1);
+    if (instance_properties[InstanceEggFoundThreatstamp]) {
+        string += QString("Hatches after <b>%1 more threat</b> is accumulated.</i><br>")
+            .arg(THREAT_TO_HATCH - (gw()->game()->threat() - instance_properties[InstanceEggFoundThreatstamp]) + 1);
     }
 
     if (instance_properties[InstanceEggFoundFlavor]) {
@@ -111,8 +107,48 @@ QString Item::instance_properties_to_string() const {
     return string;
 }
 
-void Item::call_hooks(HookType type, const HookPayload &payload) const {
-    def_of(code)->properties.call_hooks(type, payload, def()->type);
+QString Item::to_data_string() const {
+    QString instance_props_string;
+
+    for (const auto &pair : instance_properties) {
+        instance_props_string += QString("%1:%2:").arg(pair.first).arg(pair.second);
+    }
+
+    return QString("%1;%2;%3;%4;%5 Hey! Keep the items in the game, man. Thanks for playing AOR! :)")
+        .arg(code)
+        .arg(id)
+        .arg(uses_left)
+        .arg(owning_action)
+        .arg(instance_props_string);
+}
+
+Item Item::from_data_string(const QString &data_string) {
+    QStringList chunks = data_string.split(";");
+
+    Item item;
+    item.code = chunks[0].toULongLong();
+    item.id = chunks[1].toULongLong();
+    item.uses_left = chunks[2].toULongLong();
+    item.owning_action = chunks[3].toULongLong();
+
+    bool is_key = true;
+    QString key;
+    std::map<ItemProperty, AorUInt> instance_props;
+    for (const QString &key_or_prop : chunks[4].split(':', Qt::SkipEmptyParts)) {
+        if (is_key) {
+            key = key_or_prop;
+        } else {
+            instance_props[static_cast<ItemProperty>(key.toULongLong())] = key_or_prop.toULongLong();
+        }
+        is_key = !is_key;
+    }
+    item.instance_properties = ItemProperties(instance_props);
+
+    return item;
+}
+
+void Item::call_hooks(HookType type, const HookPayload &payload, ItemProperty allowed_prop_type) const {
+    def_of(code)->properties.call_hooks(type, payload, *this, def()->type, allowed_prop_type);
 }
 
 QPixmap Item::pixmap_of(ItemCode id) {
@@ -172,7 +208,7 @@ bool Item::has_resource_value(ItemCode code) {
 }
 
 void Item::for_each_resource_type(const std::function<void(ItemProperty, ItemProperty, ItemProperty)> &fn) {
-    for (quint16 i = 1; i <= 5; i++) {
+    for (AorUInt i = 1; i <= 5; i++) {
         ItemProperty cost_prop = (ItemProperty) (Cost + i);
         ItemProperty max_prop = (ItemProperty) (ToolMaximum + i);
         ItemProperty resource_prop = (ItemProperty) (Resource + i);
@@ -181,7 +217,7 @@ void Item::for_each_resource_type(const std::function<void(ItemProperty, ItemPro
 }
 
 void Item::for_each_tool_discover(const std::function<void(ItemProperty, ItemProperty)> &fn) {
-    for (quint16 i = 0; i < 9; i++) {
+    for (AorUInt i = 0; i < 9; i++) {
         ItemProperty can_discover_prop = (ItemProperty) (ToolCanDiscover1 + i);
         ItemProperty weight_prop = (ItemProperty) (ToolDiscoverWeight1 + i);
         fn(can_discover_prop, weight_prop);
@@ -192,6 +228,7 @@ QString Item::type_to_string(ItemType type) {
     QString string;
 
     if (type & Untradeable) { string += "Untradeable "; }
+    if (type & Signature) { string += "Signature "; }
 
     if (type & Consumable) { string += "Consumable, "; }
     if (type & Material)  { string += "Material, "; }
@@ -200,8 +237,9 @@ QString Item::type_to_string(ItemType type) {
     if (type & MiningTool) { string += "Mining Tool, "; }
     if (type & Skill) { string += "Skill, "; }
     if (type & Artifact) { string += "Artifact, "; }
-    if (type & Rune) { string += "Curse, "; }
     if (type & Effect) { string += "Injury, "; }
+    if (type & Weather) { string += "Environment Effect, "; }
+    if (type & Curse) { string += "Curse, "; }
 
     // Chop off the last comma and space
     return string.left(string.length() - 2);
@@ -216,10 +254,43 @@ QString Item::properties_to_string(const ItemProperties &props) {
         }
 
         if (property_definitions().find(pair.first) != end(property_definitions())) {
-            string += property_definitions().at(pair.first).description.arg(pair.second);
+            QString description;
+
+            const PropertyDefinition &def = property_definitions().at(pair.first);
+
+            if (pair.first & HoldsItemCode) {
+                description = def.description.arg(Item::def_of(pair.second)->display_name);
+            } else if (pair.first == PropertyIfLore) {
+                ItemProperties target_properties = {{ (ItemProperty) pair.second, props[PropertyIfLoreValue] }};
+                description = def.description.arg(props[PropertyLoreRequirement]).arg(properties_to_string(target_properties));
+            } else if (pair.first == PersistentEggsHaveColor) {
+                description = def.description.arg(Colors::name((Color) pair.second));
+            } else {
+                description = def.description.arg(pair.second);
+            }
+
+            if (!description.isEmpty()) {
+                string += description;
+                string += "<br>";
+            }
         }
-        string += "<br>";
     }
 
     return string.left(string.size() - 4); // cut off the last <br>
+}
+
+void Item::serialize(QIODevice *dev) const {
+    Serialize::serialize(dev, code);
+    Serialize::serialize(dev, id);
+    Serialize::serialize(dev, uses_left);
+    Serialize::serialize(dev, owning_action);
+    Serialize::serialize(dev, instance_properties);
+}
+
+void Item::deserialize(QIODevice *dev) {
+    Serialize::deserialize(dev, code);
+    Serialize::deserialize(dev, id);
+    Serialize::deserialize(dev, uses_left);
+    Serialize::deserialize(dev, owning_action);
+    Serialize::deserialize(dev, instance_properties);
 }
