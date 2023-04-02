@@ -55,6 +55,10 @@ void Inventory::remove_item(AorUInt y, AorUInt x) {
 }
 
 void Inventory::remove_item(ItemId id) {
+    if (id == EMPTY_ID) {
+        return;
+    }
+
     for (size_t i = 0; i < INVENTORY_SIZE; i++) {
         if (m_items[i].id == id) {
             m_items[i] = Item();
