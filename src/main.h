@@ -16,7 +16,7 @@
 
 const static AorUInt MAJOR_VERSION = 2;
 const static AorUInt MINOR_VERSION = 0;
-const static AorUInt PATCH_VERSION = 1;
+const static AorUInt PATCH_VERSION = 2;
 
 void new_game_prompt();
 void welcome_message();
