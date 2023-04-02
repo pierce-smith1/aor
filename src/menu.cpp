@@ -41,6 +41,7 @@ MenuBar::MenuBar(LKGameWindow *parent)
             gw()->selected_char_id() = NOBODY;
             gw()->selected_tribe_id() = NO_TRIBE;
             gw()->refresh_ui();
+            CharacterActivity::refresh_ui_bars(gw()->game()->characters()[0]);
         }
     });
 
