@@ -125,6 +125,12 @@ void ExplorerButton::refresh() {
 
     m_portrait_effect->setStrength(1.0);
     m_portrait_effect->setColor(Colors::blend(character().heritage()));
+
+    if (character().id() == gw()->selected_char_id()) {
+        setStyleSheet("*[slot=\"true\"] { border: 2px solid #888; border-radius: 3px; background-color: white; }");
+    } else {
+        setStyleSheet("*[slot=\"true\"] { border: 1px solid #bbb; border-radius: 3px; background-color: white; }");
+    }
 }
 
 QPixmap ExplorerButton::pixmap() {
