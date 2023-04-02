@@ -46,8 +46,8 @@ void CharacterActivity::complete(const TimedActivity &activity) {
     give_injuries(activity);
     std::vector<Item> items = products(activity);
     add_bonus_items(activity, items);
-    give(activity, items);
     exhaust_reagents(activity);
+    give(activity, items);
     clear_injuries(activity);
     increase_threat(activity);
 
