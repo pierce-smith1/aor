@@ -342,15 +342,6 @@ bool Character::push_effect(const Item &effect) {
         return item.id != EMPTY_ID;
     });
 
-    bool should_die = current_effects == EFFECT_SLOTS - 1;
-    call_hooks(HookCalcShouldDie, { &should_die });
-    if (should_die) {
-        gw()->notify(Warning, QString("%1 has been lost to the world.")
-            .arg(m_name)
-        );
-        die();
-    }
-
     for (AorUInt i = 0; i < EFFECT_SLOTS; i++) {
         if (m_effects[i].id == EMPTY_ID) {
             m_effects[i] = effect;

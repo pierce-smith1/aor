@@ -381,6 +381,21 @@ void CharacterActivity::clear_injuries(const TimedActivity &activity) {
             effect = Item();
         }
     }
+
+    auto &effects = activity.owner().effects();
+    AorInt current_effects = std::count_if(effects.begin(), effects.end(), [](const Item &item) {
+        return item.id != EMPTY_ID;
+    });
+
+    bool should_die = current_effects == EFFECT_SLOTS;
+    activity.owner().call_hooks(HookCalcShouldDie, { &should_die });
+    if (should_die) {
+        gw()->notify(Warning, QString("%1 has been lost to the world.")
+            .arg(activity.owner().name())
+        );
+        activity.owner().die();
+    }
+
 }
 
 void CharacterActivity::start_next_action(const TimedActivity &activity) {
