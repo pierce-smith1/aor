@@ -216,6 +216,10 @@ void MapViewTile::refresh() {
     } else if (WorldMap::map_tiles()[m_y][m_x].type & MapTileLocation) {
         m_slot->show();
         m_image_label->hide();
+    } else {
+        m_slot->hide();
+        m_image_label->setPixmap(QPixmap(":/assets/img/map/unknown.png"));
+        m_image_label->show();
     }
 }
 

@@ -178,6 +178,8 @@ void Game::check_tutorial(ItemDomain domain) {
         return;
     }
 
+    QDrag::cancel();
+
     switch (domain) {
         case Consumable: {
             gw()->tutorial(

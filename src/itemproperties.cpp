@@ -225,6 +225,7 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
                         continue;
                     }
 
+                    QDrag::cancel();
                     ChoiceDialog choice_dialog(choices);
 
                     auto choice = choices[choice_dialog.exec()];
