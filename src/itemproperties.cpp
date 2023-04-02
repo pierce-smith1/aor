@@ -148,7 +148,7 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
                 });
 
                 std::shuffle(inventory_items.begin(), inventory_items.end(), *Generators::rng());
-                character->discover(inventory_items[0]);
+                character->discover(Item(inventory_items[0].code));
             }}}
         }},
         { PersistentMaxEnergyBoost, {

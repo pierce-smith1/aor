@@ -338,10 +338,6 @@ bool Character::push_effect(const Item &effect) {
     }
     gw()->game()->history().insert(effect.code);
 
-    AorInt current_effects = std::count_if(begin(m_effects), end(m_effects), [](const Item &item) {
-        return item.id != EMPTY_ID;
-    });
-
     for (AorUInt i = 0; i < EFFECT_SLOTS; i++) {
         if (m_effects[i].id == EMPTY_ID) {
             m_effects[i] = effect;
