@@ -78,6 +78,8 @@ public:
     Effects &effects();
     Skills &skills();
 
+    static Character &mock_character();
+
     void serialize(QIODevice *dev) const;
     void deserialize(QIODevice *dev);
 

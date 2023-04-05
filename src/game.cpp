@@ -433,6 +433,10 @@ Item Game::next_signature(LocationId id) {
 }
 
 Character &Game::character(CharacterId id) {
+    if (id == NOBODY) {
+        return Character::mock_character();
+    }
+
     auto result = std::find_if(m_explorers.begin(), m_explorers.end(), [=](Character &c) {
         return c.id() == id;
     });

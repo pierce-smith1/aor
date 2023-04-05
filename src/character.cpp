@@ -446,6 +446,13 @@ Skills &Character::skills() {
     return m_skills;
 }
 
+Character &Character::mock_character() {
+    static Character mock;
+    mock = Character();
+
+    return mock;
+}
+
 void Character::serialize(QIODevice *dev) const {
     Serialize::serialize(dev, m_id);
     Serialize::serialize(dev, m_name);
