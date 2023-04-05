@@ -14,7 +14,7 @@ AboutBox::AboutBox() {
 
     QTextEdit *text = new QTextEdit(this);
     text->setText(
-        "<b>Aegis of Rhodon</b>" + QString(" b%1.%2.%3<br>").arg(MAJOR_VERSION).arg(MINOR_VERSION).arg(PATCH_VERSION) +
+        "<b>Aegis of Rhodon</b>" + QString(" b%1.%2.%3<br>").arg(AOR_MAJOR_VERSION).arg(AOR_MINOR_VERSION).arg(AOR_PATCH_VERSION) +
         "<br>"
         "<b>Code and art</b> by Pierce \"Breadcrumbs\" Smith (pierce@doughbyte.com)<br>"
         "<b>Sound design</b> by prrrki<br>"

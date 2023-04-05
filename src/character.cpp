@@ -53,7 +53,7 @@ void Character::queue_activity(ItemDomain domain, const std::vector<ItemId> &ite
     if (gw()->game()->fast_actions()) {
         activity_ms = 10 * 120;
     } else {
-        activity_ms = 100 * 120;
+        activity_ms = (1000 / 8) * 120;
     }
 
     // Don't do any sort of time adjustment if we're coupling - both participants
