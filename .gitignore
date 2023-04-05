@@ -74,3 +74,6 @@ desktop-yokin
 assets/img/items/sil/*
 gmon.out
 prof.stats
+aor
+aor.exe
+server/replay
