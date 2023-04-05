@@ -113,21 +113,20 @@ void ExplorerButton::refresh() {
     }) ? Effect : None));
 
     if (character().dead() || character().id() == NOBODY) {
-        m_portrait_effect->setStrength(0.0);
         m_activity_icon->hide();
         m_couple_status_icon->hide();
-        return;
+        m_portrait_effect->setStrength(0.0);
+    } else {
+        m_couple_status_icon->setVisible(character().can_couple());
+        m_couple_status_icon->raise();
+
+        m_activity_icon->setVisible(true);
+        m_activity_icon->setPixmap(Icons::activity_icons().at(character().activity().explorer_subtype()));
+        m_activity_icon->raise();
+
+        m_portrait_effect->setStrength(1.0);
+        m_portrait_effect->setColor(Colors::blend(character().heritage()));
     }
-
-    m_couple_status_icon->setVisible(character().can_couple());
-    m_couple_status_icon->raise();
-
-    m_activity_icon->setVisible(true);
-    m_activity_icon->setPixmap(Icons::activity_icons().at(character().activity().explorer_subtype()));
-    m_activity_icon->raise();
-
-    m_portrait_effect->setStrength(1.0);
-    m_portrait_effect->setColor(Colors::blend(character().heritage()));
 
     if (character().id() == gw()->selected_char_id()) {
         setStyleSheet("*[slot=\"true\"] { border: 2px solid #888; border-radius: 3px; background-color: white; }");
