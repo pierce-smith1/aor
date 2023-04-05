@@ -46,6 +46,7 @@ AboutBox::AboutBox() {
         "<b>MECH-KEYBOARD-01.wav by newagesoup</b> (https://freesound.org/people/newagesoup/sounds/348239/) (https://creativecommons.org/publicdomain/zero/1.0/)<br>"
         "<br>"
         "AOR is built with Qt5 and is licensed under the LGPL (https://www.gnu.org/licenses/lgpl-3.0.en.html)<br>"
+        "The source is available at (https://github.com/pierce-smith1/aor).<br>"
     );
     text->setReadOnly(true);
     layout()->addWidget(text);
