@@ -380,9 +380,9 @@ void LKGameWindow::save() {
     m_save_file.reset();
 
     IO::write_uint(&m_save_file, SAVE_MAGIC_NUMBER);
-    IO::write_uint(&m_save_file, MAJOR_VERSION);
-    IO::write_uint(&m_save_file, MINOR_VERSION);
-    IO::write_uint(&m_save_file, PATCH_VERSION);
+    IO::write_uint(&m_save_file, AOR_MAJOR_VERSION);
+    IO::write_uint(&m_save_file, AOR_MINOR_VERSION);
+    IO::write_uint(&m_save_file, AOR_PATCH_VERSION);
 
     m_game->serialize(&m_save_file);
 
@@ -404,7 +404,7 @@ void LKGameWindow::load() {
     }
 
     AorUInt mv = IO::read_uint(&m_save_file);
-    if (mv != MAJOR_VERSION) {
+    if (mv != AOR_MAJOR_VERSION) {
         QMessageBox::critical(this, "Aegis of Rhodon", QString("The save file is of an incompatible version."));
         exit(0);
     }

@@ -53,7 +53,7 @@ void Character::queue_activity(ItemDomain domain, const std::vector<ItemId> &ite
     if (gw()->game()->fast_actions()) {
         activity_ms = 10 * 120;
     } else {
-        activity_ms = 100 * 120;
+        activity_ms = (1000 / 8) * 120;
     }
 
     // Don't do any sort of time adjustment if we're coupling - both participants
@@ -125,17 +125,11 @@ bool Character::can_perform_action(ItemDomain domain) {
             call_hooks(HookCanDoActionCheck, { &can_do, &m_energy }, SmithingTool);
             break;
         } case Foraging: {
-            AorInt queued_forages = std::count_if(m_activities.begin(), m_activities.end(), [=](ActivityId aid) {
-                return gw()->game()->activity(aid).explorer_subtype() == Foraging;
-            });
-            can_do = gw()->game()->forageables_left() > queued_forages;
+            can_do = gw()->game()->forageables_left() > gw()->game()->total_queued_character_activities(Foraging);
             call_hooks(HookCanDoActionCheck, { &can_do, &m_energy }, domain);
             break;
         } case Mining: {
-            AorInt queued_mines = std::count_if(m_activities.begin(), m_activities.end(), [=](ActivityId aid) {
-                return gw()->game()->activity(aid).explorer_subtype() == Mining;
-            });
-            can_do = gw()->game()->mineables_left() > queued_mines;
+            can_do = gw()->game()->mineables_left() > gw()->game()->total_queued_character_activities(Mining);
             call_hooks(HookCanDoActionCheck, { &can_do, &m_energy }, domain);
             break;
         } case Travelling: {
@@ -444,6 +438,13 @@ Effects &Character::effects() {
 
 Skills &Character::skills() {
     return m_skills;
+}
+
+Character &Character::mock_character() {
+    static Character mock;
+    mock = Character();
+
+    return mock;
 }
 
 void Character::serialize(QIODevice *dev) const {

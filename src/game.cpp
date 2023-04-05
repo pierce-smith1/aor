@@ -402,6 +402,15 @@ AorInt Game::mineables_left() {
     return mineables_left(m_current_location_id);
 }
 
+AorInt Game::total_queued_character_activities(ItemDomain domain) {
+    return std::accumulate(m_explorers.begin(), m_explorers.end(), 0, [=](AorInt acc, Character &c) {
+        return acc + std::count_if(c.activities().begin(), c.activities().end(), [=](ActivityId id) {
+            TimedActivity &t = gw()->game()->activity(id);
+            return (t.type & domain) && !t.finished;
+        });
+    });
+}
+
 AorUInt Game::signatures_left(LocationId id) {
     AorUInt left = 0;
     LocationDefinition location = LocationDefinition::get_def(id);
@@ -433,6 +442,10 @@ Item Game::next_signature(LocationId id) {
 }
 
 Character &Game::character(CharacterId id) {
+    if (id == NOBODY) {
+        return Character::mock_character();
+    }
+
     auto result = std::find_if(m_explorers.begin(), m_explorers.end(), [=](Character &c) {
         return c.id() == id;
     });

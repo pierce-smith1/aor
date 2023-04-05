@@ -99,6 +99,8 @@ public:
     AorInt forageables_left();
     AorInt mineables_left(LocationId id);
     AorInt mineables_left();
+    AorInt total_queued_forages();
+    AorInt total_queued_character_activities(ItemDomain domain);
     AorUInt signatures_left(LocationId id);
     Item next_signature(LocationId id);
 
