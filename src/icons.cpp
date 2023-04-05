@@ -1,3 +1,6 @@
+// Copyright 2023 Pierce Smith
+// This software is licensed under the terms of the Lesser GNU General Public License.
+
 #include "icons.h"
 
 const std::map<ItemDomain, QPixmap> &Icons::activity_icons() {

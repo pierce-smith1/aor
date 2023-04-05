@@ -1,3 +1,6 @@
+// Copyright 2023 Pierce Smith
+// This software is licensed under the terms of the Lesser GNU General Public License.
+
 #pragma once
 
 // This is a bunch of ugly bullshit to allow definitions
@@ -65,4 +68,3 @@ struct LocationDefinition;
 
 using ItemMark = DefinitionMark<ItemDefinition, ItemDefinition>;
 using WeatherMark = DefinitionMark<ItemDefinition, LocationDefinition>;
-

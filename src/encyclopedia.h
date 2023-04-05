@@ -1,3 +1,6 @@
+// Copyright 2023 Pierce Smith
+// This software is licensed under the terms of the Lesser GNU General Public License.
+
 #pragma once
 
 #include <QGraphicsColorizeEffect>
@@ -21,4 +24,3 @@ private:
     int m_total_items = 0;
     Ui::Encyclopedia m_widget;
 };
-

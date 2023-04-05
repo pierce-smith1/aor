@@ -1,3 +1,6 @@
+// Copyright 2023 Pierce Smith
+// This software is licensed under the terms of the Lesser GNU General Public License.
+
 #include "trade.h"
 #include "gamewindow.h"
 
@@ -197,4 +200,3 @@ void DoughbyteConnection::notify_trade(GameId tribe_id) {
     IO::write_byte(&m_socket, MT_EXECUTETRADE);
     IO::write_uint(&m_socket, tribe_id);
 }
-

@@ -1,3 +1,6 @@
+// Copyright 2023 Pierce Smith
+// This software is licensed under the terms of the Lesser GNU General Public License.
+
 #include "queuedactivityslot.h"
 #include "../icons.h"
 
@@ -74,5 +77,3 @@ TimedActivity &QueuedActivitySlot::activity() {
 
     return gw()->game()->activity(gw()->selected_char().activities()[m_n]);
 }
-
-
