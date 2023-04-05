@@ -1,3 +1,6 @@
+// Copyright 2023 Pierce Smith
+// This software is licensed under the terms of the Lesser GNU General Public License.
+
 #include "choiceslot.h"
 #include "../choicedialog.h"
 
@@ -24,5 +27,3 @@ QPixmap ChoiceSlot::pixmap() {
 void ChoiceSlot::on_left_click(QMouseEvent *) {
     m_dialog->done(m_n);
 }
-
-

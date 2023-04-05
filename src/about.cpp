@@ -1,3 +1,6 @@
+// Copyright 2023 Pierce Smith
+// This software is licensed under the terms of the Lesser GNU General Public License.
+
 #include "about.h"
 #include "main.h"
 
@@ -41,6 +44,8 @@ AboutBox::AboutBox() {
         "<b>Jacket/Sloth Rustle 8 by brandondelehoy</b> (https://freesound.org/people/brandondelehoy/sounds/494792/) (https://creativecommons.org/publicdomain/zero/1.0/)<br>"
         "<b>Rustling Foliage in Forest by sillygrizzlies</b> (https://freesound.org/people/sillygrizzlies/sounds/635053/) (https://creativecommons.org/publicdomain/zero/1.0/)<br>"
         "<b>MECH-KEYBOARD-01.wav by newagesoup</b> (https://freesound.org/people/newagesoup/sounds/348239/) (https://creativecommons.org/publicdomain/zero/1.0/)<br>"
+        "<br>"
+        "AOR is built with Qt5 and is licensed under the LGPL (https://www.gnu.org/licenses/lgpl-3.0.en.html)<br>"
     );
     text->setReadOnly(true);
     layout()->addWidget(text);
