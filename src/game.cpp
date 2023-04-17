@@ -89,18 +89,6 @@ Settings &Game::settings() {
     return m_settings;
 }
 
-LocationId &Game::current_location_id() {
-    return m_current_location_id;
-}
-
-LocationDefinition Game::current_location() {
-    return LocationDefinition::get_def(m_current_location_id);
-}
-
-LocationId &Game::next_location_id() {
-    return m_next_location_id;
-}
-
 bool &Game::fast_actions() {
     return m_fast_actions;
 }
@@ -354,55 +342,12 @@ std::vector<TimedActivity> Game::activities_of_type(ItemDomain type) {
     return activities;
 }
 
-Game::TravelCheckResult Game::can_travel(LocationId id) {
-    if (id == m_current_location_id || m_next_location_id != NOWHERE) {
-        return TravelCheckResult::AlreadyHere;
-    }
-
-    if (std::any_of(m_explorers.begin(), m_explorers.end(), [=](Character &c) {
-        return c.activity().active;
-    })) {
-        return TravelCheckResult::ConcurrentAction;
-    }
-
-    // Temporarily set so that hooks can use it.
-    m_next_location_id = id;
-
-    if (!m_map.path_exists_between(m_current_location_id, id)) {
-        m_next_location_id = NOWHERE;
-        return TravelCheckResult::NoPath;
-    }
-
-    bool can_travel = true;
-    call_hooks(HookDecideCanTravel, [&](Character &c) -> HookPayload { return { &c, &can_travel }; });
-
-    m_next_location_id = NOWHERE;
-
-    return can_travel ? TravelCheckResult::Ok : TravelCheckResult::InsufficientResources;
-}
-
-void Game::start_travel(LocationId id) {
-    m_next_location_id = id;
-
-    for (Character &c : m_explorers) {
-        c.queue_activity(Travelling, {});
-    }
-}
-
 AorInt Game::forageables_left(LocationId id) {
     return LocationDefinition::get_def(id).forageables - m_consumable_waste[id];
 }
 
-AorInt Game::forageables_left() {
-    return forageables_left(m_current_location_id);
-}
-
 AorInt Game::mineables_left(LocationId id) {
     return LocationDefinition::get_def(id).mineables - m_mineable_waste[id];
-}
-
-AorInt Game::mineables_left() {
-    return mineables_left(m_current_location_id);
 }
 
 AorInt Game::total_queued_character_activities(ItemDomain domain) {
@@ -484,8 +429,7 @@ void Game::call_hooks(HookType type, const std::function<HookPayload(Character &
         }
 
         // Don't call global effects per-character; we'll do that later.
-        AorUInt char_domain = int_domain & ~Weather;
-        char_domain &= ~Resident;
+        AorUInt char_domain = ~Resident;
         c.call_hooks(type, payload_provider(c), char_domain);
     }
 
@@ -493,13 +437,6 @@ void Game::call_hooks(HookType type, const std::function<HookPayload(Character &
 }
 
 void Game::call_global_hooks(HookType type, const HookPayload &payload, AorUInt int_domain) {
-    if (int_domain & Weather) {
-        for (AorUInt i = 0; i < WEATHER_EFFECTS; i++) {
-            ItemCode weather = gw()->game()->current_location().properties[(ItemProperty) (WeatherEffect1 + i)];
-            Item::def_of(weather)->properties.call_hooks(type, payload, Item());
-        }
-    }
-
     if (int_domain & Resident) {
         for (const Item &item : gw()->game()->inventory().items()) {
             item.call_hooks(type, payload, InventoryProperty);
@@ -519,8 +456,6 @@ void Game::serialize(QIODevice *dev) const {
     Serialize::serialize(dev, m_history);
     Serialize::serialize(dev, m_threat);
     Serialize::serialize(dev, m_map);
-    Serialize::serialize(dev, m_current_location_id);
-    Serialize::serialize(dev, m_next_location_id);
     Serialize::serialize(dev, m_consumable_waste);
     Serialize::serialize(dev, m_mineable_waste);
     Serialize::serialize(dev, m_waste_action_counts);
@@ -543,8 +478,6 @@ void Game::deserialize(QIODevice *dev) {
     Serialize::deserialize(dev, m_history);
     Serialize::deserialize(dev, m_threat);
     Serialize::deserialize(dev, m_map);
-    Serialize::deserialize(dev, m_current_location_id);
-    Serialize::deserialize(dev, m_next_location_id);
     Serialize::deserialize(dev, m_consumable_waste);
     Serialize::deserialize(dev, m_mineable_waste);
     Serialize::deserialize(dev, m_waste_action_counts);

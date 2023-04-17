@@ -15,7 +15,6 @@
 #include "slot/materialslot.h"
 #include "slot/toolslot.h"
 #include "slot/artifactslot.h"
-#include "slot/effectslot.h"
 #include "slot/portraitslot.h"
 #include "slot/queuedactivityslot.h"
 #include "slot/smithingresultslot.h"
@@ -89,14 +88,9 @@ LKGameWindow::LKGameWindow()
     activity_palette.setColor(QPalette::Highlight, Colors::qcolor(Lime));
     m_window.activity_time_bar->setPalette(activity_palette);
 
-    QPalette spirit_palette;
-    spirit_palette.setColor(QPalette::Highlight, Colors::qcolor(Blueberry));
-    m_window.spirit_bar->setPalette(spirit_palette);
-
-    QPalette energy_palette;
-    energy_palette.setColor(QPalette::Highlight, Colors::qcolor(Cherry));
-    m_window.energy_bar->setPalette(energy_palette);
-    m_window.global_action_bar->setPalette(energy_palette);
+    QPalette threat_palette;
+    threat_palette.setColor(QPalette::Highlight, Colors::qcolor(Cherry));
+    m_window.global_action_bar->setPalette(threat_palette);
 
     m_encyclopedia->refresh();
 
@@ -176,10 +170,6 @@ void LKGameWindow::install_slots() {
         (new ArtifactSlot(i))->install();
     }
 
-    for (AorUInt i = 0; i < EFFECT_SLOTS; i++) {
-        (new EffectSlot(i))->install();
-    }
-
     for (AorUInt i = 0; i < MAX_QUEUED_ACTIVITIES; i++) {
         (new QueuedActivitySlot(i))->install();
     }
@@ -256,11 +246,11 @@ void LKGameWindow::refresh_ui_buttons() {
     }
 
     get_activity_buttons().at(Foraging)->setText(QString("Forage (%1)")
-        .arg(m_game->forageables_left())
+        .arg(m_game->forageables_left(selected_char().location_id()))
     );
 
     get_activity_buttons().at(Mining)->setText(QString("Mine (%1)")
-        .arg(m_game->mineables_left())
+        .arg(m_game->mineables_left(selected_char().location_id()))
     );
 
     m_window.trade_partner_combobox->setEnabled(m_game->trade_partner() == NO_TRIBE);

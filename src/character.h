@@ -15,7 +15,7 @@
 #include "inventory.h"
 #include "characteractivity.h"
 #include "generators.h"
-#include "clampedresource.h"
+#include "locations.h"
 
 class Game;
 
@@ -23,11 +23,9 @@ const static AorUInt MAX_ARRAY_SIZE = std::max({ SMITHING_SLOTS, TRADE_SLOTS, AR
 const static AorUInt MAX_QUEUED_ACTIVITIES = 8;
 const static AorUInt MAX_SKILLS = 6;
 
-const static AorUInt BASE_MAX_ENERGY = 50;
-const static AorUInt BASE_MAX_SPIRIT = 50;
 const static AorUInt BASE_MAX_RESOURCE = 10;
 
-const static AorUInt BASE_HOOK_DOMAINS = Artifact | Effect | Explorer | Weather | Travelling | Resident;
+const static AorUInt BASE_HOOK_DOMAINS = Artifact | Explorer | Weather | Travelling | Resident;
 
 using Heritage = std::multiset<Color>;
 using ExternalItemIds = std::map<ItemDomain, std::array<ItemId, MAX_ARRAY_SIZE>>;
@@ -47,30 +45,25 @@ public:
     CharacterId &partner();
     bool &dead();
     bool &can_couple();
+    LocationId &location_id();
+    LocationId &next_location_id();
 
     ItemProperties heritage_properties();
 
     void queue_activity(ItemDomain domain, const std::vector<ItemId> &items);
+    void queue_travel(LocationId location);
     void die();
     TimedActivity &activity();
 
-    ClampedResource &energy();
-    ClampedResource &spirit();
-    AorInt base_spirit_cost();
     AorUInt egg_find_percent_chance();
 
     bool can_perform_action(ItemDomain action);
-    AorInt energy_to_gain();
-    AorInt spirit_to_gain();
 
     std::vector<ItemCode> smithable_items();
     ItemCode smithing_result();
     ItemProperties total_material_resources();
     std::vector<Item> equipped_items();
-    std::vector<Item> nonempty_injuries();
 
-    bool clear_last_effect();
-    bool push_effect(const Item &effect);
     bool discover(const Item &item);
 
     void call_hooks(HookType type, const HookPayload &payload, AorUInt int_domain = BASE_HOOK_DOMAINS, const std::vector<Item> &extra_items = {});
@@ -78,7 +71,6 @@ public:
     ItemId tool_id(ItemDomain domain);
     ToolIds &tools();
     ExternalItemIds &external_items();
-    Effects &effects();
     Skills &skills();
 
     static Character &mock_character();
@@ -97,7 +89,6 @@ private:
         { Material, {} },
         { Artifact, {} },
     };
-    Effects m_effects {};
     ToolIds m_tool_ids {
         { SmithingTool, EMPTY_ID },
         { ForagingTool, EMPTY_ID },
@@ -107,6 +98,6 @@ private:
     CharacterId m_partner = NOBODY;
     bool m_dead = false;
     bool m_can_couple = false;
-    ClampedResource m_energy = ClampedResource(40, BASE_MAX_ENERGY, HookCalcMaxEnergy);
-    ClampedResource m_spirit = ClampedResource(40, BASE_MAX_SPIRIT, HookCalcMaxSpirit);
+    LocationId m_location_id = LocationDefinition::get_def("point_entry").id;
+    LocationId m_next_location_id = NOWHERE;
 };

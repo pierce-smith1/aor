@@ -128,36 +128,6 @@ const static std::vector<CheatCommand> COMMANDS = {
         }
     },
     {
-        "energy",
-        "Change the current character's energy to $0; if $0 is '?', show the current energy instead",
-        1,
-        [](const QStringList &args) {
-            if (args[0] == "?") {
-                qDebug("Current energy is (%lld)", gw()->selected_char().energy().amount());
-                return;
-            }
-
-            QS_TO_INT(energy, args[0]);
-
-            gw()->selected_char().energy().set(energy, &gw()->selected_char());
-        }
-    },
-    {
-        "spirit",
-        "Change the current character's spirit to $0; if $0 is '?', show the current spirit instead",
-        1,
-        [](const QStringList &args) {
-            if (args[0] == "?") {
-                qDebug("Current spirit is (%lld)", gw()->selected_char().spirit().amount());
-                return;
-            }
-
-            QS_TO_INT(spirit, args[0]);
-
-            gw()->selected_char().spirit().set(spirit, &gw()->selected_char());
-        }
-    },
-    {
         "timel",
         "Change the amount of ms left in the current activity to $0; if $0 is '?', show the amount of ms left instead",
         1,
@@ -170,16 +140,6 @@ const static std::vector<CheatCommand> COMMANDS = {
             QS_TO_INT(ms, args[0]);
 
             gw()->selected_char().activity().ms_left = ms;
-        }
-    },
-    {
-        "effect",
-        "Set the effect at n = $0 to a new item with name $1",
-        2,
-        [](const QStringList &args) {
-            QS_TO_INT(n, args[0]);
-
-            gw()->selected_char().effects()[n] = Item(args[1]);
         }
     },
     {
@@ -316,28 +276,28 @@ const static std::vector<CheatCommand> COMMANDS = {
     },
     {
         "move",
-        "Move the expedition to the location with name $0.",
+        "Move the current character to the location with name $0.",
         1,
         [](const QStringList &args) {
-            gw()->game()->current_location_id() = LocationDefinition::get_def(args[0]).id;
+            gw()->selected_char().location_id() = LocationDefinition::get_def(args[0]).id;
         }
     },
     {
         "waste",
-        "Print the number of waste actions taken at the current location.",
+        "Print the number of waste actions taken at the location of the current character.",
         0,
         [](const QStringList &) {
-            qDebug("waste: %lld", gw()->game()->waste_action_counts()[gw()->game()->current_location_id()]);
+            qDebug("waste: %lld", gw()->game()->waste_action_counts()[gw()->selected_char().location_id()]);
         }
     },
     {
         "sigwhen",
-        "Print the number of waste actions needed to find the $0th signature item at the current location.",
+        "Print the number of waste actions needed to find the $0th signature item at the location of the current character.",
         1,
         [](const QStringList &args) {
             QS_TO_INT(n, args[0]);
 
-            qDebug("sigwhen: %lld", gw()->game()->signature_requirements()[gw()->game()->current_location_id()][n]);
+            qDebug("sigwhen: %lld", gw()->game()->signature_requirements()[gw()->selected_char().location_id()][n]);
         }
     },
     {

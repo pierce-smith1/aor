@@ -55,7 +55,6 @@ const std::map<ItemDomain, QPixmap> &Icons::explorer_button_icons() {
     static std::map<ItemDomain, QPixmap> icons = {
         { Tool, QPixmap(":/assets/img/icons/sq_purple_filled.png") },
         { Artifact, QPixmap(":/assets/img/icons/sq_blue_filled.png") },
-        { Effect, QPixmap(":/assets/img/icons/sq_pink_filled.png") },
         { None, QPixmap(":/assets/img/icons/blank.png") },
     };
 

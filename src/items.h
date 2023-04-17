@@ -54,7 +54,6 @@ enum ItemDomain : AorUInt {
     Offering        = 1 << 5, Trading  = 1 << 5,
     Skill           = 1 << 6,
     Artifact        = 1 << 7,
-    Effect          = 1 << 8,
     Resident        = 1 << 9,
     Portrait        = 1 << 10,
     ForeignOffering = 1 << 11,
@@ -111,7 +110,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         1 USES, Consumable,
         {
             { ItemLevel, 1 },
-            { ConsumableEnergyBoost, 20 },
             { LeafyResource, 5 },
         }
     },
@@ -123,8 +121,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         1 USES, Consumable,
         {
             { ItemLevel, 1 },
-            { ConsumableEnergyBoost, 10 },
-            { ConsumableSpiritBoost, 10 },
             { LeafyResource, 5 },
         }
     },
@@ -136,8 +132,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         1 USES, Consumable,
         {
             { ItemLevel, 2 },
-            { ConsumableClearsNumEffects, 1 },
-            { ConsumableEnergyBoost, 30 },
             { LeafyResource, 10 }
         }
     },
@@ -149,7 +143,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         1 USES, Consumable,
         {
             { ItemLevel, 2 },
-            { ConsumableEnergyBoost, 40 },
             { LeafyResource, 10 }
         }
     },
@@ -162,8 +155,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         {
             { ItemLevel, 3 },
             { LeafyResource, 20 },
-            { ConsumableEnergyBoost, 20 },
-            { ConsumableSpiritBoost, 20 },
             { ConsumableMakesCouplable, 1 }
         }
     },
@@ -176,8 +167,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         {
             { ItemLevel, 5 },
             { LeafyResource, 10 },
-            { ConsumableEnergyBoost, 20 },
-            { ConsumableGivesEffect, ItemMark::marker("obsessive_checksum_disorder") }
         }
     },
     {
@@ -191,8 +180,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
             { ItemLevel, 5 },
             { LeafyResource, 10 },
             { RunicResource, 20 },
-            { ConsumableEnergyBoost, 20 },
-            { ConsumableGivesEffect, ItemMark::marker("dynamic_digestion") }
         }
     },
     {
@@ -205,7 +192,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
             { ItemLevel, 5 },
             { LeafyResource, 10 },
             { RunicResource, 20 },
-            { ConsumableGivesEffect, ItemMark::marker("double_vision") }
         }
     },
     {
@@ -222,8 +208,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
             { ItemLevel, 5 },
             { RunicResource, 50 },
             { LeafyResource, 50 },
-            { ConsumableEnergyBoost, 100 },
-            { ConsumableSpiritBoost, 100 },
         }
     },
     {
@@ -235,7 +219,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         1 USES, Signature | Consumable,
         {
             { ItemLevel, 5 },
-            { ConsumableGivesEffectToAll, ItemMark::marker("spinal_trap") },
         }
     },
     {
@@ -261,7 +244,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         {
             { ItemLevel, 5 },
             { LeafyResource, 50 },
-            { ConsumableClearsNumEffects, 4 },
             { ConsumableRegeneratesLocation, 10 }
         }
     },
@@ -274,8 +256,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         1 USES, Consumable,
         {
             { ItemLevel, 3 },
-            { ConsumableEnergyBoost, 50 },
-            { ConsumableSpiritBoost, 20 },
             { ConsumableCopiesRandomItems, 1 }
         }
     },
@@ -289,7 +269,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         1 USES, Consumable,
         {
             { ItemLevel, 3 },
-            { ConsumableEnergyBoost, 80 }
         }
     },
     {
@@ -415,7 +394,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
             { ItemLevel, 1 },
             { CostStone, 10 },
             { CostCrystalline, 10 },
-            { ToolEnergyCost, 20 },
             { ToolMaximumStone, 30 },
             { ToolMaximumCrystalline, 30 },
         }
@@ -430,7 +408,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
             { ItemLevel, 2 },
             { CostStone, 30 },
             { CostCrystalline, 10 },
-            { ToolEnergyCost, 10 },
             { ToolCanDiscover1, ItemMark::marker("norton_ghost_pepper") },
             { ToolCanDiscover2, ItemMark::marker("bleeding_wildheart") },
             { ToolCanDiscover3, ItemMark::marker("pipeapple") },
@@ -449,7 +426,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
             { ItemLevel, 2 },
             { CostStone, 10 },
             { CostCrystalline, 30 },
-            { ToolEnergyCost, 10 },
             { ToolCanDiscover1, ItemMark::marker("cobolt_bar") },
             { ToolCanDiscover2, ItemMark::marker("scandiskium") },
             { ToolCanDiscover3, ItemMark::marker("solid_slate") },
@@ -465,7 +441,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         0 USES, SmithingTool,
         {
             { ItemLevel, 2 },
-            { ToolEnergyCost, 30 },
             { CostMetallic, 10 },
             { CostCrystalline, 30 },
             { ToolMaximumStone, 200 },
@@ -482,7 +457,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         0 USES, MiningTool,
         {
             { ItemLevel, 3 },
-            { ToolEnergyCost, 30 },
             { CostMetallic, 40 },
             { CostRuinc, 15 },
             { ToolCanDiscover1, ItemMark::marker("scalped_remains") },
@@ -503,7 +477,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         0 USES, ForagingTool,
         {
             { ItemLevel, 3 },
-            { ToolEnergyCost, 20 },
             { CostLeafy, 10 },
             { CostMetallic, 30 },
             { CostCrystalline, 30 },
@@ -520,7 +493,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         0 USES, SmithingTool,
         {
             { ItemLevel, 3 },
-            { ToolEnergyCost, 30 },
             { CostStone, 150 },
             { CostRuinc, 20 },
             { ToolMaximumStone, 50 },
@@ -537,7 +509,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         0 USES, MiningTool,
         {
             { ItemLevel, 3 },
-            { ToolEnergyCost, 30 },
             { CostStone, 50 },
             { CostCrystalline, 50 },
             { ToolCanDiscover1, ItemMark::marker("rubygem") },
@@ -569,7 +540,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         0 USES, Artifact,
         {
             { ItemLevel, 3 },
-            { PersistentMaxSpiritBoost, 40 }
         }
     },
     {
@@ -582,7 +552,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         0 USES, Artifact,
         {
             { ItemLevel, 3 },
-            { PersistentMaxEnergyBoost, 40 }
         }
     },
     {
@@ -610,100 +579,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         {
             { ItemLevel, 5 },
             { PersistentEggPowerBoost, 3 },
-            { PersistentMaxEnergyBoost, 20 },
-            { PersistentMaxSpiritBoost, 20 },
-        }
-    },
-    {
-        CT_EFFECT | 0,
-        "disconnected_socket", "Disconnected Socket",
-        "<i>I took quite a nasty fall and dislocated my shoulder.</i><br>"
-        "<i>The doctor said doing a handshake would reconnect it, but I keep being refused.</i><br>",
-        7 USES, Effect,
-        {
-            { ItemLevel, 1 },
-            { PersistentSpeedPenalty, 20 },
-            { PersistentEnergyPenalty, 10 },
-            { InjuryMining, 1 },
-            { InjuryForaging, 1 },
-        }
-    },
-    {
-        CT_EFFECT | 1,
-        "starving", "Starving",
-        "<i>Is this what it means to be a \"Rockmuncher?\"</i><br>",
-        5 USES, Effect,
-        {
-            { ItemLevel, 1 },
-            { PersistentSpeedPenalty, 20 },
-            { PersistentSpiritPenalty, 10 },
-        }
-    },
-    {
-        CT_EFFECT | 2,
-        "weakness", "Weakness",
-        "<i>There's a numbness to my whole body -</i><br>"
-        "<i>I feel like my soul no longer owns it, and I'm just watching myself stumble around.</i><br>",
-        5 USES, Effect,
-        {
-            { ItemLevel, 1 },
-            { PersistentEnergyPenalty, 10 },
-        }
-    },
-    {
-        CT_EFFECT | 3,
-        "welchian_fever", "Welchian Fever",
-        "<i>I get the horrible feeling <b>everything is about to end...</b></i>",
-        10 USES, Effect,
-        {
-            { ItemLevel, 5 },
-            { PersistentSpiritPenalty, 20 },
-        }
-    },
-    {
-        CT_EFFECT | 4,
-        "obsessive_checksum_disorder", "Obsessive Checksum Disorder",
-        "<i>Did you touch this? Did you touch it??? DID YOU TOUCH IT?!?</i><br>",
-        6 USES, Effect,
-        {
-            { ItemLevel, 2 },
-            { PersistentEnergyPenalty, 10 },
-            { PersistentDiscoveryNotRandom, 1 }
-        }
-    },
-    {
-        CT_EFFECT | 5,
-        "dynamic_digestion", "Dynamic Digestion",
-        "<i>Damn, I'm starving. I could eat ANYTHING.</i><br>",
-        10 USES, Effect,
-        {
-            { ItemLevel, 2 },
-            { PersistentSpiritPenalty, 10 },
-            { PersistentRandomConsumableProducts, 1 }
-        }
-    },
-    {
-        CT_EFFECT | 6,
-        "double_vision", "Double Vision",
-        "<i>I can see all 1.7976931348623157 × 10^308 meters of reality!</i><br>",
-        6 USES, Effect,
-        {
-            { ItemLevel, 2 },
-            { HeritageItemDoubleChance, 100 }
-        }
-    },
-    {
-        CT_EFFECT | 7,
-        "spinal_trap", "Spinal Trap",
-        "<i>Through a series of metaphysical incantations, my spirit can remotely control</i><br>"
-        "<i>the signals being sent through my nervous system.</i><br>"
-        "<i>When my brain tells my body it's time to die, I can just - well - ignore it.</i><br>",
-        15 USES, Effect,
-        {
-            { ItemLevel, 5 },
-            { PropertyIfLore, PersistentCannotDie },
-            { PropertyIfLoreValue, 1 },
-            { PropertyLoreRequirement, 130 },
         }
     },
     {
@@ -760,7 +635,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         0 USES, Weather,
         {
             { ItemLevel, 1 },
-            { PersistentChaoticCalculations, 1 }
         }
     },
     {
@@ -817,7 +691,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         1 USES, Consumable | Untradeable,
         {
             { ItemLevel, 3 },
-            { ConsumableEnergyBoost, 50 },
         }
     },
     {
@@ -838,8 +711,6 @@ const static std::vector<ItemDefinition> ITEM_DEFINITIONS = ItemMark::resolve_ma
         {
             { ItemLevel, 1 },
             { InventoryInfectsItems, 20 },
-            { InventoryMaxEnergyBoost, 10 },
-            { InventoryMaxSpiritBoost, 10 }
         }
     }
 });

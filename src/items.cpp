@@ -240,7 +240,6 @@ QString Item::type_to_string(ItemType type) {
     if (type & MiningTool) { string += "Mining Tool, "; }
     if (type & Skill) { string += "Skill, "; }
     if (type & Artifact) { string += "Artifact, "; }
-    if (type & Effect) { string += "Injury, "; }
     if (type & Weather) { string += "Environment Effect, "; }
     if (type & Curse) { string += "Curse, "; }
 

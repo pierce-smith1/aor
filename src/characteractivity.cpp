@@ -44,14 +44,11 @@ void CharacterActivity::complete(const TimedActivity &activity) {
         gw()->game()->trade_partner() = NO_TRIBE;
     }
 
-    exhaust_character(activity);
     give_bonuses(activity);
-    give_injuries(activity);
     std::vector<Item> items = products(activity);
     add_bonus_items(activity, items);
     exhaust_reagents(activity);
     give(activity, items);
-    clear_injuries(activity);
     increase_threat(activity);
 
     start_next_action(activity);
@@ -59,32 +56,12 @@ void CharacterActivity::complete(const TimedActivity &activity) {
     gw()->game()->check_hatch();
 
     if (activity.explorer_subtype() == Foraging) {
-        gw()->game()->forageable_waste()[gw()->game()->current_location_id()]++;
+        gw()->game()->forageable_waste()[activity.owner().location_id()]++;
     } else if (activity.explorer_subtype() == Mining) {
-        gw()->game()->mineable_waste()[gw()->game()->current_location_id()]++;
+        gw()->game()->mineable_waste()[activity.owner().location_id()]++;
     } else if (activity.explorer_subtype() == Travelling) {
-        auto &characters = gw()->game()->characters();
-        bool no_others_travelling = std::none_of(characters.begin(), characters.end(), [=](Character &c) {
-            if (c.id() == activity.owner().id()) {
-                return false;
-            }
-
-            return std::any_of(c.activities().begin(), c.activities().end(), [=](const ActivityId aid) {
-                return gw()->game()->activity(aid).explorer_subtype() == Travelling;
-            });
-        });
-
-        if (no_others_travelling) {
-            gw()->game()->current_location_id() = gw()->game()->next_location_id();
-            gw()->game()->next_location_id() = NOWHERE;
-        }
-
-        if (gw()->game()->current_location().id == LocationDefinition::get_def("TR").id) {
-            gw()->tutorial(
-                "<b>Congrats!</b><br>"
-                "Your are winner!<br>"
-            );
-        }
+        activity.owner().location_id() = activity.owner().next_location_id();
+        activity.owner().next_location_id() = NOWHERE;
     }
 
     activity.owner().call_hooks(HookPostActivity, { &activity.owner() });
@@ -98,27 +75,10 @@ void CharacterActivity::update_ui(const TimedActivity &activity) {
 }
 
 void CharacterActivity::refresh_ui_bars(Character &character) {
-    auto clamp = [](AorInt min, AorInt value, AorInt max) -> AorInt {
-        return value < min ? min : (value > max ? max : value);
-    };
-
     QProgressBar *activity_bar = gw()->window().activity_time_bar;
-    QProgressBar *spirit_bar = gw()->window().spirit_bar;
-    QProgressBar *energy_bar = gw()->window().energy_bar;
 
     activity_bar->setMaximum(100);
     activity_bar->setValue(character.activity().percent_complete());
-
-    // We have to be very particular about clamping values here, since if we
-    // pass a number to QProgressBar::setValue that is < minValue or > maxValue,
-    // nothing happens - leading to UI inconsistencies.
-    double spirit_gain = character.spirit_to_gain() * (character.activity().percent_complete() / 100.0);
-    spirit_bar->setMaximum(character.spirit().max(&character));
-    spirit_bar->setValue(clamp(0, character.spirit().amount() + spirit_gain, character.spirit().max(&character)));
-
-    double energy_gain = character.energy_to_gain() * (character.activity().percent_complete() / 100.0);
-    energy_bar->setMaximum(character.energy().max(&character));
-    energy_bar->setValue(clamp(0, character.energy().amount() + energy_gain, character.energy().max(&character)));
 }
 
 std::vector<Item> CharacterActivity::products(const TimedActivity &activity) {
@@ -143,7 +103,7 @@ std::vector<Item> CharacterActivity::products(const TimedActivity &activity) {
         } case Foraging:
           case Mining: {
             discover_waste_item(activity.owner(), activity.explorer_subtype(), discoverable_set);
-            gw()->game()->waste_action_counts()[gw()->game()->current_location_id()]++;
+            gw()->game()->waste_action_counts()[activity.owner().location_id()]++;
             break;
         } case Coupling: {
             auto &characters = gw()->game()->characters();
@@ -216,7 +176,7 @@ void CharacterActivity::discover_waste_item(Character &character, ItemDomain dom
         }
     }
 
-    LocationId here_id = gw()->game()->current_location_id();
+    LocationId here_id = character.location_id();
     LocationDefinition here = LocationDefinition::get_def(here_id);
 
     Item signature_item = gw()->game()->next_signature(here_id);
@@ -242,36 +202,6 @@ void CharacterActivity::exhaust_reagents(const TimedActivity &activity) {
     }
 
     exhaust_item(activity, activity.owner().tool_id(activity.explorer_subtype()));
-}
-
-void CharacterActivity::exhaust_character(const TimedActivity &activity) {
-    Item tool = gw()->game()->inventory().get_item(activity.owner().tool_id(activity.explorer_subtype()));
-
-    activity.owner().energy().add(activity.owner().energy_to_gain(), &activity.owner());
-    activity.owner().spirit().add(activity.owner().spirit_to_gain(), &activity.owner());
-
-    for (Item &effect : activity.owner().effects()) {
-        if (effect.id == EMPTY_ID) {
-            continue;
-        }
-
-        if (activity.explorer_subtype() == Eating) {
-            effect.uses_left -= effect.uses_left == 1 ? 1 : 2;
-        } else {
-            effect.uses_left -= 1;
-        }
-
-        // We do NOT clear the effect here, since we may need it later
-    }
-
-    if (activity.owner().energy().amount() == 0) {
-        activity.owner().push_effect(Item("starving"));
-    }
-
-    if (activity.owner().spirit().amount() == 0) {
-        activity.owner().push_effect(Item("weakness"));
-    }
-
 }
 
 void CharacterActivity::exhaust_item(const TimedActivity &activity, ItemId id) {
@@ -323,82 +253,10 @@ void CharacterActivity::give_bonuses(const TimedActivity &activity) {
     }
 }
 
-void CharacterActivity::give_injuries(const TimedActivity &activity) {
-    bool welchian = false;
-
-    AorInt injury_percent_chance = 0;
-    activity.owner().call_hooks(HookCalcInjuryChance, { &injury_percent_chance }, BASE_HOOK_DOMAINS | activity.explorer_subtype());
-
-    if (gw()->game()->threat() > AEGIS_THREAT) {
-        injury_percent_chance += ((gw()->game()->threat() - AEGIS_THREAT) / 2);
-        welchian = true;
-    }
-
-    if (!Generators::percent_chance(injury_percent_chance)) {
-        return;
-    }
-
-    if (welchian) {
-        activity.owner().push_effect(Item("welchian_fever"));
-        return;
-    }
-
-    std::vector<std::pair<ItemCode, double>> possible_weighted_injuries;
-    for (const ItemDefinition &def : ITEM_DEFINITIONS) {
-        if (!(def.type & Effect)) {
-            continue;
-        }
-
-        switch (activity.explorer_subtype()) {
-            case Smithing: { if (!def.properties[InjurySmithing]) { continue; } break; }
-            case Foraging: { if (!def.properties[InjuryForaging]) { continue; } break; }
-            case Mining: { if (!def.properties[InjuryMining]) { continue; } break; }
-            case Eating: { if (!def.properties[InjuryEating]) { continue; } break; }
-            case Defiling: { if (!def.properties[InjuryDefiling]) { continue; } break; }
-            case Trading: { if (!def.properties[InjuryTrading]) { continue; } break; }
-            case Coupling: { if (!def.properties[InjuryCoupling]) { continue; } break; }
-            case Travelling: { if (!def.properties[InjuryTravelling]) { continue; } break; }
-            default: { bugcheck(InjuriesForUnknownDomain, activity.owner_id, activity.explorer_subtype()); }
-        }
-
-        possible_weighted_injuries.push_back({ def.code, 1 });
-    }
-
-    if (possible_weighted_injuries.empty()) {
-        return;
-    }
-
-    Item final_effect = Item(Generators::sample_with_weights(possible_weighted_injuries));
-    activity.owner().push_effect(final_effect);
-}
-
 void CharacterActivity::increase_threat(const TimedActivity &activity) {
     AorInt threat = 5;
     activity.owner().call_hooks(HookCalcThreatGain, { &threat });
     gw()->game()->threat() += threat;
-}
-
-void CharacterActivity::clear_injuries(const TimedActivity &activity) {
-    for (Item &effect : activity.owner().effects()) {
-        if (effect.uses_left == 0) {
-            effect = Item();
-        }
-    }
-
-    auto &effects = activity.owner().effects();
-    AorInt current_effects = std::count_if(effects.begin(), effects.end(), [](const Item &item) {
-        return item.id != EMPTY_ID;
-    });
-
-    bool should_die = current_effects == EFFECT_SLOTS;
-    activity.owner().call_hooks(HookCalcShouldDie, { &should_die });
-    if (should_die) {
-        gw()->notify(Warning, QString("%1 has been lost to the world.")
-            .arg(activity.owner().name())
-        );
-        activity.owner().die();
-    }
-
 }
 
 void CharacterActivity::start_next_action(const TimedActivity &activity) {

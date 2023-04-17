@@ -38,10 +38,10 @@ ItemProperties Colors::heritage_properties(Color c, int magnitude) {
     switch (c) {
         case Banana: { return {{ HeritageActivitySpeedBonus, 7 * factor }}; }
         case Orange: { return {{ PersistentThreatDecrease, 1 * factor }}; }
-        case Cherry: { return {{ HeritageMaxEnergyBoost, 20 * factor }}; }
-        case Blueberry: { return {{ HeritageMaxSpiritBoost, 20 * factor }}; }
-        case Plum: { return {{ HeritageSpiritRetention, 1 * factor }}; }
-        case Cucumber: { return {{ HeritageConsumableEnergyBoost, 5 * factor }}; }
+        case Cherry: { return {}; }
+        case Blueberry: { return {}; }
+        case Plum: { return {}; }
+        case Cucumber: { return {}; }
         case Lime: { return {{ HeritageItemDoubleChance, 5 * factor }}; }
         case Sugarplum: { return {{ PropertyIfLore, PersistentDiscoveryNotRandom }, { PropertyIfLoreValue, 1 }, { PropertyLoreRequirement, 200 }}; }
     }

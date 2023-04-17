@@ -146,7 +146,7 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>769</width>
+               <width>770</width>
                <height>373</height>
               </rect>
              </property>
@@ -338,55 +338,41 @@
           <property name="spacing">
            <number>0</number>
           </property>
+          <item row="0" column="1" rowspan="3">
+           <widget class="QGroupBox" name="skills_box">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="title">
+             <string>Skills</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout"/>
+           </widget>
+          </item>
           <item row="2" column="0">
            <layout class="QGridLayout" name="gridLayout_5">
-            <item row="2" column="0">
-             <widget class="QLabel" name="spirit_icon">
+            <item row="0" column="0">
+             <widget class="QLabel" name="time_icon">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16</width>
-                <height>16777215</height>
-               </size>
               </property>
               <property name="text">
                <string/>
               </property>
               <property name="pixmap">
-               <pixmap resource="../../images.qrc">:/assets/img/icons/spirit.png</pixmap>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QProgressBar" name="energy_bar">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>80</height>
-               </size>
-              </property>
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the current explorer's &lt;span style=&quot; font-weight:600;&quot;&gt;energy.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Energy is required for her to use tools. You can refill it by eating food recovered from &lt;span style=&quot; font-weight:600;&quot;&gt;foraging.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If her energy reaches 0, she will sustain continous injury until it is raised above 0 again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="maximum">
-               <number>100</number>
-              </property>
-              <property name="value">
-               <number>24</number>
-              </property>
-              <property name="format">
-               <string>%v/%m</string>
+               <pixmap resource="../../images.qrc">:/assets/img/icons/arrow.png</pixmap>
               </property>
              </widget>
             </item>
@@ -421,93 +407,7 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="time_icon">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="pixmap">
-               <pixmap resource="../../images.qrc">:/assets/img/icons/arrow.png</pixmap>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="energy_icon">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="pixmap">
-               <pixmap resource="../../images.qrc">:/assets/img/icons/bolt.png</pixmap>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QProgressBar" name="spirit_bar">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>80</height>
-               </size>
-              </property>
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the current explorer's &lt;span style=&quot; font-weight:600;&quot;&gt;spirit&lt;/span&gt;. &lt;/p&gt;&lt;p&gt;Every action she takes drains a small amount of spirit. She can refill it by &lt;span style=&quot; font-weight:600;&quot;&gt;defiling&lt;/span&gt; an item. Drag any non-consumable to her portrait to have her defile it for &lt;span style=&quot; font-weight:600;&quot;&gt;25 spirit per level &lt;/span&gt;of the defiled item.&lt;/p&gt;&lt;p&gt;If her spirit reaches 0, she will sustain continuous injury until it is raised above 0 again.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="whatsThis">
-               <string/>
-              </property>
-              <property name="value">
-               <number>24</number>
-              </property>
-              <property name="format">
-               <string>%v/%m</string>
-              </property>
-             </widget>
-            </item>
            </layout>
-          </item>
-          <item row="1" column="0">
-           <widget class="QGroupBox" name="effect_group">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>100</height>
-             </size>
-            </property>
-            <property name="toolTip">
-             <string/>
-            </property>
-            <property name="title">
-             <string>Injuries</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-            </property>
-            <property name="flat">
-             <bool>false</bool>
-            </property>
-            <layout class="QHBoxLayout" name="horizontalLayout_3"/>
-           </widget>
           </item>
           <item row="0" column="0">
            <widget class="QWidget" name="player_widget" native="true">
@@ -622,10 +522,10 @@
             </layout>
            </widget>
           </item>
-          <item row="0" column="1" rowspan="3">
-           <widget class="QGroupBox" name="skills_box">
+          <item row="1" column="0">
+           <widget class="QGroupBox" name="stomach_group">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -633,13 +533,22 @@
             <property name="maximumSize">
              <size>
               <width>16777215</width>
-              <height>16777215</height>
+              <height>100</height>
              </size>
             </property>
-            <property name="title">
-             <string>Skills</string>
+            <property name="toolTip">
+             <string/>
             </property>
-            <layout class="QVBoxLayout" name="verticalLayout"/>
+            <property name="title">
+             <string>Stomach</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_3"/>
            </widget>
           </item>
          </layout>
@@ -1297,7 +1206,7 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>501</width>
+                  <width>502</width>
                   <height>387</height>
                  </rect>
                 </property>

@@ -58,8 +58,6 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         {
             { WeatherEffect1, WeatherMark::marker("acid_stingers") },
             { WeatherEffect2, WeatherMark::marker("empty") },
-            { LocationSpiritCost, 10 },
-            { LocationEnergyCost, 10 },
             { LocationSignatureItem1, WeatherMark::marker("honeykey") },
         }
     },
@@ -74,8 +72,6 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         {
             { WeatherEffect1, WeatherMark::marker("unaligned_terrain") },
             { WeatherEffect2, WeatherMark::marker("empty") },
-            { LocationSpiritCost, 10 },
-            { LocationEnergyCost, 10 },
             { LocationSignatureItem1, WeatherMark::marker("fungified_token") },
             { LocationSignatureItem2, WeatherMark::marker("polymore") },
             { LocationSignatureItem3, WeatherMark::marker("copycap") },
@@ -90,8 +86,6 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         {
             { WeatherEffect1, WeatherMark::marker("detritus_reapers") },
             { WeatherEffect2, WeatherMark::marker("empty") },
-            { LocationSpiritCost, 10 },
-            { LocationEnergyCost, 10 },
             { LocationSignatureItem1, WeatherMark::marker("binary_pesticide") },
         }
     },
@@ -104,8 +98,6 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         {
             { WeatherEffect1, WeatherMark::marker("empty") },
             { WeatherEffect2, WeatherMark::marker("empty") },
-            { LocationSpiritCost, 5 },
-            { LocationEnergyCost, 5 },
             { LocationSignatureItem1, WeatherMark::marker("virtualized_fruit") }
         }
     },
@@ -120,7 +112,6 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         {
             { WeatherEffect1, WeatherMark::marker("unstable_division") },
             { WeatherEffect2, WeatherMark::marker("empty") },
-            { LocationSpiritCost, 15 },
             { LocationSignatureItem1, WeatherMark::marker("pentium_bar") },
             { LocationSignatureItem2, WeatherMark::marker("pentium_bar") },
             { LocationSignatureItem3, WeatherMark::marker("pentium_bar") },
@@ -137,7 +128,6 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         {
             { WeatherEffect1, WeatherMark::marker("unified_egg_firmware_interface") },
             { WeatherEffect2, WeatherMark::marker("unaligned_terrain") },
-            { LocationSpiritCost, 30 },
             { LocationSignatureItem1, WeatherMark::marker("advanced_coniine_and_phoratoxin_iris") },
         }
     },
@@ -152,7 +142,6 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         {
             { WeatherEffect1, WeatherMark::marker("nonvolatile_compounds") },
             { WeatherEffect2, WeatherMark::marker("empty") },
-            { LocationSpiritCost, 30 },
             { LocationResourceRequirement, 40 },
             { LocationSignatureItem1, WeatherMark::marker("amniotic_cable") },
         }
@@ -167,8 +156,6 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         {
             { WeatherEffect1, WeatherMark::marker("unaligned_terrain") },
             { WeatherEffect2, WeatherMark::marker("empty") },
-            { LocationSpiritCost, 30 },
-            { LocationEnergyCost, 30 },
             { LocationSignatureItem1, WeatherMark::marker("corrupting_nematode") }
         }
     },
@@ -183,8 +170,6 @@ const static std::vector<LocationDefinition> LOCATION_DEFINITIONS = WeatherMark:
         {
             { WeatherEffect1, WeatherMark::marker("empty") },
             { WeatherEffect2, WeatherMark::marker("empty") },
-            { LocationSpiritCost, 100 },
-            { LocationEnergyCost, 100 },
             { LocationPartyRequirement, 6 },
             { LocationResourceRequirement, 250 },
         }

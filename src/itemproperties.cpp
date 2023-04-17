@@ -43,46 +43,6 @@ void geometric_shift(AorInt *value, AorInt extra_noise) {
 
 const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
     const static std::map<ItemProperty, PropertyDefinition> PROPERTY_DESCRIPTIONS = {
-        { ItemLevel, {
-            "", // ItemLevel has specific code to handle its unique display.
-            {{ HookCalcSpiritGain, HOOK_1(AorInt, spirit_gain)
-                if (item_domain & Material) {
-                    *spirit_gain += prop_value * 25;
-                }
-            }}, { HookCalcActivityTime, HOOK_1(AorInt, activity_ms)
-                if (item_domain & Tool) {
-                    *activity_ms *= prop_value == 0 ? 1 : prop_value;
-                }
-            }}}
-        }},
-        { ToolEnergyCost, {
-            "Requires <b>%1 energy</b> per use.",
-            {{ HookCanDoActionCheck, HOOK_2(bool, can_do, ClampedResource, current_energy)
-                *can_do = *can_do && (current_energy->amount() >= static_cast<AorInt>(prop_value));
-            }}, { HookCalcEnergyGain, HOOK_1(AorInt, energy_gain)
-                *energy_gain -= prop_value;
-            }}}
-        }},
-        { ConsumableEnergyBoost, {
-            "Gives <b>+%1 energy</b>.",
-            {{ HookCalcEnergyGain, HOOK_1(AorInt, energy_gain)
-                *energy_gain += prop_value;
-            }}}
-        }},
-        { ConsumableSpiritBoost, {
-            "Gives <b>+%1 spirit</b>.",
-            {{ HookCalcSpiritGain, HOOK_1(AorInt, spirit_gain)
-                *spirit_gain += prop_value;
-            }}}
-        }},
-        { ConsumableClearsNumEffects, {
-            "Fully clears up to <b>%1 injury(ies)</b>, starting with the rightmost.",
-            {{ HookPostEat, HOOK_1(Character, character)
-                for (AorUInt i = 0; i < prop_value; i++) {
-                    character->clear_last_effect();
-                }
-            }}}
-        }},
         { ConsumableMakesCouplable, {
             "Gives the ability to <b><font color=purple>have a child</font></b> with another explorer.",
             {{ HookPostEat, HOOK_1(Character, character)
@@ -92,12 +52,12 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
         { ConsumableRegeneratesLocation, {
             "Regenerates <b>%1 forageables</b> and <b>the signature item(s)</b> wherever it is eaten.",
             {{ HookPostEat, HOOK_1(Character, character)
-                LocationId here_id = gw()->game()->current_location_id();
+                LocationId here_id = character->location_id();
                 LocationDefinition here = LocationDefinition::get_def(here_id);
 
                 gw()->game()->forageable_waste()[here_id] -= prop_value;
 
-                AorUInt waste_left = gw()->game()->forageables_left() + gw()->game()->mineables_left();
+                AorUInt waste_left = gw()->game()->forageables_left(here_id) + gw()->game()->mineables_left(here_id);
                 AorUInt current_actions = gw()->game()->waste_action_counts()[here_id];
                 for (AorUInt i = 0; i < 9; i++) {
                     if (here.properties[(ItemProperty) (LocationSignatureItem1 + i)] == 0) {
@@ -154,18 +114,6 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
                 character->discover(Item(inventory_items[0].code));
             }}}
         }},
-        { PersistentMaxEnergyBoost, {
-            "I have <b>+%1 max energy</b>.",
-            {{ HookCalcMaxEnergy, HOOK_1(AorInt, max_energy)
-                *max_energy += prop_value;
-            }}}
-        }},
-        { PersistentMaxSpiritBoost, {
-            "I have <b>+%1 max spirit</b>.",
-            {{ HookCalcMaxSpirit, HOOK_1(AorInt, max_spirit)
-                *max_spirit += prop_value;
-            }}}
-        }},
         { PersistentSpeedBonus, {
             "My actions complete <b>%1x faster</b>.",
             {{ HookCalcActivityTime, HOOK_1(AorInt, activity_ms)
@@ -176,18 +124,6 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
             "My actions complete <b>%1% slower</b>.",
             {{ HookCalcActivityTime, HOOK_1(AorInt, activity_ms)
                 *activity_ms += *activity_ms * (prop_value / 100.0);
-            }}}
-        }},
-        { PersistentEnergyPenalty, {
-            "My actions cost an additional <b>%1 energy</b>." ,
-            {{ HookCalcEnergyGain, HOOK_1(AorInt, energy_gain)
-                *energy_gain -= prop_value;
-            }}}
-        }},
-        { PersistentSpiritPenalty, {
-            "My actions cost an additional <b>%1 spirit</b>." ,
-            {{ HookCalcSpiritGain, HOOK_1(AorInt, spirit_gain)
-                *spirit_gain -= prop_value;
             }}}
         }},
         { PersistentRandomConsumableProducts, {
@@ -260,20 +196,6 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
                 *should_die = false;
             }}}
         }},
-        { PersistentChaoticCalculations, {
-            "Game calculations are <b>slightly wrong</b>.",
-            {{ HookCalcMaxEnergy, HOOK_1(AorInt, energy_gain)
-                geometric_shift(energy_gain, 0x197420);
-            }}, { HookCalcMaxSpirit, HOOK_1(AorInt, spirit_gain)
-                geometric_shift(spirit_gain, 0x22705);
-            }}, { HookCalcEnergyGain, HOOK_1(AorInt, energy_gain)
-                geometric_shift(energy_gain, 0x265404);
-            }}, { HookCalcSpiritGain, HOOK_1(AorInt, spirit_gain)
-                geometric_shift(spirit_gain, 0x343);
-            }}, { HookCalcBonusConsumableEnergy, HOOK_1(AorInt, energy_gain)
-                geometric_shift(energy_gain, 0x1);
-            }}}
-        }},
         { PersistentEggsHaveColor, {
             "Eggs hatch into <b>%1 Fennahians</b> (regardless of their parents.)",
             {{ HookJustHatched, HOOK_2(Character, character, Item, egg)
@@ -322,34 +244,10 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
                 gw()->window().lore_label->setText(QString("<b>%1</b>").arg(gw()->game()->lore()));
             }}}
         }},
-        { HeritageMaxEnergyBoost, {
-            "I have <b>+%1 max energy</b>.",
-            {{ HookCalcMaxEnergy, HOOK_1(AorInt, energy_gain)
-                *energy_gain += prop_value;
-            }}}
-        }},
-        { HeritageMaxSpiritBoost, {
-            "I have <b>+%1 max spirit</b>.",
-            {{ HookCalcMaxSpirit, HOOK_1(AorInt, energy_gain)
-                *energy_gain += prop_value;
-            }}}
-        }},
-        { HeritageConsumableEnergyBoost, {
-            "I get <b>+%1 bonus energy</b> when I eat something.",
-            {{ HookCalcBonusConsumableEnergy, HOOK_1(AorInt, energy_gain)
-                *energy_gain += prop_value;
-            }}}
-        }},
         { HeritageSmithProductUsageBoost, {
             "Items that I craft have <b>+%1 use(s)</b>.",
             {{ HookCalcBonusProductUse, HOOK_1(AorInt, use_bonus)
                 *use_bonus += prop_value;
-            }}}
-        }},
-        { HeritageInjuryResilience, {
-            "I have a <b>-%1% chance to suffer an injury</b> after taking an action.",
-            {{ HookCalcInjuryChance, HOOK_1(AorInt, injury_percent_chance)
-                *injury_percent_chance -= prop_value;
             }}}
         }},
         { HeritageMaterialValueBonus, {
@@ -370,54 +268,9 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
                 *item_double_chance += prop_value;
             }}}
         }},
-        { HeritageSpiritRetention, {
-            "I lose <b>%1 less spirit</b> from actions (but not less than 1).",
-            {{ HookCalcSpiritGain, HOOK_1(AorInt, spirit_gain)
-                if (*spirit_gain < 0) {
-                    *spirit_gain += prop_value;
-                    if (*spirit_gain > -1) {
-                        *spirit_gain = -1;
-                    }
-                }
-            }}}
-        }},
-        { ConsumableGivesEffect, {
-            "Gives an injury: <b>%1.</b>",
-            {{ HookPostEat, HOOK_1(Character, character)
-                character->push_effect(Item(prop_value));
-            }}}
-        }},
-        { ConsumableGivesEffectToAll, {
-            "Gives an injury to <b>all</b> explorers: <b>%1.</b>",
-            {{ HookPostEat, HOOK_1(Character, character)
-                for (Character &c : gw()->game()->characters()) {
-                    if (c.id() == NOBODY || c.dead()) {
-                        continue;
-                    }
-
-                    c.push_effect(Item(prop_value));
-                }
-            }}}
-        }},
         { SkillClearInjury, {
             "Fully clears up to <b>%1 injury(ies)</b>, starting with the rightmost.",
             {}
-        }},
-        { LocationSpiritCost, {
-            "Passage here requires <b>%1 spirit</b> per explorer.",
-            {{ HookCalcSpiritGain, HOOK_1(AorInt, spirit_gain)
-                *spirit_gain -= prop_value;
-            }}, { HookDecideCanTravel, HOOK_2(Character, character, bool, can_travel)
-                *can_travel = *can_travel && (AorUInt) character->spirit().amount() >= prop_value;
-            }}}
-        }},
-        { LocationEnergyCost, {
-            "Passage here requires <b>%1 energy</b> per explorer.",
-            {{ HookCalcEnergyGain, HOOK_1(AorInt, energy_gain)
-                *energy_gain -= prop_value;
-            }}, { HookDecideCanTravel, HOOK_2(Character, character, bool, can_travel)
-                *can_travel = *can_travel && (AorUInt) character->energy().amount() >= prop_value;
-            }}}
         }},
         { LocationPartyRequirement, {
             "Passage here requires our expedition have at least <b>%1 live explorers</b>.",
@@ -461,18 +314,6 @@ const std::map<ItemProperty, PropertyDefinition> &property_definitions() {
                     curse.id = non_cursed_items[0].id; // evil
                     gw()->game()->inventory().get_item_ref(curse.id) = curse;
                 }
-            }}}
-        }},
-        { InventoryMaxEnergyBoost, {
-            "While this is in the inventory, all explorers have <b>+%1 max energy.</b>",
-            {{ HookCalcMaxEnergy, HOOK_1(AorInt, energy_gain)
-                *energy_gain += prop_value;
-            }}}
-        }},
-        { InventoryMaxSpiritBoost, {
-            "While this is in the inventory, all explorers have <b>+%1 max spirit.</b>",
-            {{ HookCalcMaxSpirit, HOOK_1(AorInt, spirit_gain)
-                *spirit_gain += prop_value;
             }}}
         }},
         { PropertyIfLore, {

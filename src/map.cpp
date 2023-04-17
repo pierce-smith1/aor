@@ -98,10 +98,14 @@ const std::vector<WorldMap::Coord> &WorldMap::reveal_order() {
 }
 
 bool WorldMap::path_exists_between(LocationId from, LocationId to) {
+    if (from == NOWHERE || to == NOWHERE) {
+        return false;
+    }
+
     return path_exists_between(coord_of(from), coord_of(to));
 }
 
-#define _EMPTY_ MapTile()
+#define _EMPTY_  MapTile()
 #define  E__DLT  MapTile(MapTileEdgeDownLeft)
 #define  EHORZT  MapTile(MapTileEdgeHorizontal)
 #define  E_RD_T  MapTile(MapTileEdgeRightDown)
@@ -113,7 +117,7 @@ bool WorldMap::path_exists_between(LocationId from, LocationId to) {
 #define  EUR_LT  MapTile(MapTileEdgeUpRightLeft)
 #define  EURD_T  MapTile(MapTileEdgeUpRightDown)
 #define  ECROST  MapTile(MapTileEdgeCross)
-#define L(n)     MapTile(LocationDefinition::get_def(n))
+#define  L(n)    MapTile(LocationDefinition::get_def(n))
 
 const Tiles &WorldMap::map_tiles() {
     static Tiles tiles = {{

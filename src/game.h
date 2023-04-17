@@ -57,9 +57,6 @@ public:
     QString &tribe_name();
     ItemHistory &history();
     WorldMap &map();
-    LocationId &current_location_id();
-    LocationDefinition current_location();
-    LocationId &next_location_id();
     AorUInt &threat();
     RunningActivities &running_activities();
     ConsumableWaste &forageable_waste();
@@ -89,19 +86,8 @@ public:
     void start_scan();
     bool can_scan();
 
-    enum class TravelCheckResult {
-        Ok,
-        InsufficientResources,
-        ConcurrentAction,
-        AlreadyHere,
-        NoPath,
-    };
-    TravelCheckResult can_travel(LocationId id);
-    void start_travel(LocationId id);
     AorInt forageables_left(LocationId id);
-    AorInt forageables_left();
     AorInt mineables_left(LocationId id);
-    AorInt mineables_left();
     AorInt total_queued_forages();
     AorInt total_queued_character_activities(ItemDomain domain);
     AorUInt signatures_left(LocationId id);
@@ -129,8 +115,6 @@ private:
     ItemHistory m_history;
     AorUInt m_threat = 0;
     WorldMap m_map;
-    LocationId m_current_location_id = LocationDefinition::get_def("point_entry").id;
-    LocationId m_next_location_id = NOWHERE;
     ConsumableWaste m_consumable_waste;
     MineableWaste m_mineable_waste;
     WasteActionCounts m_waste_action_counts;

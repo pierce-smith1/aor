@@ -10,7 +10,6 @@ ExplorerButton::ExplorerButton(size_t n)
       m_status_icons_widget(new QWidget(this)),
       m_tool_status_icon(new QLabel()),
       m_artifact_status_icon(new QLabel()),
-      m_injury_status_icon(new QLabel()),
       m_portrait_effect(new QGraphicsColorizeEffect(this)),
       m_n(n)
 {
@@ -36,7 +35,6 @@ ExplorerButton::ExplorerButton(size_t n)
     m_status_icons_widget->layout()->addWidget(dummy);
     m_status_icons_widget->layout()->addWidget(m_tool_status_icon);
     m_status_icons_widget->layout()->addWidget(m_artifact_status_icon);
-    m_status_icons_widget->layout()->addWidget(m_injury_status_icon);
 
     m_tool_status_icon->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
     m_tool_status_icon->setMaximumSize(8, 8);
@@ -47,11 +45,6 @@ ExplorerButton::ExplorerButton(size_t n)
     m_artifact_status_icon->setMaximumSize(8, 8);
     m_artifact_status_icon->setMinimumSize(8, 8);
     m_artifact_status_icon->setPixmap(Icons::explorer_button_icons().at(Artifact));
-
-    m_injury_status_icon->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
-    m_injury_status_icon->setMaximumSize(12, 8);
-    m_injury_status_icon->setMinimumSize(12, 8);
-    m_injury_status_icon->setPixmap(Icons::explorer_button_icons().at(Effect));
 }
 
 bool ExplorerButton::do_hovering() {
@@ -107,11 +100,6 @@ void ExplorerButton::refresh() {
         return id != EMPTY_ID;
     }) ? Artifact : None));
 
-    auto &effects = character().effects();
-    m_injury_status_icon->setPixmap(Icons::explorer_button_icons().at(std::any_of(effects.begin(), effects.end(), [](Item &effect) {
-        return effect.id != EMPTY_ID;
-    }) ? Effect : None));
-
     if (character().dead() || character().id() == NOBODY) {
         m_activity_icon->hide();
         m_couple_status_icon->hide();
@@ -160,8 +148,7 @@ bool ExplorerButton::will_accept_drop(const SlotMessage &message) {
         return false;
     }
 
-    return (character().energy().amount() == character().energy().max(&character()))
-        && (character().activity().explorer_subtype() == None);
+    return true;
 }
 
 void ExplorerButton::accept_message(const SlotMessage &message) {
@@ -191,7 +178,6 @@ void ExplorerButton::accept_message(const SlotMessage &message) {
 
 bool ExplorerButton::is_draggable() {
     return character().can_couple()
-        && character().energy().amount() == character().energy().max(&character())
         && !character().activity().active;
 }
 
@@ -220,12 +206,6 @@ Character &ExplorerButton::character() {
 QString ExplorerButton::character_description() {
     QString string;
 
-    string += QString("<b><font color=%4>%2</font></b> spirit, <b><font color=%3>%1</font></b> energy<br><br>")
-        .arg(character().energy().amount())
-        .arg(character().spirit().amount())
-        .arg(Colors::qcolor(Cherry).name())
-        .arg(Colors::qcolor(Blueberry).name());
-
     for (const Item &item : character().equipped_items()) {
         if (item.def()->type & Tool) {
             string += QString("<font color=%2>Holding tool: <b>%1</b></font><br>")
@@ -240,16 +220,6 @@ QString ExplorerButton::character_description() {
         }
     }
 
-    for (const Item &effect : character().nonempty_injuries()) {
-        string += QString("<font color=%2>Hurt: <b>%1</b></font><br>")
-            .arg(effect.def()->display_name)
-            .arg(Colors::qcolor(Cherry).name());
-    }
-
-    if (character().nonempty_injuries().size() > 0 || character().equipped_items().size() > 0) {
-        string += "<br>";
-    }
-
     switch (character().activity().explorer_subtype()) {
         case Smithing: { string += "<i>Currently smithing</i><br>"; break; }
         case Foraging: { string += "<i>Currently foraging</i><br>"; break; }
@@ -259,7 +229,7 @@ QString ExplorerButton::character_description() {
         case Trading: { string += "<i>Currently trading</i><br>"; break; }
         case Travelling: {
             string += QString("<i>Currently traveling to %1</i><br>")
-                .arg(LocationDefinition::get_def(gw()->game()->next_location_id()).display_name);
+                .arg(LocationDefinition::get_def(character().next_location_id()).display_name);
             break;
         } case Coupling: {
             Character &partner = gw()->game()->character(character().partner());
@@ -271,7 +241,6 @@ QString ExplorerButton::character_description() {
 
     if (character().can_couple()) {
         string += "<b><font color=purple>I'm ready to have a child!</font> Drag me onto a partner.</b><br>";
-        string += "<b>Both me and my partner must have <font color=red>full energy</font>.</b><br><br>";
     }
 
     ItemProperties heritage_props = Colors::blend_heritage(character().heritage());

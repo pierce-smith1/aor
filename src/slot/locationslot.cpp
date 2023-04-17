@@ -44,34 +44,20 @@ std::optional<TooltipInfo> LocationSlot::tooltip_info() {
 void LocationSlot::on_left_click(QMouseEvent *event) {
     QAction *travel_action = new QAction(Icons::activity_icons().at(Travelling), "Travel", this);
 
-    auto travel_check_result = gw()->game()->can_travel(m_location_def.id);
-    if (gw()->game()->can_travel(m_location_def.id) != Game::TravelCheckResult::Ok) {
-        switch (travel_check_result) {
-            case Game::TravelCheckResult::ConcurrentAction: {
-                travel_action->setText("Travel (All explorers must be idle)");
-                break;
-            } case Game::TravelCheckResult::InsufficientResources: {
-                travel_action->setText("Travel (Requirements not met)");
-                break;
-            } case Game::TravelCheckResult::NoPath: {
-                travel_action->setText("Travel (Too far away)");
-                break;
-            } default: {}
-        }
-        travel_action->setEnabled(false);
-    }
+    LocationId current_location = gw()->selected_char().location_id();
+    travel_action->setEnabled(gw()->game()->map().path_exists_between(current_location, m_location_def.id));
 
     if (travel_action == QMenu::exec({ travel_action }, event->globalPos())) {
-        gw()->game()->start_travel(m_location_def.id);
+        gw()->selected_char().queue_travel(m_location_def.id);
     }
 }
 
 void LocationSlot::refresh() {
     Slot::refresh();
 
-    if (m_location_def.id == gw()->game()->current_location_id()) {
+    if (m_location_def.id == gw()->selected_char().location_id()) {
         setStyleSheet("*[slot=\"true\"] { border: 2px solid #888; border-radius: 3px; background-color: white; }");
-    } else if (m_location_def.id == gw()->game()->next_location_id()) {
+    } else if (m_location_def.id == gw()->selected_char().next_location_id()) {
         setStyleSheet("*[slot=\"true\"] { border: 2px solid #800; border-radius: 3px; background-color: white; }");
     } else {
         setStyleSheet("*[slot=\"true\"] { border: 1px solid #bbb; border-radius: 3px; background-color: white; }");
@@ -83,7 +69,7 @@ QString LocationSlot::location_description() {
 
     description += "<br>";
 
-    if (gw()->game()->next_location_id() == m_location_def.id) {
+    if (gw()->selected_char().next_location_id() == m_location_def.id) {
         description += "<i>Our expedition is currently travelling here.</i><br><br>";
     }
 
@@ -121,7 +107,7 @@ QString LocationSlot::location_subtext() {
     } else if (m_location_def.id & BiomeMesa) {
         return "Windblown Vista";
     } else if (m_location_def.id & BiomeRoses) {
-        return "Rose Vista";
+        return "Ultimate Vista";
     } else {
         return "Vista";
     }

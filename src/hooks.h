@@ -39,12 +39,7 @@ template <typename T> T extract_payload(const HookPayload &payload, size_t index
 enum HookType : AorUInt {
     HookNone,
     HookCanDoActionCheck,
-    HookCalcEnergyGain,
-    HookCalcSpiritGain,
     HookPostActivity,
-    HookCalcMaxEnergy,
-    HookCalcMaxSpirit,
-    HookCalcBonusConsumableEnergy,
     HookPostEat,
     HookCalcActivityTime,
     HookCalcMaterialBonus,

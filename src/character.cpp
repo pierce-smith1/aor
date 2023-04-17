@@ -43,6 +43,14 @@ bool &Character::can_couple() {
     return m_can_couple;
 }
 
+LocationId &Character::location_id() {
+    return m_location_id;
+}
+
+LocationId &Character::next_location_id() {
+    return m_next_location_id;
+}
+
 ItemProperties Character::heritage_properties() {
     return Colors::blend_heritage(m_heritage);
 }
@@ -86,6 +94,11 @@ void Character::queue_activity(ItemDomain domain, const std::vector<ItemId> &ite
     gw()->refresh_slots();
 }
 
+void Character::queue_travel(LocationId location) {
+    m_next_location_id = location;
+    queue_activity(Travelling, {});
+}
+
 void Character::die() {
     call_hooks(HookPostDeath, { this });
     m_dead = true;
@@ -93,18 +106,6 @@ void Character::die() {
 
 TimedActivity &Character::activity() {
     return gw()->game()->activity(m_activities.front());
-}
-
-ClampedResource &Character::energy() {
-    return m_energy;
-}
-
-ClampedResource &Character::spirit() {
-    return m_spirit;
-}
-
-AorInt Character::base_spirit_cost() {
-    return 5;
 }
 
 AorUInt Character::egg_find_percent_chance() {
@@ -125,71 +126,25 @@ bool Character::can_perform_action(ItemDomain domain) {
             break;
         } case Smithing: {
             can_do = smithing_result() != EMPTY_CODE;
-            call_hooks(HookCanDoActionCheck, { &can_do, &m_energy }, SmithingTool);
             break;
         } case Foraging: {
-            can_do = gw()->game()->forageables_left() > gw()->game()->total_queued_character_activities(Foraging);
-            call_hooks(HookCanDoActionCheck, { &can_do, &m_energy }, domain);
+            can_do = gw()->game()->forageables_left(m_location_id) > gw()->game()->total_queued_character_activities(Foraging);
+            call_hooks(HookCanDoActionCheck, { &can_do }, domain);
             break;
         } case Mining: {
-            can_do = gw()->game()->mineables_left() > gw()->game()->total_queued_character_activities(Mining);
-            call_hooks(HookCanDoActionCheck, { &can_do, &m_energy }, domain);
+            can_do = gw()->game()->mineables_left(m_location_id) > gw()->game()->total_queued_character_activities(Mining);
+            call_hooks(HookCanDoActionCheck, { &can_do }, domain);
             break;
         } case Travelling: {
-            return true;
+            can_do = gw()->game()->map().path_exists_between(m_location_id, m_next_location_id);
+            call_hooks(HookCanDoActionCheck, { &can_do }, domain);
+            break;
         } default: {
             return false;
         }
     }
 
     return can_do;
-}
-
-AorInt Character::energy_to_gain() {
-    if (gw()->game()->no_exhaustion()) {
-        return 0;
-    }
-
-    AorInt gain = 0;
-
-    call_hooks(HookCalcEnergyGain, { &gain }, BASE_HOOK_DOMAINS | activity().explorer_subtype(), activity().owned_items());
-
-    switch (activity().explorer_subtype()) {
-        case Eating: {
-            call_hooks(HookCalcBonusConsumableEnergy, { &gain });
-            break;
-        } case Coupling: {
-            gain = -energy().max(this);
-            break;
-        } default: {
-            break;
-        }
-    }
-
-    return gain;
-}
-
-AorInt Character::spirit_to_gain() {
-    if (gw()->game()->no_exhaustion()) {
-        return 0;
-    }
-
-    AorInt gain = 0;
-
-    switch (activity().explorer_subtype()) {
-        case Eating:
-        case Defiling:
-        case Travelling: {
-            call_hooks(HookCalcSpiritGain, { &gain }, BASE_HOOK_DOMAINS, activity().owned_items());
-            break;
-        } default: {
-            gain -= base_spirit_cost();
-            call_hooks(HookCalcSpiritGain, { &gain }, BASE_HOOK_DOMAINS, activity().owned_items());
-            break;
-        }
-    }
-
-    return gain;
 }
 
 std::vector<ItemCode> Character::smithable_items() {
@@ -304,48 +259,6 @@ std::vector<Item> Character::equipped_items() {
     return equipped_items;
 }
 
-std::vector<Item> Character::nonempty_injuries() {
-    std::vector<Item> injuries;
-
-    std::copy_if(m_effects.begin(), m_effects.end(), std::back_inserter(injuries), [=](const Item &effect) {
-        return effect.id != EMPTY_ID;
-    });
-
-    return injuries;
-}
-
-bool Character::push_effect(const Item &effect) {
-    if (effect.id == EMPTY_ID) {
-        return false;
-    }
-
-    if (!std::any_of(begin(gw()->game()->history()), end(gw()->game()->history()), [=](ItemCode code) {
-        return Item::def_of(code)->type & Effect;
-    })) {
-        gw()->tutorial(
-            "<b>I just suffered an injury...</b><br>"
-            "<br>"
-            "<b>Injuries</b> inflict our explorers with negative effects.<br>"
-            "They are triggered by certain events, such as running out of energy or spirit,<br>"
-            "and can happen randomly under certain conditions.<br>"
-            "They heal over time, and can be healed faster by eating <b>consumables</b>.<br>"
-            "<br>"
-            "Injuries should not be left to fester; once an explorer fills all her injury slots, she will <b>die</b>."
-        );
-    }
-    gw()->game()->history().insert(effect.code);
-
-    for (AorUInt i = 0; i < EFFECT_SLOTS; i++) {
-        if (m_effects[i].id == EMPTY_ID) {
-            m_effects[i] = effect;
-            gw()->notify(Warning, QString("%1 suffered an injury...").arg(name()));
-            return true;
-        }
-    }
-
-    return false;
-}
-
 bool Character::discover(const Item &item) {
     if (!gw()->game()->add_item(item)) {
         gw()->notify(Warning, QString("%1 discovered %3 %2, but the inventory was too full to accept it!")
@@ -391,18 +304,12 @@ void Character::call_hooks(HookType type, const HookPayload &payload, AorUInt Ao
         }
     }
 
-    if (domain & Effect) {
-        for (const Item &effect : m_effects) {
-            effect.call_hooks(type, payload);
-        }
-    }
-
     if (domain & Explorer) {
         heritage_properties().call_hooks(type, payload, Item());
     }
 
     if (domain & Travelling) {
-        LocationDefinition::get_def(gw()->game()->next_location_id()).properties.call_hooks(type, payload, Item());
+        LocationDefinition::get_def(m_next_location_id).properties.call_hooks(type, payload, Item());
     }
 
     for (const Item &item : extra_items) {
@@ -410,17 +317,6 @@ void Character::call_hooks(HookType type, const HookPayload &payload, AorUInt Ao
     }
 
     gw()->game()->call_global_hooks(type, payload, AorInt_domain);
-}
-
-bool Character::clear_last_effect() {
-    for (AorInt i = EFFECT_SLOTS - 1; i >= 0; i--) {
-        if (effects()[i].id != EMPTY_ID) {
-            effects()[i] = Item();
-            return true;
-        }
-    }
-
-    return false;
 }
 
 ItemId Character::tool_id(ItemDomain domain) {
@@ -433,10 +329,6 @@ ToolIds &Character::tools() {
 
 ExternalItemIds &Character::external_items() {
     return m_external_item_ids;
-}
-
-Effects &Character::effects() {
-    return m_effects;
 }
 
 Skills &Character::skills() {
@@ -456,14 +348,13 @@ void Character::serialize(QIODevice *dev) const {
     Serialize::serialize(dev, m_heritage);
     Serialize::serialize(dev, m_activities);
     Serialize::serialize(dev, m_external_item_ids);
-    Serialize::serialize(dev, m_effects);
     Serialize::serialize(dev, m_tool_ids);
     Serialize::serialize(dev, m_skills);
     Serialize::serialize(dev, m_partner);
     Serialize::serialize(dev, m_dead);
     Serialize::serialize(dev, m_can_couple);
-    Serialize::serialize(dev, m_energy);
-    Serialize::serialize(dev, m_spirit);
+    Serialize::serialize(dev, m_location_id);
+    Serialize::serialize(dev, m_next_location_id);
 }
 
 void Character::deserialize(QIODevice *dev) {
@@ -472,14 +363,13 @@ void Character::deserialize(QIODevice *dev) {
     Serialize::deserialize(dev, m_heritage);
     Serialize::deserialize(dev, m_activities);
     Serialize::deserialize(dev, m_external_item_ids);
-    Serialize::deserialize(dev, m_effects);
     Serialize::deserialize(dev, m_tool_ids);
     Serialize::deserialize(dev, m_skills);
     Serialize::deserialize(dev, m_partner);
     Serialize::deserialize(dev, m_dead);
     Serialize::deserialize(dev, m_can_couple);
-    Serialize::deserialize(dev, m_energy);
-    Serialize::deserialize(dev, m_spirit);
+    Serialize::deserialize(dev, m_location_id);
+    Serialize::deserialize(dev, m_next_location_id);
 }
 
 Inventory &Character::inventory() {

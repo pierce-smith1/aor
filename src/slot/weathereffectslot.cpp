@@ -22,6 +22,6 @@ void WeatherEffectSlot::install() {
 }
 
 Item WeatherEffectSlot::my_item() {
-    LocationDefinition here = LocationDefinition::get_def(gw()->game()->current_location_id());
+    LocationDefinition here = LocationDefinition::get_def(gw()->selected_char().location_id());
     return Item(here.properties[(ItemProperty) (WeatherEffect1 + m_n)]);
 }

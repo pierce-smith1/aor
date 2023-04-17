@@ -31,14 +31,11 @@ public:
 
 private:
     static void exhaust_reagents(const TimedActivity &activity);
-    static void exhaust_character(const TimedActivity &activity);
     static void exhaust_item(const TimedActivity &activity, ItemId id);
     static std::vector<Item> products(const TimedActivity &activity);
     static void give(const TimedActivity &activity, const std::vector<Item> &items);
     static void give_bonuses(const TimedActivity &activity);
-    static void give_injuries(const TimedActivity &activity);
     static void increase_threat(const TimedActivity &activity);
-    static void clear_injuries(const TimedActivity &activity);
     static void start_next_action(const TimedActivity &activity);
     static void add_bonus_items(const TimedActivity &activity, std::vector<Item> &items);
 };
